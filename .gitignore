@@ -1,0 +1,9 @@
+# Folder
+node_modules/
+uploads/
+dist/
+db/
+
+# Files
+.npmrc
+.env

@@ -1,0 +1,129 @@
+version: "3"
+
+services:
+  swagger:
+    image: sys/swagger
+    build: ./docs
+    ports:
+      - 8080
+    environment:
+      BASE_URL: /docs
+      SWAGGER_JSON: /api.yaml
+    networks:
+      - bridge
+  nginx:
+    image: sys/nginx
+    build: ./nginx
+    ports:
+      - 80:80
+      - 443:443
+    networks:
+      - bridge
+    depends_on:
+      - swagger
+      - nats
+      - user
+      - log
+  nats:
+    image: nats-streaming:alpine
+    command: [
+      "-p", 
+      "4222", 
+      "-m", 
+      "8222", 
+      "-hbi", 
+      "5s", 
+      "-hbt", 
+      "5s", 
+      "-hbf", 
+      "2", 
+      "-SD", 
+      "-cid", 
+      "nats_clus"
+    ]
+    ports:
+      - 4222
+      - 8222
+    networks:
+      - bridge
+  redis:
+    image: redis:alpine
+    ports:
+      - 6379
+    networks:
+      - bridge
+  user:
+    image: sys/user
+    build: 
+      context: ./src/user
+      args:
+        - NODE_ENV=prod
+      secrets:
+        - npmrc
+    ports:
+      - 3000
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=prod
+      - MONGO_URI=${MONGO_URI_USER_SRV}
+      - NATS_URL=http://nats:4222
+      - NATS_CLIENT_ID=nats-cli_user
+      - NATS_CLUSTER_ID=nats_clus
+      - REDIS_URI=redis://redis:6379
+    networks:
+      - bridge
+    depends_on:
+      - nats
+      - redis
+  course:
+    image: sys/course
+    build: 
+      context: ./src/course
+      args:
+        - NODE_ENV=prod
+      secrets:
+        - npmrc
+    ports:
+      - 3000
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=prod
+      - MONGO_URI=${MONGO_URI_COURSE_SRV}
+      - NATS_URL=http://nats:4222
+      - NATS_CLIENT_ID=nats-cli_course
+      - NATS_CLUSTER_ID=nats_clus
+    networks:
+      - bridge
+    depends_on:
+      - nats
+  log:
+    image: sys/log
+    build: 
+      context: ./src/log
+      args:
+        - NODE_ENV=prod
+      secrets:
+        - npmrc
+    ports:
+      - 3000
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=prod
+      - MONGO_URI=${MONGO_URI_LOG_SRV}
+      - NATS_URL=http://nats:4222
+      - NATS_CLIENT_ID=nats-cli_log
+      - NATS_CLUSTER_ID=nats_clus
+    networks:
+      - bridge
+    depends_on:
+      - nats
+
+secrets:
+  npmrc:
+    file: .npmrc
+
+networks:
+  bridge:
