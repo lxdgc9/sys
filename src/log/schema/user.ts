@@ -1,17 +1,18 @@
 import { Schema, Types } from "mongoose";
 
-export interface IActor {
+export interface IUser {
   userId: Types.ObjectId;
-  obj: any;
+  doc: any;
 }
-export const schema = new Schema<IActor>(
+
+export const schema = new Schema<IUser>(
   {
     userId: {
       type: Schema.Types.ObjectId,
       required: true,
       unique: true,
     },
-    obj: {
+    doc: {
       type: Schema.Types.Mixed,
       required: true,
     },

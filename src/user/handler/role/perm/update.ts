@@ -1,4 +1,5 @@
 import { BadReqErr, ConflictErr } from "@lxdgc9/pkg/dist/err";
+import { Actions } from "@lxdgc9/pkg/dist/event/log";
 import { RequestHandler } from "express";
 import { Types } from "mongoose";
 import { LogPublisher } from "../../../event/publisher/log";
@@ -6,7 +7,7 @@ import { Perm } from "../../../model/perm";
 import { PermGr } from "../../../model/perm-gr";
 import { nats } from "../../../nats";
 
-export const modPerm: RequestHandler = async (req, res, next) => {
+export const updatePerm: RequestHandler = async (req, res, next) => {
   const {
     code,
     desc,
@@ -17,56 +18,73 @@ export const modPerm: RequestHandler = async (req, res, next) => {
     groupId?: Types.ObjectId;
   } = req.body;
   try {
-    const perm = await Perm.findById(req.params.id);
-    if (!perm) {
-      throw new BadReqErr("permission doesn't exist");
+    if (!Object.keys(req.body).length) {
+      throw new BadReqErr("body not empty");
     }
 
-    const [isDupl, existGr] = await Promise.all([
-      Perm.exists({ code }),
+    const perm = await Perm.findById(req.params.id).populate({
+      path: "group",
+      select: "-perms",
+    });
+    if (!perm) {
+      throw new BadReqErr("permission not found");
+    }
+
+    const [isDupl, exGroup] = await Promise.all([
+      Perm.exists({
+        _id: {
+          $ne: req.params.id,
+        },
+        code,
+      }),
       PermGr.exists({ _id: groupId }),
     ]);
     if (code && isDupl) {
       throw new ConflictErr("code duplicated");
     }
-    if (groupId && !existGr) {
-      throw new BadReqErr("permission group doesn't exist");
+    if (groupId && !exGroup) {
+      throw new BadReqErr("group not found");
     }
 
-    if (groupId && !perm.group.equals(groupId)) {
-      await Promise.all([
-        PermGr.findByIdAndUpdate(groupId, {
-          $addToSet: { perms: perm._id },
-        }),
-        PermGr.findByIdAndUpdate(perm.group, {
-          $pull: { perms: perm._id },
-        }),
-      ]);
-    }
-
-    await perm.updateOne({
-      $set: {
-        code,
-        desc,
-        group: groupId,
+    const updPerm = await Perm.findByIdAndUpdate(
+      perm._id,
+      {
+        $set: {
+          code,
+          desc,
+          group: groupId,
+        },
       },
+      { new: true }
+    ).populate({
+      path: "group",
+      select: "-perms",
     });
 
-    const [updPerm] = await Promise.all([
-      Perm.findById(perm._id).populate({
-        path: "group",
-        select: "-perms",
-      }),
+    res.json({ perm: updPerm });
+
+    await Promise.all([
+      groupId &&
+        !perm.group._id.equals(groupId) &&
+        (await Promise.all([
+          PermGr.findByIdAndUpdate(groupId, {
+            $addToSet: {
+              perms: perm._id,
+            },
+          }),
+          PermGr.findByIdAndUpdate(perm.group._id, {
+            $pull: {
+              perms: perm._id,
+            },
+          }),
+        ])),
       new LogPublisher(nats.cli).publish({
-        act: "MOD",
-        model: Perm.modelName,
-        doc: perm,
         userId: req.user?.id,
-        status: true,
+        model: Perm.modelName,
+        act: Actions.update,
+        doc: perm,
       }),
     ]);
-
-    res.json({ perm: updPerm });
   } catch (e) {
     next(e);
   }

@@ -8,18 +8,19 @@ import {
 import { Router } from "express";
 import { body, param } from "express-validator";
 import { deletePerm } from "../handler/role/perm/delete";
-import { deleteManyPerm } from "../handler/role/perm/delete-many";
+import { deletePerms } from "../handler/role/perm/delete-many";
 import { deleteGroup } from "../handler/role/perm/group/delete";
-import { deleteManyGroup } from "../handler/role/perm/group/delete-many";
+import { deleteGroups } from "../handler/role/perm/group/delete-many";
 import { insertGroup } from "../handler/role/perm/group/insert";
-import { insertManyGroup } from "../handler/role/perm/group/insert-many";
+import { insertGroups } from "../handler/role/perm/group/insert-many";
+import { searchGroup } from "../handler/role/perm/group/search";
 import { searchGroups } from "../handler/role/perm/group/search-many";
 import { updateGroup } from "../handler/role/perm/group/update";
 import { insertPerm } from "../handler/role/perm/insert";
-import { insertManyPerm } from "../handler/role/perm/insert-many";
+import { insertPerms } from "../handler/role/perm/insert-many";
 import { searchPerm } from "../handler/role/perm/search";
 import { getPerms } from "../handler/role/perm/search-many";
-import { modPerm } from "../handler/role/perm/update";
+import { updatePerm } from "../handler/role/perm/update";
 
 export const r = Router();
 
@@ -31,6 +32,8 @@ r.route("/group")
       body("name")
         .notEmpty()
         .withMessage("required")
+        .isString()
+        .withMessage("must be string")
         .isLength({ min: 1, max: 255 })
         .withMessage("1 <= len <= 255")
     ),
@@ -41,6 +44,8 @@ r.route("/group/many")
     guard(INSERT_PERM),
     validate(
       body("groups")
+        .notEmpty()
+        .withMessage("required")
         .isArray({ min: 1 })
         .withMessage("must be array, has aleast 1 element"),
       body("groups.*").isObject().withMessage("must be object"),
@@ -50,19 +55,26 @@ r.route("/group/many")
         .isLength({ min: 1, max: 255 })
         .withMessage("1 <= len <= 255")
     ),
-    insertManyGroup
+    insertGroups
   )
   .delete(
     guard(DELETE_PERM),
     validate(
       body("ids")
+        .notEmpty()
+        .withMessage("required")
         .isArray({ min: 1 })
         .withMessage("must be array, has aleast 1 element"),
       body("ids.*").isMongoId().withMessage("must be mongoId")
     ),
-    deleteManyGroup
+    deleteGroups
   );
 r.route("/group/:id")
+  .get(
+    guard(SEARCH_PERM),
+    validate(param("id").isMongoId().withMessage("must be mongoId")),
+    searchGroup
+  )
   .patch(
     guard(UPDATE_PERM),
     validate(
@@ -83,17 +95,34 @@ r.route("/group/:id")
   )
   .delete(
     guard(DELETE_PERM),
-    validate(param("id").isMongoId().withMessage("invalid format id")),
+    validate(param("id").isMongoId().withMessage("must be mongoId")),
     deleteGroup
   );
+
 r.route("/")
   .get(guard(SEARCH_PERM), getPerms)
   .post(
     guard(INSERT_PERM),
     validate(
-      body("code").notEmpty(),
-      body("desc").notEmpty(),
-      body("groupId").notEmpty().isMongoId()
+      body("code")
+        .notEmpty()
+        .withMessage("required")
+        .isString()
+        .withMessage("must be string")
+        .isLength({ min: 1, max: 255 })
+        .withMessage("1 <= len <= 255"),
+      body("desc")
+        .notEmpty()
+        .withMessage("required")
+        .isString()
+        .withMessage("must be string")
+        .isLength({ min: 1, max: 255 })
+        .withMessage("1 <= len <= 255"),
+      body("groupId")
+        .notEmpty()
+        .withMessage("required")
+        .isMongoId()
+        .withMessage("must be mongoId")
     ),
     insertPerm
   );
@@ -105,7 +134,7 @@ r.route("/many")
         .notEmpty()
         .withMessage("required")
         .isArray({ min: 1 })
-        .withMessage(""),
+        .withMessage("must be array, has aleast 1 element"),
       body("perms.*").isObject().withMessage("must be object"),
       body("perms.*.code")
         .isString()
@@ -117,19 +146,21 @@ r.route("/many")
         .withMessage("must be string")
         .isLength({ min: 1, max: 255 })
         .withMessage("1 <= len <= 255"),
-      body("groupId").isMongoId().withMessage("must be mongoId")
+      body("perms.*.groupId").isMongoId().withMessage("must be mongoId")
     ),
-    insertManyPerm
+    insertPerms
   )
   .delete(
     guard(DELETE_PERM),
     validate(
       body("ids")
+        .notEmpty()
+        .withMessage("required")
         .isArray({ min: 1 })
         .withMessage("must be array, has aleast 1 element"),
-      body("perms.*").isMongoId().withMessage("must be mongoId")
+      body("ids.*").isMongoId().withMessage("must be mongoId")
     ),
-    deleteManyPerm
+    deletePerms
   );
 r.route("/:id")
   .get(
@@ -140,12 +171,27 @@ r.route("/:id")
   .patch(
     guard(UPDATE_PERM),
     validate(
-      param("id").isMongoId(),
-      body("desc")
+      param("id").isMongoId().withMessage("must be mongoId"),
+      body("code")
+        .optional({ values: "undefined" })
+        .isString()
+        .withMessage("must be string")
         .isLength({ min: 1, max: 255 })
-        .optional({ values: "undefined" }),
-      body("groupId").optional({ values: "undefined" }).isMongoId()
+        .withMessage("1 <= len <= 255"),
+      body("desc")
+        .optional({ values: "undefined" })
+        .isString()
+        .withMessage("must be string")
+        .isLength({ min: 1, max: 255 }),
+      body("groupId")
+        .optional({ values: "undefined" })
+        .isMongoId()
+        .withMessage("must be mongoId")
     ),
-    modPerm
+    updatePerm
   )
-  .delete(guard(DELETE_PERM), validate(param("id").isMongoId()), deletePerm);
+  .delete(
+    guard(DELETE_PERM),
+    validate(param("id").isMongoId().withMessage("must be mongoId")),
+    deletePerm
+  );

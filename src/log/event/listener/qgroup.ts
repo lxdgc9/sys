@@ -1,1 +1,1 @@
-export const qGroup = "log-srv";
+export const qGroup = "log";

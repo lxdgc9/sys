@@ -1,29 +1,25 @@
+import { Actions } from "@lxdgc9/pkg/dist/event/log";
 import { Schema, Types } from "mongoose";
 
 interface ILog {
-  act: "GET" | "NEW" | "MOD" | "DEL";
+  actor: Types.ObjectId; // chủ thể (người thực hiện)
+  act: Actions; // hành động
   doc: any;
-  actor: Types.ObjectId;
-  status: boolean;
 }
 
 export const schema = new Schema<ILog>(
   {
+    actor: {
+      type: Schema.Types.ObjectId,
+      ref: "user",
+    },
     act: {
       type: String,
-      enum: ["GET", "NEW", "MOD", "DEL"],
+      enum: Actions,
       required: true,
     },
     doc: {
       type: Schema.Types.Mixed,
-    },
-    actor: {
-      type: Schema.Types.ObjectId,
-      ref: "actor",
-    },
-    status: {
-      type: Boolean,
-      default: false,
     },
   },
   {
@@ -37,5 +33,3 @@ export const schema = new Schema<ILog>(
     },
   }
 );
-
-schema.index({ createdAt: -1 });

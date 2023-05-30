@@ -1,4 +1,5 @@
 import { BadReqErr } from "@lxdgc9/pkg/dist/err";
+import { Actions } from "@lxdgc9/pkg/dist/event/log";
 import { RequestHandler } from "express";
 import { Types } from "mongoose";
 import { LogPublisher } from "../../event/publisher/log";
@@ -48,11 +49,10 @@ export const modRole: RequestHandler = async (req, res, next) => {
     res.json({ role: updRole });
 
     await new LogPublisher(nats.cli).publish({
-      act: "MOD",
+      act: Actions.update,
       model: Role.modelName,
       doc: role,
       userId: req.user?.id,
-      status: true,
     });
   } catch (e) {
     next(e);

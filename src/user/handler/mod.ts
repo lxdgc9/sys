@@ -1,8 +1,9 @@
 import { BadReqErr, ConflictErr } from "@lxdgc9/pkg/dist/err";
+import { Actions } from "@lxdgc9/pkg/dist/event/log";
 import { RequestHandler } from "express";
 import { Types } from "mongoose";
 import { LogPublisher } from "../event/publisher/log";
-import { ModUserPublisher } from "../event/publisher/user/mod";
+import { UpdateUserPublisher } from "../event/publisher/user/mod";
 import { Role } from "../model/role";
 import { User } from "../model/user";
 import { nats } from "../nats";
@@ -92,13 +93,12 @@ export const modUser: RequestHandler = async (req, res, next) => {
     res.json({ user: updUser });
 
     await Promise.all([
-      new ModUserPublisher(nats.cli).publish(updUser!),
+      new UpdateUserPublisher(nats.cli).publish(updUser!),
       new LogPublisher(nats.cli).publish({
-        act: "MOD",
+        act: Actions.update,
         model: User.modelName,
         doc: user,
         userId: req.user?.id,
-        status: true,
       }),
     ]);
   } catch (e) {

@@ -1,11 +1,17 @@
-import { guard } from "@lxdgc9/pkg/dist/middie";
-import { LOG_CODE } from "@lxdgc9/pkg/dist/perm";
+import { guard, validate } from "@lxdgc9/pkg/dist/middleware";
+import { LOG } from "@lxdgc9/pkg/dist/rule/log";
 import { Router } from "express";
-import { getLogs } from "../handler/get";
-import { getSrv } from "../handler/get-srv";
+import { param } from "express-validator";
+import { logs } from "../handler/logs";
+import { searchParts } from "../handler/parts";
 
 export const r = Router();
 
-r.get("/srvs", guard(LOG_CODE.GET_LOG), getSrv);
+r.get("/", guard(LOG), searchParts);
 
-r.get("/:srv", guard(LOG_CODE.GET_LOG), getLogs);
+r.get(
+  "/:part",
+  guard(LOG),
+  validate(param("part").isString().withMessage("must be string")),
+  logs
+);

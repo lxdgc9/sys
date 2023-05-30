@@ -1,8 +1,9 @@
 import { BadReqErr } from "@lxdgc9/pkg/dist/err";
+import { Actions } from "@lxdgc9/pkg/dist/event/log";
 import { RequestHandler } from "express";
 import { Types } from "mongoose";
 import { LogPublisher } from "../event/publisher/log";
-import { DelManyUserPublisher } from "../event/publisher/user/del-s";
+import { DeleteManyUserPublisher } from "../event/publisher/user/delete-many";
 import { User } from "../model/user";
 import { nats } from "../nats";
 
@@ -23,13 +24,12 @@ export const delUsers: RequestHandler = async (req, res, next) => {
     await User.deleteMany({ _id: userIds });
 
     await Promise.all([
-      new DelManyUserPublisher(nats.cli).publish(userIds),
+      new DeleteManyUserPublisher(nats.cli).publish(userIds),
       new LogPublisher(nats.cli).publish({
-        act: "DEL",
+        act: Actions.delete,
         model: User.modelName,
         doc: users,
         userId: req.user?.id,
-        status: true,
       }),
     ]);
 

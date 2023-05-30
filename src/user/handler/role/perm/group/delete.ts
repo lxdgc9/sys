@@ -1,4 +1,5 @@
 import { BadReqErr } from "@lxdgc9/pkg/dist/err";
+import { Actions } from "@lxdgc9/pkg/dist/event/log";
 import { RequestHandler } from "express";
 import { LogPublisher } from "../../../../event/publisher/log";
 import { Perm } from "../../../../model/perm";
@@ -12,17 +13,20 @@ export const deleteGroup: RequestHandler = async (req, res, next) => {
       throw new BadReqErr("group not found");
     }
 
-    res.json({ msg: "group deleted" });
+    res.json({ msg: "deleted" });
 
     await Promise.all([
       // Xóa permissions thuộc group này
-      Perm.deleteMany({ _id: group.perms }),
+      Perm.deleteMany({
+        _id: {
+          $in: group.perms,
+        },
+      }),
       new LogPublisher(nats.cli).publish({
-        act: "DEL",
-        model: PermGr.modelName,
-        doc: group,
         userId: req.user?.id,
-        status: true,
+        model: PermGr.modelName,
+        act: Actions.delete,
+        doc: group,
       }),
     ]);
   } catch (e) {

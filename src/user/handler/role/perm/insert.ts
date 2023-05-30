@@ -1,4 +1,5 @@
 import { BadReqErr, ConflictErr } from "@lxdgc9/pkg/dist/err";
+import { Actions } from "@lxdgc9/pkg/dist/event/log";
 import { RequestHandler } from "express";
 import { Types } from "mongoose";
 import { LogPublisher } from "../../../event/publisher/log";
@@ -34,14 +35,7 @@ export const insertPerm: RequestHandler = async (req, res, next) => {
       desc,
       group: groupId,
     });
-    await Promise.all([
-      newPerm.save(),
-      group.updateOne({
-        $addToSet: {
-          perms: newPerm._id,
-        },
-      }),
-    ]);
+    await newPerm.save();
 
     const perm = await Perm.findById(newPerm._id).populate({
       path: "group",
@@ -50,13 +44,19 @@ export const insertPerm: RequestHandler = async (req, res, next) => {
 
     res.status(201).send({ perm });
 
-    await new LogPublisher(nats.cli).publish({
-      act: "NEW",
-      model: Perm.modelName,
-      doc: perm!,
-      userId: req.user?.id,
-      status: true,
-    });
+    await Promise.all([
+      group.updateOne({
+        $addToSet: {
+          perms: newPerm._id,
+        },
+      }),
+      new LogPublisher(nats.cli).publish({
+        userId: req.user?.id,
+        model: Perm.modelName,
+        act: Actions.insert,
+        doc: perm,
+      }),
+    ]);
   } catch (e) {
     next(e);
   }

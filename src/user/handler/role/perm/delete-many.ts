@@ -1,4 +1,5 @@
 import { BadReqErr } from "@lxdgc9/pkg/dist/err";
+import { Actions } from "@lxdgc9/pkg/dist/event/log";
 import { RequestHandler } from "express";
 import { Types } from "mongoose";
 import { LogPublisher } from "../../../event/publisher/log";
@@ -6,7 +7,7 @@ import { Perm } from "../../../model/perm";
 import { PermGr } from "../../../model/perm-gr";
 import { nats } from "../../../nats";
 
-export const deleteManyPerm: RequestHandler = async (req, res, next) => {
+export const deletePerms: RequestHandler = async (req, res, next) => {
   const {
     ids,
   }: {
@@ -18,6 +19,9 @@ export const deleteManyPerm: RequestHandler = async (req, res, next) => {
       _id: {
         $in: ids,
       },
+    }).populate({
+      path: "group",
+      select: "-perms",
     });
     if (perms.length < ids.length) {
       throw new BadReqErr("ids mismatch");
@@ -29,13 +33,13 @@ export const deleteManyPerm: RequestHandler = async (req, res, next) => {
       },
     });
 
-    res.json({ msg: "delete groups" });
+    res.json({ msg: "deleted" });
 
     await Promise.all([
       PermGr.updateMany(
         {
           _id: {
-            $in: perms.map((p) => p.group),
+            $in: perms.map((p) => p.group._id),
           },
         },
         {
@@ -45,11 +49,10 @@ export const deleteManyPerm: RequestHandler = async (req, res, next) => {
         }
       ),
       new LogPublisher(nats.cli).publish({
-        act: "DEL",
-        model: Perm.modelName,
-        doc: perms,
         userId: req.user?.id,
-        status: true,
+        model: Perm.modelName,
+        act: Actions.delete,
+        doc: perms,
       }),
     ]);
   } catch (e) {

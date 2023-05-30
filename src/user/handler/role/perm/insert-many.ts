@@ -1,10 +1,13 @@
 import { BadReqErr } from "@lxdgc9/pkg/dist/err";
+import { Actions } from "@lxdgc9/pkg/dist/event/log";
 import { RequestHandler } from "express";
 import { Types } from "mongoose";
+import { LogPublisher } from "../../../event/publisher/log";
 import { Perm } from "../../../model/perm";
 import { PermGr } from "../../../model/perm-gr";
+import { nats } from "../../../nats";
 
-export const insertManyPerm: RequestHandler = async (req, res, next) => {
+export const insertPerms: RequestHandler = async (req, res, next) => {
   const {
     perms,
   }: {
@@ -17,38 +20,75 @@ export const insertManyPerm: RequestHandler = async (req, res, next) => {
 
   try {
     const set = new Set(perms.map((p) => p.code));
-    if (set.size !== perms.length) {
+    if (set.size < perms.length) {
       throw new BadReqErr("duplicate code");
     }
 
+    const setGroupId = new Set(perms.map((p) => p.groupId));
     const [isDupl, numGroups] = await Promise.all([
       Perm.exists({
-        _id: {
+        code: {
           $in: Array.from(set),
         },
       }),
       PermGr.countDocuments({
         _id: {
-          $in: perms.map((p) => p.groupId),
+          $in: Array.from(setGroupId),
         },
       }),
     ]);
+
     if (isDupl) {
       throw new BadReqErr("duplicate code");
     }
-    if (numGroups < perms.length) {
-      throw new BadReqErr("group not found");
+    if (numGroups < setGroupId.size) {
+      throw new BadReqErr("groupIds mismatch");
     }
 
-    const _perms = await Perm.updateMany(perms);
+    const _perms = await Perm.insertMany(
+      perms.map(({ code, desc, groupId }) => ({
+        code,
+        desc,
+        group: groupId,
+      }))
+    );
 
-    console.log(_perms);
+    const docs = await Perm.find({
+      _id: {
+        $in: _perms.map((p) => p._id),
+      },
+    }).populate({
+      path: "group",
+      select: "-perms",
+    });
 
-    // for (const p of _perms) {
-    //   await PermGr.findByIdAndUpdate(p.)
-    // }
+    res.status(201).json({ perm: docs });
 
-    res.status(201).json({});
+    const permByGroupIds = _perms.reduce((a, { _id, group }) => {
+      if (!a.has(group.toString())) {
+        a.set(group.toString(), []);
+      }
+
+      a.get(group.toString()).push(_id);
+
+      return a;
+    }, new Map());
+
+    await Promise.all([
+      Array.from(permByGroupIds.entries()).forEach(async ([k, v]) => {
+        await PermGr.findByIdAndUpdate(k, {
+          $addToSet: {
+            perms: v,
+          },
+        });
+      }),
+      new LogPublisher(nats.cli).publish({
+        userId: req.user?.id,
+        model: Perm.modelName,
+        act: Actions.insert,
+        doc: docs,
+      }),
+    ]);
   } catch (e) {
     next(e);
   }

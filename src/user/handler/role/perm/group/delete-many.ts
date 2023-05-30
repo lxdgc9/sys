@@ -1,4 +1,5 @@
 import { BadReqErr } from "@lxdgc9/pkg/dist/err";
+import { Actions } from "@lxdgc9/pkg/dist/event/log";
 import { RequestHandler } from "express";
 import { Types } from "mongoose";
 import { LogPublisher } from "../../../../event/publisher/log";
@@ -6,7 +7,7 @@ import { Perm } from "../../../../model/perm";
 import { PermGr } from "../../../../model/perm-gr";
 import { nats } from "../../../../nats";
 
-export const deleteManyGroup: RequestHandler = async (req, res, next) => {
+export const deleteGroups: RequestHandler = async (req, res, next) => {
   const {
     ids,
   }: {
@@ -23,27 +24,28 @@ export const deleteManyGroup: RequestHandler = async (req, res, next) => {
       throw new BadReqErr("ids mismatch");
     }
 
+    await PermGr.deleteMany({
+      _id: {
+        $in: ids,
+      },
+    });
+
+    res.json({ msg: "deleted" });
+
     await Promise.all([
-      PermGr.deleteMany({
-        _id: {
-          $in: ids,
-        },
-      }),
+      // Xóa permission có group thuộc ids
       Perm.deleteMany({
         group: {
           $in: ids,
         },
       }),
       new LogPublisher(nats.cli).publish({
-        act: "DEL",
-        model: PermGr.modelName,
-        doc: groups,
         userId: req.user?.id,
-        status: true,
+        model: PermGr.modelName,
+        act: Actions.delete,
+        doc: groups,
       }),
     ]);
-
-    res.json({ msg: "group deleted" });
   } catch (e) {
     next(e);
   }

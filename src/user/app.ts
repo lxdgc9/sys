@@ -1,4 +1,5 @@
 import { errHandler } from "@lxdgc9/pkg/dist/middleware";
+import compress from "compression";
 import express from "express";
 import { r as perm } from "./route/perm";
 import { r as role } from "./route/role";
@@ -6,6 +7,7 @@ import { r as user } from "./route/user";
 
 const app = express();
 
+app.use(compress());
 app.use(express.json());
 
 app.use("/api/users/roles/perms", perm);

@@ -1,4 +1,5 @@
 import { BadReqErr } from "@lxdgc9/pkg/dist/err";
+import { Actions } from "@lxdgc9/pkg/dist/event/log";
 import { RequestHandler } from "express";
 import { LogPublisher } from "../../event/publisher/log";
 import { Role } from "../../model/role";
@@ -14,11 +15,10 @@ export const delRole: RequestHandler = async (req, res, next) => {
     res.json({ msg: "delete successfully" });
 
     await new LogPublisher(nats.cli).publish({
-      act: "DEL",
+      act: Actions.delete,
       model: Role.modelName,
       doc: role,
       userId: req.user?.id,
-      status: true,
     });
   } catch (e) {
     next(e);

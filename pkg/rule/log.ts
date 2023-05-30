@@ -1,1 +1,1 @@
-export const LOG = "ACCESS_LOG";
+export const LOG = "access_log";

@@ -1,7 +1,7 @@
 import { connect } from "mongoose";
 import { app } from "./app";
 import { LogListener } from "./event/listener/log";
-import { NewUserListener } from "./event/listener/user/new";
+import { InsertUserListener } from "./event/listener/user/insert";
 import { nats } from "./nats";
 
 (async () => {
@@ -31,16 +31,15 @@ import { nats } from "./nats";
     process.on("SIGINT", () => nats.cli.close());
     process.on("SIGTERM", () => nats.cli.close());
 
-    new NewUserListener(nats.cli).listen();
+    new InsertUserListener(nats.cli).listen();
     new LogListener(nats.cli).listen();
 
-    connect(process.env.MONGO_URI);
-    console.log("Connected to MongoDb");
+    connect(process.env.MONGO_URI).then(() =>
+      console.log("Connected to MongoDb")
+    );
   } catch (err) {
     console.error(err);
   }
 
-  app.listen(3000, () => {
-    console.log("Listening on port 3000!!!");
-  });
+  app.listen(3000, () => console.log("Listening on port 3000!!!"));
 })();

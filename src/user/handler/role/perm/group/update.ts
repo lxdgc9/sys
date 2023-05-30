@@ -1,4 +1,5 @@
 import { BadReqErr } from "@lxdgc9/pkg/dist/err";
+import { Actions } from "@lxdgc9/pkg/dist/event/log";
 import { RequestHandler } from "express";
 import { Types } from "mongoose";
 import { LogPublisher } from "../../../../event/publisher/log";
@@ -16,6 +17,10 @@ export const updateGroup: RequestHandler = async (req, res, next) => {
   } = req.body;
 
   try {
+    if (!Object.keys(req.body).length) {
+      throw new BadReqErr("body not empty");
+    }
+
     const [group, numGroups] = await Promise.all([
       PermGr.findById(req.params.id),
       Perm.countDocuments({
@@ -31,34 +36,34 @@ export const updateGroup: RequestHandler = async (req, res, next) => {
       throw new BadReqErr("permIds mismatch");
     }
 
-    await Promise.all([
-      group.updateOne({
+    const updGroup = await PermGr.findByIdAndUpdate(
+      group._id,
+      {
         $set: {
           name,
           perms: permIds,
         },
-      }),
+      },
+      { new: true }
+    ).populate({
+      path: "perms",
+      select: "-group",
+    });
+
+    res.json({ group: updGroup });
+
+    await Promise.all([
       permIds &&
         Perm.deleteMany({
           _id: group.perms.filter((p) => !permIds.includes(p)),
         }),
-    ]);
-
-    const [updGroup] = await Promise.all([
-      PermGr.findById(group._id).populate({
-        path: "perms",
-        select: "-group",
-      }),
       new LogPublisher(nats.cli).publish({
-        act: "MOD",
-        model: PermGr.modelName,
-        doc: group,
         userId: req.user?.id,
-        status: true,
+        model: PermGr.modelName,
+        act: Actions.update,
+        doc: group,
       }),
     ]);
-
-    res.json({ group: updGroup });
   } catch (e) {
     next(e);
   }
