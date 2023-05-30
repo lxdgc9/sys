@@ -1,7 +1,7 @@
 import { Document } from "mongoose";
 import { Subject } from "../subject";
 
-export interface ModUser {
-  subject: Subject.MOD_USER;
+export interface UpdateUser {
+  subject: Subject.UPDATE_USER;
   data: Document;
 }

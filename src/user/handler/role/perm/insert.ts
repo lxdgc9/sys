@@ -6,20 +6,21 @@ import { Perm } from "../../../model/perm";
 import { PermGr } from "../../../model/perm-gr";
 import { nats } from "../../../nats";
 
-export const newPerm: RequestHandler = async (req, res, next) => {
+export const insertPerm: RequestHandler = async (req, res, next) => {
   const {
-    code: code,
-    description: desc,
-    groupId: grpId,
+    code,
+    desc,
+    groupId,
   }: {
     code: string;
-    description: string;
+    desc: string;
     groupId: Types.ObjectId;
   } = req.body;
+
   try {
     const [isDupl, group] = await Promise.all([
       Perm.exists({ code }),
-      PermGr.findById(grpId),
+      PermGr.findById(groupId),
     ]);
     if (isDupl) {
       throw new ConflictErr("duplicate code");
@@ -31,7 +32,7 @@ export const newPerm: RequestHandler = async (req, res, next) => {
     const newPerm = new Perm({
       code,
       desc,
-      group: grpId,
+      group: groupId,
     });
     await Promise.all([
       newPerm.save(),
@@ -47,9 +48,7 @@ export const newPerm: RequestHandler = async (req, res, next) => {
       select: "-perms",
     });
 
-    res.status(201).send({
-      permission: perm,
-    });
+    res.status(201).send({ perm });
 
     await new LogPublisher(nats.cli).publish({
       act: "NEW",

@@ -5,16 +5,17 @@ import { Perm } from "../../../../model/perm";
 import { PermGr } from "../../../../model/perm-gr";
 import { nats } from "../../../../nats";
 
-export const delGroup: RequestHandler = async (req, res, next) => {
+export const deleteGroup: RequestHandler = async (req, res, next) => {
   try {
     const group = await PermGr.findByIdAndDelete(req.params.id);
     if (!group) {
       throw new BadReqErr("group not found");
     }
 
-    res.json({ msg: "group deleted successfully!" });
+    res.json({ msg: "group deleted" });
 
     await Promise.all([
+      // Xóa permissions thuộc group này
       Perm.deleteMany({ _id: group.perms }),
       new LogPublisher(nats.cli).publish({
         act: "DEL",

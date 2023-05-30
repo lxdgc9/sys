@@ -1,4 +1,4 @@
-import { errHandler } from "@lxdgc9/pkg/dist/middie";
+import { errHandler } from "@lxdgc9/pkg/dist/middleware";
 import express from "express";
 import { r as perm } from "./route/perm";
 import { r as role } from "./route/role";

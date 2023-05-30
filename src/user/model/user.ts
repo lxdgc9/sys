@@ -63,8 +63,7 @@ schema.pre("save", async function (next) {
     return next();
   }
   try {
-    const salt = await genSalt(10);
-    this.passwd = await hash(this.passwd, salt);
+    this.passwd = await hash(this.passwd, await genSalt(10));
     next();
   } catch (e) {
     console.log(e);

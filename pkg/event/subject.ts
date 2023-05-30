@@ -1,9 +1,11 @@
 export enum Subject {
-  LOG = "log-srv",
+  // User service
+  INSERT_USER = "user-insrt_user",
+  INSERT_MANY_USER = "user-insrt_users",
+  UPDATE_USER = "user-upd_user",
+  DELETE_USER = "user-del_user",
+  DELETE_MANY_USER = "user-del_users",
 
-  NEW_USER = "user-srv_new-user",
-  NEW_MANY_USER = "user-srv_new-many-user",
-  MOD_USER = "user-srv_mod-user",
-  DEL_USER = "user-srv_del-user",
-  DEL_MANY_USER = "user-srv_del-many-user",
+  // Log service
+  LOG = "log",
 }

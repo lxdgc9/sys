@@ -1,5 +1,10 @@
-import { guard, validate } from "@lxdgc9/pkg/dist/middie";
-import { MNG_CODE } from "@lxdgc9/pkg/dist/perm";
+import { guard, validate } from "@lxdgc9/pkg/dist/middleware";
+import {
+  DELETE_USER,
+  INSERT_USER,
+  SEARCH_USER,
+  UPDATE_USER,
+} from "@lxdgc9/pkg/dist/rule/manage";
 import { Router } from "express";
 import { body, param } from "express-validator";
 import { delUser } from "../handler/del";
@@ -15,12 +20,10 @@ import { rtk } from "../handler/rtk";
 
 export const r = Router();
 
-const { GET_USER, NEW_USER, MOD_USER, DEL_USER } = MNG_CODE;
-
 r.route("/")
-  .get(guard(GET_USER), getUsers)
+  .get(guard(SEARCH_USER), getUsers)
   .post(
-    guard(NEW_USER),
+    guard(INSERT_USER),
     validate(
       body("prof").notEmpty().isObject(),
       body("passwd").notEmpty().isStrongPassword({
@@ -37,7 +40,7 @@ r.route("/")
 
 r.route("/many")
   .post(
-    guard(NEW_USER),
+    guard(INSERT_USER),
     validate(
       body("users").notEmpty().isArray().isLength({ min: 1 }),
       body("users.*.prof").notEmpty().isObject(),
@@ -53,7 +56,7 @@ r.route("/many")
     newUsers
   )
   .delete(
-    guard(DEL_USER),
+    guard(DELETE_USER),
     validate(
       body("userIds").notEmpty().isArray({ min: 1 }),
       body("userIds.*").isMongoId()
@@ -61,9 +64,9 @@ r.route("/many")
     delUsers
   );
 r.route("/:id")
-  .get(guard(GET_USER), validate(param("id").isMongoId()), getUser)
+  .get(guard(SEARCH_USER), validate(param("id").isMongoId()), getUser)
   .patch(
-    guard(MOD_USER),
+    guard(UPDATE_USER),
     validate(
       param("id").isMongoId(),
       body("prof").optional({ values: "falsy" }).isObject(),
@@ -72,7 +75,7 @@ r.route("/:id")
     ),
     modUser
   )
-  .delete(guard(DEL_USER), validate(param("id").isMongoId()), delUser);
+  .delete(guard(DELETE_USER), validate(param("id").isMongoId()), delUser);
 
 r.post(
   "/auth",
@@ -88,7 +91,7 @@ r.post("/auth/rtk", validate(body("token").notEmpty()), rtk);
 
 r.patch(
   "/:id/passwd",
-  guard(MOD_USER),
+  guard(UPDATE_USER),
   validate(
     body("oldPasswd").notEmpty(),
     body("newPasswd").notEmpty().isStrongPassword({

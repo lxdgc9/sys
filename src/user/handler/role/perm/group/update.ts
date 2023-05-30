@@ -6,7 +6,7 @@ import { Perm } from "../../../../model/perm";
 import { PermGr } from "../../../../model/perm-gr";
 import { nats } from "../../../../nats";
 
-export const modGroup: RequestHandler = async (req, res, next) => {
+export const updateGroup: RequestHandler = async (req, res, next) => {
   const {
     name,
     permIds,
@@ -14,6 +14,7 @@ export const modGroup: RequestHandler = async (req, res, next) => {
     name?: string;
     permIds?: Types.ObjectId[];
   } = req.body;
+
   try {
     const [group, numGroups] = await Promise.all([
       PermGr.findById(req.params.id),

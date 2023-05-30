@@ -5,14 +5,14 @@ import { Perm } from "../../../model/perm";
 import { PermGr } from "../../../model/perm-gr";
 import { nats } from "../../../nats";
 
-export const delPerm: RequestHandler = async (req, res, next) => {
+export const deletePerm: RequestHandler = async (req, res, next) => {
   try {
     const perm = await Perm.findByIdAndDelete(req.params.id);
     if (!perm) {
       throw new BadReqErr("permission not found");
     }
 
-    res.json({ msg: "permission deleted successfully" });
+    res.json({ msg: "deleted permission" });
 
     await Promise.all([
       PermGr.findByIdAndUpdate(perm.group, {
