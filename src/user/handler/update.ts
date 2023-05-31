@@ -8,11 +8,10 @@ import { Role } from "../model/role";
 import { User } from "../model/user";
 import { nats } from "../nats";
 
-export const modUser: RequestHandler = async (req, res, next) => {
+export const updateUser: RequestHandler = async (req, res, next) => {
   const {
     prof,
     roleId,
-    active,
   }: {
     prof?: object & {
       username: string;
@@ -20,15 +19,25 @@ export const modUser: RequestHandler = async (req, res, next) => {
       email: string;
     };
     roleId?: Types.ObjectId;
-    active?: boolean;
   } = req.body;
+
   try {
-    const user = await User.findById(req.params.id);
-    if (!user) {
-      throw new BadReqErr("user doesn't exist");
+    if (!Object.keys(req.body).length) {
+      throw new BadReqErr("body not empty");
     }
 
-    const [isDupl, existRole] = await Promise.all([
+    const user = await User.findById(req.params.id).populate({
+      path: "role",
+      populate: {
+        path: "perms",
+        select: "-group",
+      },
+    });
+    if (!user) {
+      throw new BadReqErr("user not found");
+    }
+
+    const [isDupl, exRole] = await Promise.all([
       User.exists({
         $or: [
           {
@@ -65,8 +74,8 @@ export const modUser: RequestHandler = async (req, res, next) => {
     if (prof && isDupl) {
       throw new ConflictErr("duplicate username, phone or email");
     }
-    if (roleId && !existRole) {
-      throw new BadReqErr("role doesn't exist");
+    if (roleId && !exRole) {
+      throw new BadReqErr("role not found");
     }
 
     const updUser = await User.findByIdAndUpdate(
@@ -78,7 +87,6 @@ export const modUser: RequestHandler = async (req, res, next) => {
             v,
           })),
           role: roleId,
-          active,
         },
       },
       { new: true }
@@ -95,10 +103,10 @@ export const modUser: RequestHandler = async (req, res, next) => {
     await Promise.all([
       new UpdateUserPublisher(nats.cli).publish(updUser!),
       new LogPublisher(nats.cli).publish({
-        act: Actions.update,
-        model: User.modelName,
-        doc: user,
         userId: req.user?.id,
+        model: User.modelName,
+        act: Actions.update,
+        doc: user,
       }),
     ]);
   } catch (e) {

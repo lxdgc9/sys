@@ -7,16 +7,16 @@ import {
 } from "@lxdgc9/pkg/dist/rule/manage";
 import { Router } from "express";
 import { body, param } from "express-validator";
-import { delUser } from "../handler/delete";
-import { delUsers } from "../handler/delete-many";
+import { deleteUser } from "../handler/delete";
+import { deleteUsers } from "../handler/delete-many";
 import { insertUser } from "../handler/insert";
 import { insertUsers } from "../handler/insert-many";
 import { login } from "../handler/login";
-import { modUser } from "../handler/mod";
 import { modPasswd } from "../handler/mod-pass";
 import { rtk } from "../handler/rtk";
 import { searchUser } from "../handler/search";
 import { searchUsers } from "../handler/search-many";
+import { updateUser } from "../handler/update";
 
 export const r = Router();
 
@@ -52,6 +52,7 @@ r.route("/")
         .trim(),
       body("passwd")
         .notEmpty()
+        .withMessage("required")
         .isStrongPassword({
           minLength: 6,
           minSymbols: 0,
@@ -109,6 +110,7 @@ r.route("/many")
         .trim(),
       body("users.*.passwd")
         .notEmpty()
+        .withMessage("required")
         .isStrongPassword({
           minLength: 6,
           minSymbols: 0,
@@ -131,10 +133,14 @@ r.route("/many")
   .delete(
     guard(DELETE_USER),
     validate(
-      body("userIds").notEmpty().isArray({ min: 1 }),
-      body("userIds.*").isMongoId()
+      body("ids")
+        .notEmpty()
+        .withMessage("required")
+        .isArray({ min: 1 })
+        .withMessage("must be array, has aleast 1 element"),
+      body("ids.*").isMongoId().withMessage("must be mongoId")
     ),
-    delUsers
+    deleteUsers
   );
 
 r.route("/:id")
@@ -146,14 +152,47 @@ r.route("/:id")
   .patch(
     guard(UPDATE_USER),
     validate(
-      param("id").isMongoId(),
-      body("prof").optional({ values: "falsy" }).isObject(),
-      body("roleId").optional({ values: "falsy" }).isMongoId(),
-      body("active").optional({ values: "falsy" }).isBoolean()
+      param("id").isMongoId().withMessage("must be mongoId"),
+      body("prof")
+        .optional({ values: "undefined" })
+        .isObject()
+        .withMessage("must be object")
+        .custom((v) => {
+          if (!Object.keys(v).length) {
+            throw new Error("Object must not be empty");
+          }
+          return true;
+        }),
+      body("prof.username")
+        .optional({ values: "undefined" })
+        .isString()
+        .withMessage("must be string")
+        .isLength({ min: 1, max: 255 })
+        .withMessage("1 <= len <= 255")
+        .trim()
+        .toLowerCase(),
+      body("prof.phone")
+        .optional({ values: "undefined" })
+        .isMobilePhone("vi-VN")
+        .withMessage("invalid phone number"),
+      body("prof.email")
+        .optional({ values: "undefined" })
+        .isMobilePhone("vi-VN")
+        .isEmail()
+        .withMessage("must be email")
+        .trim(),
+      body("roleId")
+        .optional({ values: "undefined" })
+        .isMongoId()
+        .withMessage("must be mongoId")
     ),
-    modUser
+    updateUser
   )
-  .delete(guard(DELETE_USER), validate(param("id").isMongoId()), delUser);
+  .delete(
+    guard(DELETE_USER),
+    validate(param("id").isMongoId().withMessage("must be mongoId")),
+    deleteUser
+  );
 
 r.post(
   "/auth",

@@ -6,7 +6,7 @@ import { DeleteUserPublisher } from "../event/publisher/user/del";
 import { User } from "../model/user";
 import { nats } from "../nats";
 
-export const delUser: RequestHandler = async (req, res, next) => {
+export const deleteUser: RequestHandler = async (req, res, next) => {
   try {
     const user = await User.findByIdAndDelete(req.params.id).populate({
       path: "role",

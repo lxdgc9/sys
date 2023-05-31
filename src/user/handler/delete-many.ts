@@ -7,16 +7,17 @@ import { DeleteManyUserPublisher } from "../event/publisher/user/delete-many";
 import { User } from "../model/user";
 import { nats } from "../nats";
 
-export const delUsers: RequestHandler = async (req, res, next) => {
+export const deleteUsers: RequestHandler = async (req, res, next) => {
   const {
-    userIds,
+    ids,
   }: {
-    userIds: Types.ObjectId[];
+    ids: Types.ObjectId[];
   } = req.body;
+
   try {
     const users = await User.find({
       _id: {
-        $in: userIds,
+        $in: ids,
       },
     }).populate({
       path: "role",
@@ -25,16 +26,20 @@ export const delUsers: RequestHandler = async (req, res, next) => {
         select: "-group",
       },
     });
-    if (users.length < userIds.length) {
+    if (users.length < ids.length) {
       throw new BadReqErr("userIds mismatch");
     }
 
-    await User.deleteMany({ _id: userIds });
+    await User.deleteMany({
+      _id: {
+        $in: ids,
+      },
+    });
 
     res.json({ msg: "deleted" });
 
     await Promise.all([
-      new DeleteManyUserPublisher(nats.cli).publish(userIds),
+      new DeleteManyUserPublisher(nats.cli).publish(ids),
       new LogPublisher(nats.cli).publish({
         userId: req.user?.id,
         model: User.modelName,

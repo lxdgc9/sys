@@ -19,6 +19,10 @@ export const updateRole: RequestHandler = async (req, res, next) => {
   } = req.body;
 
   try {
+    if (!Object.keys(req.body).length) {
+      throw new BadReqErr("body not empty");
+    }
+
     const [role, numPerms] = await Promise.all([
       Role.findById(req.params.id).populate({
         path: "perms",
