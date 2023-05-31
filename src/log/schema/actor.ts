@@ -1,11 +1,11 @@
 import { Schema, Types } from "mongoose";
 
-export interface IUser {
+export interface IActor {
   userId: Types.ObjectId;
   doc: any;
 }
 
-export const schema = new Schema<IUser>(
+export const schema = new Schema<IActor>(
   {
     userId: {
       type: Schema.Types.ObjectId,

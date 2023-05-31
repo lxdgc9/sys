@@ -7,53 +7,126 @@ import {
 } from "@lxdgc9/pkg/dist/rule/manage";
 import { Router } from "express";
 import { body, param } from "express-validator";
-import { delUser } from "../handler/del";
-import { delUsers } from "../handler/del-n";
-import { getUser } from "../handler/get";
-import { getUsers } from "../handler/get-n";
+import { delUser } from "../handler/delete";
+import { delUsers } from "../handler/delete-many";
+import { insertUser } from "../handler/insert";
+import { insertUsers } from "../handler/insert-many";
 import { login } from "../handler/login";
 import { modUser } from "../handler/mod";
 import { modPasswd } from "../handler/mod-pass";
-import { newUser } from "../handler/new";
-import { newUsers } from "../handler/new-n";
 import { rtk } from "../handler/rtk";
+import { searchUser } from "../handler/search";
+import { searchUsers } from "../handler/search-many";
 
 export const r = Router();
 
 r.route("/")
-  .get(guard(SEARCH_USER), getUsers)
+  .get(guard(SEARCH_USER), searchUsers)
   .post(
     guard(INSERT_USER),
     validate(
-      body("prof").notEmpty().isObject(),
-      body("passwd").notEmpty().isStrongPassword({
-        minLength: 6,
-        minSymbols: 0,
-        minLowercase: 0,
-        minUppercase: 0,
-      }),
-      body("roleId").notEmpty().isMongoId(),
-      body("active").isBoolean().optional({ values: "undefined" })
+      body("prof")
+        .notEmpty()
+        .withMessage("required")
+        .isObject()
+        .withMessage("must be object"),
+      body("prof.username")
+        .notEmpty()
+        .withMessage("required")
+        .isString()
+        .withMessage("must be string")
+        .isLength({ min: 1, max: 255 })
+        .withMessage("1 <= len <= 255")
+        .trim()
+        .toLowerCase(),
+      body("prof.phone")
+        .notEmpty()
+        .withMessage("required")
+        .isMobilePhone("vi-VN")
+        .withMessage("invalid phone number"),
+      body("prof.email")
+        .notEmpty()
+        .withMessage("required")
+        .isEmail()
+        .withMessage("must be email")
+        .trim(),
+      body("passwd")
+        .notEmpty()
+        .isStrongPassword({
+          minLength: 6,
+          minSymbols: 0,
+          minLowercase: 0,
+          minUppercase: 0,
+        })
+        .withMessage("password not strong enough"),
+      body("roleId")
+        .notEmpty()
+        .withMessage("required")
+        .isMongoId()
+        .withMessage("must be mongoId"),
+      body("active")
+        .isBoolean()
+        .withMessage("must be boolean")
+        .optional({ values: "undefined" })
     ),
-    newUser
+    insertUser
   );
 
 r.route("/many")
   .post(
     guard(INSERT_USER),
     validate(
-      body("users").notEmpty().isArray().isLength({ min: 1 }),
-      body("users.*.prof").notEmpty().isObject(),
-      body("users.*.passwd").notEmpty().isStrongPassword({
-        minLength: 6,
-        minSymbols: 0,
-        minLowercase: 0,
-        minUppercase: 0,
-      }),
-      body("users.*.roleId").notEmpty().isMongoId(),
-      body("users.*.active").isBoolean().optional({ values: "undefined" })
+      body("users")
+        .notEmpty()
+        .withMessage("required")
+        .isArray({ min: 1 })
+        .withMessage("must be array, has aleast 1 element"),
+      body("users.*").isObject().withMessage("must be object"),
+      body("users.*.prof")
+        .notEmpty()
+        .withMessage("required")
+        .isObject()
+        .withMessage("must be object"),
+      body("users.*.prof.username")
+        .notEmpty()
+        .withMessage("required")
+        .isString()
+        .withMessage("must be string")
+        .isLength({ min: 1, max: 255 })
+        .withMessage("1 <= len <= 255")
+        .trim()
+        .toLowerCase(),
+      body("users.*.prof.phone")
+        .notEmpty()
+        .withMessage("required")
+        .isMobilePhone("vi-VN")
+        .withMessage("invalid phone number"),
+      body("users.*.prof.email")
+        .notEmpty()
+        .withMessage("required")
+        .isEmail()
+        .withMessage("must be email")
+        .trim(),
+      body("users.*.passwd")
+        .notEmpty()
+        .isStrongPassword({
+          minLength: 6,
+          minSymbols: 0,
+          minLowercase: 0,
+          minUppercase: 0,
+        })
+        .withMessage("password not strong enough"),
+      body("users.*.roleId")
+        .notEmpty()
+        .withMessage("required")
+        .isMongoId()
+        .withMessage("must be mongoId"),
+      body("users.*.active")
+        .isBoolean()
+        .withMessage("must be boolean")
+        .optional({ values: "undefined" })
     ),
-    newUsers
+    insertUsers
   )
   .delete(
     guard(DELETE_USER),
@@ -63,8 +136,13 @@ r.route("/many")
     ),
     delUsers
   );
+
 r.route("/:id")
-  .get(guard(SEARCH_USER), validate(param("id").isMongoId()), getUser)
+  .get(
+    guard(SEARCH_USER),
+    validate(param("id").isMongoId().withMessage("must be mongoId")),
+    searchUser
+  )
   .patch(
     guard(UPDATE_USER),
     validate(

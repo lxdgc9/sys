@@ -1,7 +1,7 @@
 import { Listener, Subject } from "@lxdgc9/pkg/dist/event";
 import { InsertUser } from "@lxdgc9/pkg/dist/event/user";
 import { Message } from "node-nats-streaming";
-import { User } from "../../../model/user";
+import { Actor } from "../../../model/actor";
 import { qGroup } from "../qgroup";
 
 export class InsertUserListener extends Listener<InsertUser> {
@@ -9,7 +9,7 @@ export class InsertUserListener extends Listener<InsertUser> {
   qGroup = qGroup;
 
   async onMsg(data: InsertUser["data"], msg: Message) {
-    const newUser = new User({
+    const newUser = new Actor({
       userId: data.id,
       doc: data,
     });

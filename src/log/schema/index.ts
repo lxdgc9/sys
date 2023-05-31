@@ -11,7 +11,7 @@ export const schema = new Schema<ILog>(
   {
     actor: {
       type: Schema.Types.ObjectId,
-      ref: "user",
+      ref: "actor",
     },
     act: {
       type: String,

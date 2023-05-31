@@ -11,8 +11,8 @@ import { deleteRole } from "../handler/role/delete";
 import { deleteRoles } from "../handler/role/delete-many";
 import { insertRole } from "../handler/role/insert";
 import { insertRoles } from "../handler/role/insert-many";
-import { searchRoles } from "../handler/role/search";
-import { searchRole } from "../handler/role/search-many";
+import { searchRole } from "../handler/role/search";
+import { searchRoles } from "../handler/role/search-many";
 import { updateRole } from "../handler/role/update";
 
 export const r = Router();

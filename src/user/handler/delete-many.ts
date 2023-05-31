@@ -15,7 +15,15 @@ export const delUsers: RequestHandler = async (req, res, next) => {
   } = req.body;
   try {
     const users = await User.find({
-      _id: { $in: userIds },
+      _id: {
+        $in: userIds,
+      },
+    }).populate({
+      path: "role",
+      populate: {
+        path: "perms",
+        select: "-group",
+      },
     });
     if (users.length < userIds.length) {
       throw new BadReqErr("userIds mismatch");
@@ -23,17 +31,17 @@ export const delUsers: RequestHandler = async (req, res, next) => {
 
     await User.deleteMany({ _id: userIds });
 
+    res.json({ msg: "deleted" });
+
     await Promise.all([
       new DeleteManyUserPublisher(nats.cli).publish(userIds),
       new LogPublisher(nats.cli).publish({
-        act: Actions.delete,
-        model: User.modelName,
-        doc: users,
         userId: req.user?.id,
+        model: User.modelName,
+        act: Actions.delete,
+        doc: users,
       }),
     ]);
-
-    res.json({ msg: "deleted users" });
   } catch (e) {
     next(e);
   }

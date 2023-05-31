@@ -8,20 +8,26 @@ import { nats } from "../nats";
 
 export const delUser: RequestHandler = async (req, res, next) => {
   try {
-    const user = await User.findByIdAndDelete(req.params.id);
+    const user = await User.findByIdAndDelete(req.params.id).populate({
+      path: "role",
+      populate: {
+        path: "perms",
+        select: "-group",
+      },
+    });
     if (!user) {
       throw new BadReqErr("user not found");
     }
 
-    res.json({ msg: "deleted user" });
+    res.json({ msg: "deleted" });
 
     await Promise.all([
       new DeleteUserPublisher(nats.cli).publish(user._id),
       new LogPublisher(nats.cli).publish({
-        act: Actions.delete,
-        model: User.modelName,
-        doc: user,
         userId: req.user?.id,
+        model: User.modelName,
+        act: Actions.delete,
+        doc: user,
       }),
     ]);
   } catch (e) {

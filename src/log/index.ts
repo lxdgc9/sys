@@ -1,7 +1,11 @@
 import { connect } from "mongoose";
 import { app } from "./app";
 import { LogListener } from "./event/listener/log";
+import { DeleteUserListener } from "./event/listener/user/delete";
+import { DeleteManyUserListener } from "./event/listener/user/delete-many";
 import { InsertUserListener } from "./event/listener/user/insert";
+import { InsertManyUserListener } from "./event/listener/user/insert-many";
+import { UpdateUserListener } from "./event/listener/user/update";
 import { nats } from "./nats";
 
 (async () => {
@@ -32,6 +36,10 @@ import { nats } from "./nats";
     process.on("SIGTERM", () => nats.cli.close());
 
     new InsertUserListener(nats.cli).listen();
+    new InsertManyUserListener(nats.cli).listen();
+    new DeleteUserListener(nats.cli).listen();
+    new DeleteManyUserListener(nats.cli).listen();
+    new UpdateUserListener(nats.cli).listen();
     new LogListener(nats.cli).listen();
 
     connect(process.env.MONGO_URI).then(() =>

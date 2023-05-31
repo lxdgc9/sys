@@ -1,7 +1,7 @@
 import { Listener, Subject } from "@lxdgc9/pkg/dist/event";
 import { UpdateUser } from "@lxdgc9/pkg/dist/event/user";
 import { Message } from "node-nats-streaming";
-import { User } from "../../../model/user";
+import { Actor } from "../../../model/actor";
 import { qGroup } from "../qgroup";
 
 export class UpdateUserListener extends Listener<UpdateUser> {
@@ -9,10 +9,9 @@ export class UpdateUserListener extends Listener<UpdateUser> {
   qGroup = qGroup;
 
   async onMsg(data: UpdateUser["data"], msg: Message) {
-    const { id } = data;
-    await User.findOneAndUpdate(
+    await Actor.findOneAndUpdate(
       {
-        userId: id,
+        userId: data.id,
       },
       {
         $set: {

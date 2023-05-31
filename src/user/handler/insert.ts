@@ -8,7 +8,7 @@ import { Role } from "../model/role";
 import { User } from "../model/user";
 import { nats } from "../nats";
 
-export const newUser: RequestHandler = async (req, res, next) => {
+export const insertUser: RequestHandler = async (req, res, next) => {
   const {
     prof,
     passwd,
@@ -24,6 +24,7 @@ export const newUser: RequestHandler = async (req, res, next) => {
     roleId: Types.ObjectId;
     active?: boolean;
   } = req.body;
+
   try {
     const [isDupl, exRole] = await Promise.all([
       User.exists({
@@ -87,10 +88,10 @@ export const newUser: RequestHandler = async (req, res, next) => {
     await Promise.all([
       new InsertUserPublisher(nats.cli).publish(user!),
       new LogPublisher(nats.cli).publish({
-        act: Actions.insert,
-        model: User.modelName,
-        doc: user!,
         userId: req.user?.id,
+        model: User.modelName,
+        act: Actions.insert,
+        doc: user,
       }),
     ]);
   } catch (e) {
