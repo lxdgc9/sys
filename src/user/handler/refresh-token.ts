@@ -5,8 +5,13 @@ import { sign, verify } from "jsonwebtoken";
 import { User } from "../model/user";
 import { redis } from "../redis";
 
-export const rtk: RequestHandler = async (req, res, next) => {
-  const { token }: { token: string } = req.body;
+export const refreshToken: RequestHandler = async (req, res, next) => {
+  const {
+    token,
+  }: {
+    token: string;
+  } = req.body;
+
   try {
     const { id } = verify(
       token,
@@ -32,29 +37,35 @@ export const rtk: RequestHandler = async (req, res, next) => {
       },
     });
     if (!user) {
-      throw new UnauthorizedErr("user doesn't exist");
+      throw new UnauthorizedErr("user not found");
     }
 
-    const atk = sign(
+    const accessToken = sign(
       {
         id: user._id,
         perms: user.role.perms.map((p) => p.code),
         active: user.active,
       },
       process.env.ACCESS_TOKEN_SECRET!,
-      { expiresIn: 900 }
+      {
+        expiresIn: 900, // 15*60s
+      }
     );
-    const rtk = sign({ id: user._id }, process.env.REFRESH_TOKEN_SECRET!, {
-      expiresIn: 36288000,
-    });
+    const refreshToken = sign(
+      { id: user._id },
+      process.env.REFRESH_TOKEN_SECRET!,
+      {
+        expiresIn: 36288000, // 3600*24*60*7s
+      }
+    );
 
     res.json({
-      accessToken: atk,
-      refreshToken: rtk,
+      accessToken,
+      refreshToken,
     });
 
-    await redis.set(`rf-tkn.${id}`, rtk, {
-      EX: 36288001,
+    await redis.set(`rf-tkn.${id}`, refreshToken, {
+      EX: 36288001, // 1 + 3600*24*60*7s
     });
   } catch (e) {
     next(e);

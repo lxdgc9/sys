@@ -7,16 +7,17 @@ import {
 } from "@lxdgc9/pkg/dist/rule/manage";
 import { Router } from "express";
 import { body, param } from "express-validator";
+import { changePasswd } from "../handler/change-passwd";
 import { deleteUser } from "../handler/delete";
 import { deleteUsers } from "../handler/delete-many";
 import { insertUser } from "../handler/insert";
 import { insertUsers } from "../handler/insert-many";
 import { login } from "../handler/login";
-import { modPasswd } from "../handler/mod-pass";
-import { rtk } from "../handler/rtk";
+import { refreshToken } from "../handler/refresh-token";
 import { searchUser } from "../handler/search";
 import { searchUsers } from "../handler/search-many";
 import { updateUser } from "../handler/update";
+import { updateAccess } from "../handler/update-access";
 
 export const r = Router();
 
@@ -197,26 +198,59 @@ r.route("/:id")
 r.post(
   "/auth",
   validate(
-    body("k").notEmpty(),
-    body("v").notEmpty(),
-    body("passwd").notEmpty()
+    body("k")
+      .notEmpty()
+      .withMessage("required")
+      .isIn(["username", "phone", "email"])
+      .withMessage("invalid field, must be username, phone, email"),
+    body("v").notEmpty().withMessage("required"),
+    body("passwd").notEmpty().withMessage("required")
   ),
   login
 );
 
-r.post("/auth/rtk", validate(body("token").notEmpty()), rtk);
+r.post(
+  "/auth/refresh-token",
+  validate(
+    body("token")
+      .notEmpty()
+      .withMessage("required")
+      .isString()
+      .withMessage("must be string")
+  ),
+  refreshToken
+);
 
 r.patch(
   "/:id/passwd",
   guard(UPDATE_USER),
   validate(
-    body("oldPasswd").notEmpty(),
-    body("newPasswd").notEmpty().isStrongPassword({
-      minLength: 6,
-      minSymbols: 0,
-      minLowercase: 0,
-      minUppercase: 0,
-    })
+    param("id").isMongoId().withMessage("must be mongoId"),
+    body("oldPasswd").notEmpty().withMessage("required"),
+    body("newPasswd")
+      .notEmpty()
+      .withMessage("required")
+      .isStrongPassword({
+        minLength: 6,
+        minSymbols: 0,
+        minLowercase: 0,
+        minUppercase: 0,
+      })
+      .withMessage("password not strong enough")
   ),
-  modPasswd
+  changePasswd
+);
+
+r.patch(
+  "/:id/active",
+  guard(UPDATE_USER),
+  validate(
+    param("id").isMongoId().withMessage("must be mongoId"),
+    body("status")
+      .notEmpty()
+      .withMessage("required")
+      .isBoolean()
+      .withMessage("must be boolean")
+  ),
+  updateAccess
 );

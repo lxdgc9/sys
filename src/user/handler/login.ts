@@ -15,6 +15,7 @@ export const login: RequestHandler = async (req, res, next) => {
     v: string;
     passwd: string;
   } = req.body;
+
   try {
     const user = await User.findOne({
       attrs: {
@@ -37,31 +38,38 @@ export const login: RequestHandler = async (req, res, next) => {
       throw new UnauthorizedErr("user not found");
     }
 
-    const match = await compare(passwd, user.passwd);
-    if (!match) {
+    if (!(await compare(passwd, user.passwd))) {
       throw new UnauthorizedErr("wrong password");
     }
 
-    const atk = sign(
+    const accessToken = sign(
       {
         id: user._id,
         perms: user.role.perms.map((p) => p.code),
         active: user.active,
       },
       process.env.ACCESS_TOKEN_SECRET!,
-      { expiresIn: 900 }
+      {
+        expiresIn: 900, // 15*60s
+      }
     );
-    const rtk = sign({ id: user._id }, process.env.REFRESH_TOKEN_SECRET!, {
-      expiresIn: 2592000,
-    });
+    const refreshToken = sign(
+      { id: user._id },
+      process.env.REFRESH_TOKEN_SECRET!,
+      {
+        expiresIn: 2592000, // 3600*24*30s
+      }
+    );
 
     res.json({
       user,
-      accessToken: atk,
-      refreshToken: rtk,
+      accessToken,
+      refreshToken,
     });
 
-    await redis.set(`rf-tkn.${user._id}`, rtk, { EX: 2592001 });
+    await redis.set(`rf-tkn.${user._id}`, refreshToken, {
+      EX: 2592001, // 1 + 3600*24*30s
+    });
   } catch (e) {
     next(e);
   }
