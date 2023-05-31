@@ -11,6 +11,7 @@ export const searchRole: RequestHandler = async (req, res, next) => {
     if (!role) {
       throw new NotFoundErr("role not found");
     }
+
     res.json({ role });
   } catch (e) {
     next(e);

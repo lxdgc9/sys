@@ -14,26 +14,32 @@ export const deleteRoles: RequestHandler = async (req, res, next) => {
   } = req.body;
 
   try {
+    // Rất có thể ids sẽ chứa phần tử trùng nhau, đoạn này để thanh lọc
+    const idArr = Array.from(new Set(ids));
+
+    // Kiểm tra danh sách role có phần tử nào không tồn tại trong db hay không
     const roles = await Role.find({
       _id: {
-        $in: ids,
+        $in: idArr,
       },
     }).populate({
       path: "perms",
       select: "-group",
     });
-    if (roles.length < ids.length) {
+    if (roles.length < idArr.length) {
       throw new BadReqErr("ids mismatch");
     }
 
+    // Tiến hành xóa những role có id thuộc mảng đã thanh lọc trước đó
     await Role.deleteMany({
       _id: {
-        $in: ids,
+        $in: idArr,
       },
     });
 
     res.json({ msg: "deleted" });
 
+    // Thông báo đến log service
     await Promise.all([
       new LogPublisher(nats.cli).publish({
         userId: req.user?.id,

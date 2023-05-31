@@ -19,23 +19,29 @@ export const insertRoles: RequestHandler = async (req, res, next) => {
   } = req.body;
 
   try {
-    const set = new Set(roles.map((r) => r.permIds).flat());
+    // Tập hợp các permission thuộc đầu vào, loại bỏ phần tử trùng
+    const permArr = Array.from(new Set(roles.map((r) => r.permIds).flat()));
+
+    // Kiểm tra có permission nào không tồn tại trong db hay không
     const numPerms = await Perm.countDocuments({
       _id: {
-        $in: Array.from(set),
+        $in: permArr,
       },
     });
-    if (numPerms < set.size) {
+    if (numPerms < permArr.length) {
       throw new BadReqErr("permIds mismatch");
     }
 
+    // Tiến hành tạo nhiều role cùng lúc
     const _roles = await Role.insertMany(
       roles.map(({ name, level, permIds }) => ({
         name,
         level,
-        perms: permIds,
+        perms: Array.from(new Set(permIds)), // đảm bảo permission không bị duplicate
       }))
     );
+
+    // Fetch roles từ documents đã tạo trả về client
     const docs = await Role.find({
       _id: {
         $in: _roles.map((r) => r._id),
@@ -47,6 +53,7 @@ export const insertRoles: RequestHandler = async (req, res, next) => {
 
     res.status(201).json({ roles: docs });
 
+    // Thông báo đến log service
     await new LogPublisher(nats.cli).publish({
       userId: req.user?.id,
       model: Role.modelName,

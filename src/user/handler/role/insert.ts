@@ -19,22 +19,28 @@ export const insertRole: RequestHandler = async (req, res, next) => {
   } = req.body;
 
   try {
+    // Danh sách permission không bị duplicate
+    const permArr = Array.from(new Set(permIds));
+
+    // Kiểm tra có permission nào không tồn tại trong db hay không?
     const numPerms = await Perm.countDocuments({
       _id: {
-        $in: permIds,
+        $in: permArr,
       },
     });
-    if (numPerms < permIds.length) {
+    if (numPerms < permArr.length) {
       throw new BadReqErr("permIds mismatch");
     }
 
+    // Tiến hành tạo role
     const newRole = new Role({
       name,
       level,
-      perms: permIds,
+      perms: permArr, // danh sách này đã lược bỏ duplicate trước đó
     });
     await newRole.save();
 
+    // Fetch data trả về client
     const role = await Role.findById(newRole._id).populate({
       path: "perms",
       select: "-group",
@@ -42,6 +48,7 @@ export const insertRole: RequestHandler = async (req, res, next) => {
 
     res.json({ role });
 
+    // Thông báo đến log service
     await new LogPublisher(nats.cli).publish({
       userId: req.user?.id,
       model: Role.modelName,

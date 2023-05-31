@@ -8,6 +8,7 @@ import { nats } from "../../../nats";
 
 export const deletePerm: RequestHandler = async (req, res, next) => {
   try {
+    // Tiến hành xóa, nếu không tồn tại trong db thì thông báo
     const perm = await Perm.findByIdAndDelete(req.params.id).populate({
       path: "group",
       select: "-perms",
@@ -19,9 +20,14 @@ export const deletePerm: RequestHandler = async (req, res, next) => {
     res.json({ msg: "deleted" });
 
     await Promise.all([
+      // Sau khi xóa thành công, cập nhật property của group chứa permission
+      // đã xóa này
       PermGr.findByIdAndUpdate(perm.group, {
-        $pull: { perms: perm._id },
+        $pull: {
+          perms: perm._id,
+        },
       }),
+      // Thông báo đến log service
       new LogPublisher(nats.cli).publish({
         userId: req.user?.id,
         model: Perm.modelName,

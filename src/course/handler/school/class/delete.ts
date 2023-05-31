@@ -1,10 +1,10 @@
 import { BadReqErr } from "@lxdgc9/pkg/dist/err";
 import { RequestHandler } from "express";
 import { Class } from "../../../model/class";
-import { Unit } from "../../../model/unit";
+import { School } from "../../../model/school";
 import { User } from "../../../model/user";
 
-export const delClass: RequestHandler = async (req, res, next) => {
+export const deleteClass: RequestHandler = async (req, res, next) => {
   try {
     const _class = await Class.findByIdAndDelete(req.params.id);
     if (!_class) {
@@ -14,7 +14,7 @@ export const delClass: RequestHandler = async (req, res, next) => {
     res.json({ msg: "deleted class" });
 
     await Promise.all([
-      Unit.findOneAndUpdate(_class.unit, {
+      School.findOneAndUpdate(_class.school, {
         $pull: {
           classes: _class._id,
         },

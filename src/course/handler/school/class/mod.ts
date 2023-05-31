@@ -2,7 +2,7 @@ import { BadReqErr } from "@lxdgc9/pkg/dist/err";
 import { RequestHandler } from "express";
 import { Types } from "mongoose";
 import { Class } from "../../../model/class";
-import { Unit } from "../../../model/unit";
+import { School } from "../../../model/school";
 import { User } from "../../../model/user";
 
 export const modClass: RequestHandler = async (req, res, next) => {
@@ -18,7 +18,7 @@ export const modClass: RequestHandler = async (req, res, next) => {
   try {
     const [_class, exUnit, numMembers] = await Promise.all([
       Class.findById(req.params.id),
-      Unit.exists({ _id: unitId }),
+      School.exists({ _id: unitId }),
       User.countDocuments({
         _id: {
           $in: memberIds,
@@ -39,19 +39,19 @@ export const modClass: RequestHandler = async (req, res, next) => {
       _class.updateOne({
         $set: {
           name,
-          unit: unitId,
+          school: unitId,
           members: memberIds,
         },
       }),
       unitId &&
-        !_class.unit.equals(unitId) &&
+        !_class.school.equals(unitId) &&
         Promise.all([
-          Unit.findByIdAndUpdate(unitId, {
+          School.findByIdAndUpdate(unitId, {
             $addToSet: {
               classes: _class._id,
             },
           }),
-          Unit.findByIdAndUpdate(_class.unit, {
+          School.findByIdAndUpdate(_class.school, {
             $pull: {
               classes: _class._id,
             },

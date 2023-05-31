@@ -19,32 +19,46 @@ export const insertPerms: RequestHandler = async (req, res, next) => {
   } = req.body;
 
   try {
-    const set = new Set(perms.map((p) => p.code));
-    if (set.size < perms.length) {
+    // Tập hợp mã code và groupId đã được loại bỏ duplicate
+    const [codeArr, groupIdArr] = perms
+      .reduce(
+        (s, { code, groupId }) => {
+          s[0].add(code);
+          s[1].add(groupId);
+          return s;
+        },
+        [new Set(), new Set()]
+      )
+      .map((el) => Array.from(el));
+
+    // Nếu danh sách trên có số lượng không đúng bằng số lượng các
+    // permission từ đầu vào, tức có phần tử nào đó đã trùng, tiến
+    // hành thông báo lỗi
+    if (codeArr.length < perms.length) {
       throw new BadReqErr("duplicate code");
     }
 
-    const setGroupId = new Set(perms.map((p) => p.groupId));
+    // Tiến hành validate code và group
     const [isDupl, numGroups] = await Promise.all([
       Perm.exists({
         code: {
-          $in: Array.from(set),
+          $in: codeArr,
         },
       }),
       PermGr.countDocuments({
         _id: {
-          $in: Array.from(setGroupId),
+          $in: groupIdArr,
         },
       }),
     ]);
-
     if (isDupl) {
       throw new BadReqErr("duplicate code");
     }
-    if (numGroups < setGroupId.size) {
+    if (numGroups < groupIdArr.length) {
       throw new BadReqErr("groupIds mismatch");
     }
 
+    // Thêm đồng thời perrmission vào db
     const _perms = await Perm.insertMany(
       perms.map(({ code, desc, groupId }) => ({
         code,
@@ -53,6 +67,7 @@ export const insertPerms: RequestHandler = async (req, res, next) => {
       }))
     );
 
+    // Fetch data từ documents đã tạo trả về client
     const docs = await Perm.find({
       _id: {
         $in: _perms.map((p) => p._id),
@@ -68,9 +83,7 @@ export const insertPerms: RequestHandler = async (req, res, next) => {
       if (!map.has(group.toString())) {
         map.set(group.toString(), []);
       }
-
       map.get(group.toString()).push(_id);
-
       return map;
     }, new Map());
 
@@ -82,6 +95,7 @@ export const insertPerms: RequestHandler = async (req, res, next) => {
           },
         });
       }),
+      // Thông báo đến log service
       new LogPublisher(nats.cli).publish({
         userId: req.user?.id,
         model: Perm.modelName,

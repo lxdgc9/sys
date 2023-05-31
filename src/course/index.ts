@@ -1,8 +1,8 @@
 import { connect } from "mongoose";
 import { app } from "./app";
-import { DelUserListener } from "./event/listener/user/del";
-import { ModUserListener } from "./event/listener/user/mod";
-import { NewUserListener } from "./event/listener/user/new";
+import { DeleteUserListener } from "./event/listener/user/delete";
+import { InsertUserListener } from "./event/listener/user/insert";
+import { UpdateUserListener } from "./event/listener/user/update";
 import { nats } from "./nats";
 
 (async () => {
@@ -40,9 +40,9 @@ import { nats } from "./nats";
     process.on("SIGINT", () => nats.cli.close());
     process.on("SIGTERM", () => nats.cli.close());
 
-    new NewUserListener(nats.cli).listen();
-    new ModUserListener(nats.cli).listen();
-    new DelUserListener(nats.cli).listen();
+    new InsertUserListener(nats.cli).listen();
+    new UpdateUserListener(nats.cli).listen();
+    new DeleteUserListener(nats.cli).listen();
 
     connect(process.env.MONGO_URI).then(() =>
       console.log("Connected to MongoDb")

@@ -1,7 +1,7 @@
 import { BadReqErr, ConflictErr } from "@lxdgc9/pkg/dist/err";
 import { RequestHandler } from "express";
 import { rmSync } from "fs";
-import { Unit } from "../../model/unit";
+import { School } from "../../model/school";
 
 export const modUnit: RequestHandler = async (req, res, next) => {
   const {
@@ -16,12 +16,12 @@ export const modUnit: RequestHandler = async (req, res, next) => {
     desc?: string;
   } = req.body;
   try {
-    const unit = await Unit.findById(req.params.id);
+    const unit = await School.findById(req.params.id);
     if (!unit) {
       throw new BadReqErr("unit not found");
     }
 
-    if (code !== unit.code && (await Unit.findOne({ code }))) {
+    if (code !== unit.code && (await School.findOne({ code }))) {
       throw new ConflictErr("duplicate code");
     }
 
@@ -41,7 +41,7 @@ export const modUnit: RequestHandler = async (req, res, next) => {
       });
     }
 
-    const detail = await Unit.findById(unit._id);
+    const detail = await School.findById(unit._id);
 
     res.json({ unit: detail });
   } catch (e) {

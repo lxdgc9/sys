@@ -19,9 +19,13 @@ export const updateRole: RequestHandler = async (req, res, next) => {
   } = req.body;
 
   try {
+    // Thật vô nghĩa nếu req.body = {}
     if (!Object.keys(req.body).length) {
       throw new BadReqErr("body not empty");
     }
+
+    // Danh sách permission đã loại bỏ duplicate
+    const permArr = Array.from(new Set(permIds));
 
     const [role, numPerms] = await Promise.all([
       Role.findById(req.params.id).populate({
@@ -30,24 +34,25 @@ export const updateRole: RequestHandler = async (req, res, next) => {
       }),
       Perm.countDocuments({
         _id: {
-          $in: permIds,
+          $in: permArr,
         },
       }),
     ]);
     if (!role) {
       throw new BadReqErr("role not found");
     }
-    if (permIds && numPerms < permIds.length) {
+    if (permIds && numPerms < permArr.length) {
       throw new BadReqErr("permIds mismatch");
     }
 
+    // Cập nhật role và fetch data trả về client
     const updRole = await Role.findByIdAndUpdate(
       req.params.id,
       {
         $set: {
           name,
           level,
-          perms: permIds,
+          perms: permArr,
         },
       },
       { new: true }
@@ -58,6 +63,7 @@ export const updateRole: RequestHandler = async (req, res, next) => {
 
     res.json({ role: updRole });
 
+    // Thông báo đến log service
     await new LogPublisher(nats.cli).publish({
       userId: req.user?.id,
       model: Role.modelName,

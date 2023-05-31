@@ -15,27 +15,34 @@ export const deletePerms: RequestHandler = async (req, res, next) => {
   } = req.body;
 
   try {
+    // Danh sách id đã lượt bỏ trùng
+    const idArr = Array.from(new Set(ids));
+
     const perms = await Perm.find({
       _id: {
-        $in: ids,
+        $in: idArr,
       },
     }).populate({
       path: "group",
       select: "-perms",
     });
-    if (perms.length < ids.length) {
+    // Kiểm tra có permission nào không tồn tại trong db hay không
+    if (perms.length < idArr.length) {
       throw new BadReqErr("ids mismatch");
     }
 
+    // Tiến hành xóa permissions
     await Perm.deleteMany({
       _id: {
-        $in: ids,
+        $in: idArr,
       },
     });
 
     res.json({ msg: "deleted" });
 
     await Promise.all([
+      // Tìm kiếm các group chứa permission đã xóa và cập nhật loại
+      // bỏ chúng ra khỏi property perms
       PermGr.updateMany(
         {
           _id: {
@@ -44,10 +51,11 @@ export const deletePerms: RequestHandler = async (req, res, next) => {
         },
         {
           $pullAll: {
-            perms: ids,
+            perms: idArr,
           },
         }
       ),
+      // Thông báo đến log service
       new LogPublisher(nats.cli).publish({
         userId: req.user?.id,
         model: Perm.modelName,

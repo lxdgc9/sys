@@ -1,6 +1,6 @@
 import { Schema, Types, model } from "mongoose";
 
-interface IUnit {
+interface ISchool {
   code: string;
   name: string;
   addr?: string;
@@ -9,7 +9,7 @@ interface IUnit {
   classes: Types.ObjectId[];
 }
 
-const schema = new Schema<IUnit>(
+const schema = new Schema<ISchool>(
   {
     code: {
       type: String,
@@ -48,4 +48,4 @@ const schema = new Schema<IUnit>(
   }
 );
 
-export const Unit = model<IUnit>("unit", schema);
+export const School = model<ISchool>("school", schema);

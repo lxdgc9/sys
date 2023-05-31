@@ -1,7 +1,7 @@
 import { ConflictErr } from "@lxdgc9/pkg/dist/err";
 import { RequestHandler } from "express";
 import { rmSync } from "fs";
-import { Unit } from "../../model/unit";
+import { School } from "../../model/school";
 
 export const newUnit: RequestHandler = async (req, res, next) => {
   const {
@@ -17,12 +17,12 @@ export const newUnit: RequestHandler = async (req, res, next) => {
   } = req.body;
 
   try {
-    const isDupl = await Unit.exists({ code });
+    const isDupl = await School.exists({ code });
     if (isDupl) {
       throw new ConflictErr("duplicate unit");
     }
 
-    const newUnit = new Unit({
+    const newUnit = new School({
       code,
       name,
       addr,

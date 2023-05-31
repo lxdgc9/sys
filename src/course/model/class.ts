@@ -2,7 +2,7 @@ import { Schema, Types, model } from "mongoose";
 
 interface IClass {
   name: string;
-  unit: Types.ObjectId;
+  school: Types.ObjectId;
   members: Types.ObjectId[];
 }
 
@@ -12,9 +12,9 @@ const schema = new Schema<IClass>(
       type: String,
       required: true,
     },
-    unit: {
+    school: {
       type: Schema.Types.ObjectId,
-      ref: "unit",
+      ref: "school",
       required: true,
     },
     members: [

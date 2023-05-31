@@ -1,11 +1,11 @@
 import { BadReqErr } from "@lxdgc9/pkg/dist/err";
 import { RequestHandler } from "express";
 import { rmSync } from "fs";
-import { Unit } from "../../model/unit";
+import { School } from "../../model/school";
 
 export const delUnit: RequestHandler = async (req, res, next) => {
   try {
-    const unit = await Unit.findByIdAndDelete(req.params.id);
+    const unit = await School.findByIdAndDelete(req.params.id);
     if (!unit) {
       throw new BadReqErr("unit not found");
     }

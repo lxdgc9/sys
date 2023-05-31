@@ -2,48 +2,52 @@ import { BadReqErr } from "@lxdgc9/pkg/dist/err";
 import { RequestHandler } from "express";
 import { Types } from "mongoose";
 import { Class } from "../../../model/class";
-import { Unit } from "../../../model/unit";
+import { School } from "../../../model/school";
 import { User } from "../../../model/user";
 
-export const newClass: RequestHandler = async (req, res, next) => {
+export const insertClass: RequestHandler = async (req, res, next) => {
   const {
     name,
-    unit,
+    schoolId,
     memberIds,
   }: {
     name: string;
-    unit: string;
-    memberIds?: Types.ObjectId[];
+    schoolId: Types.ObjectId;
+    memberIds: Types.ObjectId[];
   } = req.body;
+
   try {
-    const [exUnit, numMembers] = await Promise.all([
-      Unit.exists({ _id: unit }),
+    const [exSchool, numMembers] = await Promise.all([
+      School.exists({ _id: schoolId }),
       User.countDocuments({
         _id: {
           $in: memberIds,
         },
       }),
     ]);
-    if (!exUnit) {
+    if (!exSchool) {
       throw new BadReqErr("unit not found");
     }
-    if (memberIds && numMembers < memberIds.length) {
+    if (numMembers < memberIds.length) {
       throw new BadReqErr("memberIds mismatch");
     }
 
     const newClass = new Class({
       name,
-      unit,
+      school: schoolId,
       members: memberIds,
     });
     await newClass.save();
 
-    const [_class] = await Promise.all([
-      Class.findById(newClass._id).populate({
-        path: "unit",
-        select: "-classes",
-      }),
-      Unit.findByIdAndUpdate(newClass.unit, {
+    const _class = await Class.findById(newClass._id).populate({
+      path: "school",
+      select: "-classes",
+    });
+
+    res.status(201).json({ class: _class });
+
+    await Promise.all([
+      School.findByIdAndUpdate(newClass.school, {
         $addToSet: {
           classes: newClass._id,
         },
@@ -61,10 +65,6 @@ export const newClass: RequestHandler = async (req, res, next) => {
         }
       ),
     ]);
-
-    res.status(201).json({
-      class: _class,
-    });
   } catch (e) {
     next(e);
   }

@@ -7,6 +7,7 @@ import { nats } from "../../nats";
 
 export const deleteRole: RequestHandler = async (req, res, next) => {
   try {
+    // Kiểm tra role có trong db hay không
     const role = await Role.findByIdAndDelete(req.params.id);
     if (!role) {
       throw new BadReqErr("role not found");
@@ -14,6 +15,7 @@ export const deleteRole: RequestHandler = async (req, res, next) => {
 
     res.json({ msg: "deleted" });
 
+    // Thông báo đến log service
     await Promise.all([
       new LogPublisher(nats.cli).publish({
         userId: req.user?.id,

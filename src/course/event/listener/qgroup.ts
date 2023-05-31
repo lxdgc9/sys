@@ -1,1 +1,1 @@
-export const qGroup = "course-srv";
+export const qGroup = "course";
