@@ -2,7 +2,7 @@ import { NotFoundErr } from "@lxdgc9/pkg/dist/err";
 import { RequestHandler } from "express";
 import { Role } from "../../model/role";
 
-export const getRole: RequestHandler = async (req, res, next) => {
+export const searchRole: RequestHandler = async (req, res, next) => {
   try {
     const role = await Role.findById(req.params.id).populate({
       path: "perms",

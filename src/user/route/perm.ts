@@ -39,6 +39,7 @@ r.route("/group")
     ),
     insertGroup
   );
+
 r.route("/group/many")
   .post(
     guard(INSERT_PERM),
@@ -69,6 +70,7 @@ r.route("/group/many")
     ),
     deleteGroups
   );
+
 r.route("/group/:id")
   .get(
     guard(SEARCH_PERM),
@@ -126,6 +128,7 @@ r.route("/")
     ),
     insertPerm
   );
+
 r.route("/many")
   .post(
     guard(INSERT_PERM),
@@ -162,6 +165,7 @@ r.route("/many")
     ),
     deletePerms
   );
+
 r.route("/:id")
   .get(
     guard(SEARCH_PERM),

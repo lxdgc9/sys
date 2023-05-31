@@ -64,14 +64,14 @@ export const insertPerms: RequestHandler = async (req, res, next) => {
 
     res.status(201).json({ perm: docs });
 
-    const permByGroupIds = _perms.reduce((a, { _id, group }) => {
-      if (!a.has(group.toString())) {
-        a.set(group.toString(), []);
+    const permByGroupIds = _perms.reduce((map, { _id, group }) => {
+      if (!map.has(group.toString())) {
+        map.set(group.toString(), []);
       }
 
-      a.get(group.toString()).push(_id);
+      map.get(group.toString()).push(_id);
 
-      return a;
+      return map;
     }, new Map());
 
     await Promise.all([

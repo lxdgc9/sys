@@ -16,7 +16,6 @@ export const deleteGroup: RequestHandler = async (req, res, next) => {
     res.json({ msg: "deleted" });
 
     await Promise.all([
-      // Xóa permissions thuộc group này
       Perm.deleteMany({
         _id: {
           $in: group.perms,

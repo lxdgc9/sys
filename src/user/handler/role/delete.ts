@@ -5,21 +5,23 @@ import { LogPublisher } from "../../event/publisher/log";
 import { Role } from "../../model/role";
 import { nats } from "../../nats";
 
-export const delRole: RequestHandler = async (req, res, next) => {
+export const deleteRole: RequestHandler = async (req, res, next) => {
   try {
     const role = await Role.findByIdAndDelete(req.params.id);
     if (!role) {
-      throw new BadReqErr("role doesn't exist");
+      throw new BadReqErr("role not found");
     }
 
-    res.json({ msg: "delete successfully" });
+    res.json({ msg: "deleted" });
 
-    await new LogPublisher(nats.cli).publish({
-      act: Actions.delete,
-      model: Role.modelName,
-      doc: role,
-      userId: req.user?.id,
-    });
+    await Promise.all([
+      new LogPublisher(nats.cli).publish({
+        userId: req.user?.id,
+        model: Role.modelName,
+        act: Actions.delete,
+        doc: role,
+      }),
+    ]);
   } catch (e) {
     next(e);
   }

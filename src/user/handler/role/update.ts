@@ -7,7 +7,7 @@ import { Perm } from "../../model/perm";
 import { Role } from "../../model/role";
 import { nats } from "../../nats";
 
-export const modRole: RequestHandler = async (req, res, next) => {
+export const updateRole: RequestHandler = async (req, res, next) => {
   const {
     name,
     level,
@@ -17,18 +17,24 @@ export const modRole: RequestHandler = async (req, res, next) => {
     level?: number;
     permIds?: Types.ObjectId[];
   } = req.body;
+
   try {
     const [role, numPerms] = await Promise.all([
-      Role.findById(req.params.id),
+      Role.findById(req.params.id).populate({
+        path: "perms",
+        select: "-group",
+      }),
       Perm.countDocuments({
-        _id: { $in: permIds },
-      }).then((perms) => perms),
+        _id: {
+          $in: permIds,
+        },
+      }),
     ]);
     if (!role) {
-      throw new BadReqErr("role doesn't exist");
+      throw new BadReqErr("role not found");
     }
     if (permIds && numPerms < permIds.length) {
-      throw new BadReqErr("permIds doesn't match");
+      throw new BadReqErr("permIds mismatch");
     }
 
     const updRole = await Role.findByIdAndUpdate(
@@ -49,10 +55,10 @@ export const modRole: RequestHandler = async (req, res, next) => {
     res.json({ role: updRole });
 
     await new LogPublisher(nats.cli).publish({
-      act: Actions.update,
-      model: Role.modelName,
-      doc: role,
       userId: req.user?.id,
+      model: Role.modelName,
+      act: Actions.update,
+      doc: role,
     });
   } catch (e) {
     next(e);

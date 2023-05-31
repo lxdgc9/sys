@@ -2,12 +2,11 @@ import { BadReqErr } from "@lxdgc9/pkg/dist/err";
 import { Actions } from "@lxdgc9/pkg/dist/event/log";
 import { RequestHandler } from "express";
 import { Types } from "mongoose";
-import { LogPublisher } from "../../../../event/publisher/log";
-import { Perm } from "../../../../model/perm";
-import { PermGr } from "../../../../model/perm-gr";
-import { nats } from "../../../../nats";
+import { LogPublisher } from "../../event/publisher/log";
+import { Role } from "../../model/role";
+import { nats } from "../../nats";
 
-export const deleteGroups: RequestHandler = async (req, res, next) => {
+export const deleteRoles: RequestHandler = async (req, res, next) => {
   const {
     ids,
   }: {
@@ -15,16 +14,19 @@ export const deleteGroups: RequestHandler = async (req, res, next) => {
   } = req.body;
 
   try {
-    const groups = await PermGr.find({
+    const roles = await Role.find({
       _id: {
         $in: ids,
       },
+    }).populate({
+      path: "perms",
+      select: "-group",
     });
-    if (groups.length < ids.length) {
+    if (roles.length < ids.length) {
       throw new BadReqErr("ids mismatch");
     }
 
-    await PermGr.deleteMany({
+    await Role.deleteMany({
       _id: {
         $in: ids,
       },
@@ -33,16 +35,11 @@ export const deleteGroups: RequestHandler = async (req, res, next) => {
     res.json({ msg: "deleted" });
 
     await Promise.all([
-      Perm.deleteMany({
-        group: {
-          $in: ids,
-        },
-      }),
       new LogPublisher(nats.cli).publish({
         userId: req.user?.id,
-        model: PermGr.modelName,
+        model: Role.modelName,
         act: Actions.delete,
-        doc: groups,
+        doc: roles,
       }),
     ]);
   } catch (e) {

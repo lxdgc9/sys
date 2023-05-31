@@ -7,7 +7,7 @@ import { Perm } from "../../model/perm";
 import { Role } from "../../model/role";
 import { nats } from "../../nats";
 
-export const newRole: RequestHandler = async (req, res, next) => {
+export const insertRole: RequestHandler = async (req, res, next) => {
   const {
     name,
     level,
@@ -17,12 +17,15 @@ export const newRole: RequestHandler = async (req, res, next) => {
     level: number;
     permIds: Types.ObjectId[];
   } = req.body;
+
   try {
     const numPerms = await Perm.countDocuments({
-      _id: { $in: permIds },
+      _id: {
+        $in: permIds,
+      },
     });
     if (numPerms < permIds.length) {
-      throw new BadReqErr("permIds doesn't match");
+      throw new BadReqErr("permIds mismatch");
     }
 
     const newRole = new Role({
@@ -40,10 +43,10 @@ export const newRole: RequestHandler = async (req, res, next) => {
     res.json({ role });
 
     await new LogPublisher(nats.cli).publish({
-      act: Actions.insert,
-      model: Role.modelName,
-      doc: role!,
       userId: req.user?.id,
+      model: Role.modelName,
+      act: Actions.insert,
+      doc: role,
     });
   } catch (e) {
     next(e);
