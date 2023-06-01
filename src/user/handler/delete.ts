@@ -22,7 +22,9 @@ export const deleteUser: RequestHandler = async (req, res, next) => {
     res.json({ msg: "deleted" });
 
     await Promise.all([
+      // Thông báo sự kiện xóa user để các service khác cập nhật tình hình
       new DeleteUserPublisher(nats.cli).publish(user._id),
+      // Thông báo đến log service
       new LogPublisher(nats.cli).publish({
         userId: req.user?.id,
         model: User.modelName,

@@ -10,9 +10,7 @@ export class UpdateUserListener extends Listener<UpdateUser> {
 
   async onMsg(data: UpdateUser["data"], msg: Message) {
     await Actor.findOneAndUpdate(
-      {
-        userId: data.id,
-      },
+      { userId: data.id },
       {
         $set: {
           obj: data,

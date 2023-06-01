@@ -19,6 +19,7 @@ export const insertPerm: RequestHandler = async (req, res, next) => {
   } = req.body;
 
   try {
+    // Validate duplicate code và groupId
     const [isDupl, group] = await Promise.all([
       Perm.exists({ code }),
       PermGr.findById(groupId),
@@ -37,6 +38,7 @@ export const insertPerm: RequestHandler = async (req, res, next) => {
     });
     await newPerm.save();
 
+    // Fetch data đã tạo để trả về client
     const perm = await Perm.findById(newPerm._id).populate({
       path: "group",
       select: "-perms",
@@ -45,11 +47,13 @@ export const insertPerm: RequestHandler = async (req, res, next) => {
     res.status(201).send({ perm });
 
     await Promise.all([
+      // Thêm permission đã tạo vào group
       group.updateOne({
         $addToSet: {
           perms: newPerm._id,
         },
       }),
+      // Thông báo đến log service
       new LogPublisher(nats.cli).publish({
         userId: req.user?.id,
         model: Perm.modelName,

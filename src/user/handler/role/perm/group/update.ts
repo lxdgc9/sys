@@ -17,22 +17,26 @@ export const updateGroup: RequestHandler = async (req, res, next) => {
   } = req.body;
 
   try {
+    // Thật vô nghĩa nếu req.body = {}
     if (!Object.keys(req.body).length) {
       throw new BadReqErr("body not empty");
     }
+
+    // Loại bỏ phần tử trùng
+    const permArr = Array.from(new Set(permIds));
 
     const [group, numGroups] = await Promise.all([
       PermGr.findById(req.params.id),
       Perm.countDocuments({
         _id: {
-          $in: permIds,
+          $in: permArr,
         },
       }),
     ]);
     if (!group) {
       throw new BadReqErr("group not found");
     }
-    if (permIds && numGroups < permIds.length) {
+    if (permIds && numGroups < permArr.length) {
       throw new BadReqErr("permIds mismatch");
     }
 
@@ -41,7 +45,7 @@ export const updateGroup: RequestHandler = async (req, res, next) => {
       {
         $set: {
           name,
-          perms: permIds,
+          perms: permArr,
         },
       },
       { new: true }
@@ -54,9 +58,24 @@ export const updateGroup: RequestHandler = async (req, res, next) => {
 
     await Promise.all([
       permIds &&
-        Perm.deleteMany({
-          _id: group.perms.filter((p) => !permIds.includes(p)),
-        }),
+        (await Promise.all([
+          Perm.deleteMany({
+            _id: group.perms.filter((p) => !permArr.includes(p)),
+          }),
+          Perm.updateMany(
+            {
+              _id: {
+                $in: permArr,
+              },
+            },
+            {
+              $set: {
+                group: group._id,
+              },
+            }
+          ),
+        ])),
+      // Thông báo đến log service
       new LogPublisher(nats.cli).publish({
         userId: req.user?.id,
         model: PermGr.modelName,

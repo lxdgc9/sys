@@ -17,6 +17,7 @@ export const insertGroup: RequestHandler = async (req, res, next) => {
 
     res.status(201).json({ group });
 
+    // Thông báo đến log service
     await new LogPublisher(nats.cli).publish({
       userId: req.user?.id,
       model: PermGr.modelName,

@@ -18,10 +18,12 @@ export const updatePerm: RequestHandler = async (req, res, next) => {
     groupId?: Types.ObjectId;
   } = req.body;
   try {
+    // Thật vô nghĩa nếu req.body = {}
     if (!Object.keys(req.body).length) {
       throw new BadReqErr("body not empty");
     }
 
+    // Kiểm tra permission có tồn tại trong db hay không?
     const perm = await Perm.findById(req.params.id).populate({
       path: "group",
       select: "-perms",
@@ -30,6 +32,7 @@ export const updatePerm: RequestHandler = async (req, res, next) => {
       throw new BadReqErr("permission not found");
     }
 
+    // Validate code và group
     const [isDupl, exGroup] = await Promise.all([
       Perm.exists({
         _id: {
@@ -46,6 +49,7 @@ export const updatePerm: RequestHandler = async (req, res, next) => {
       throw new BadReqErr("group not found");
     }
 
+    // Tiến hành cập nhật và fetch data
     const updPerm = await Perm.findByIdAndUpdate(
       perm._id,
       {
@@ -64,6 +68,8 @@ export const updatePerm: RequestHandler = async (req, res, next) => {
     res.json({ perm: updPerm });
 
     await Promise.all([
+      // Loại bỏ permission khỏi group củ và thêm permission
+      // vào group mới
       groupId &&
         !perm.group._id.equals(groupId) &&
         (await Promise.all([
@@ -78,6 +84,7 @@ export const updatePerm: RequestHandler = async (req, res, next) => {
             },
           }),
         ])),
+      // Thông báo đến log service
       new LogPublisher(nats.cli).publish({
         userId: req.user?.id,
         model: Perm.modelName,

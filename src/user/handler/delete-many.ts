@@ -15,9 +15,12 @@ export const deleteUsers: RequestHandler = async (req, res, next) => {
   } = req.body;
 
   try {
+    // Loại bỏ phần tử trùng trong ids
+    const idArr = Array.from(new Set(ids));
+
     const users = await User.find({
       _id: {
-        $in: ids,
+        $in: idArr,
       },
     }).populate({
       path: "role",
@@ -26,20 +29,22 @@ export const deleteUsers: RequestHandler = async (req, res, next) => {
         select: "-group",
       },
     });
-    if (users.length < ids.length) {
+    if (users.length < idArr.length) {
       throw new BadReqErr("userIds mismatch");
     }
 
     await User.deleteMany({
       _id: {
-        $in: ids,
+        $in: idArr,
       },
     });
 
     res.json({ msg: "deleted" });
 
     await Promise.all([
-      new DeleteManyUserPublisher(nats.cli).publish(ids),
+      // Thông báo cho các service khác
+      new DeleteManyUserPublisher(nats.cli).publish(idArr),
+      // Thông báo đến log service
       new LogPublisher(nats.cli).publish({
         userId: req.user?.id,
         model: User.modelName,

@@ -21,15 +21,18 @@ export const changePasswd: RequestHandler = async (req, res, next) => {
       throw new BadReqErr("user not found");
     }
 
+    // Kiểm tra mật khẩu
     if (!(await compare(oldPasswd, user.passwd))) {
       throw new BadReqErr("wrong password");
     }
 
+    // Tạo mật khẩu mới
     user.passwd = newPasswd;
     await user.save();
 
     res.json({ msg: "changed" });
 
+    // Thông báo đến log service
     await new LogPublisher(nats.cli).publish({
       userId: req.user?.id,
       model: User.modelName,

@@ -15,9 +15,13 @@ export const deleteGroups: RequestHandler = async (req, res, next) => {
   } = req.body;
 
   try {
+    // Loại bỏ phần tử trùng trong ids
+    const idArr = Array.from(new Set(ids));
+
+    // Kiểm tra có phần tử nào trong mảng không tồn tại trong db hay không
     const groups = await PermGr.find({
       _id: {
-        $in: ids,
+        $in: idArr,
       },
     });
     if (groups.length < ids.length) {
@@ -26,18 +30,20 @@ export const deleteGroups: RequestHandler = async (req, res, next) => {
 
     await PermGr.deleteMany({
       _id: {
-        $in: ids,
+        $in: idArr,
       },
     });
 
     res.json({ msg: "deleted" });
 
     await Promise.all([
+      // Xóa các permission nếu có sử dụng group này
       Perm.deleteMany({
         group: {
-          $in: ids,
+          $in: idArr,
         },
       }),
+      // Thông báo đến log service
       new LogPublisher(nats.cli).publish({
         userId: req.user?.id,
         model: PermGr.modelName,

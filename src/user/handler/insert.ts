@@ -26,6 +26,8 @@ export const insertUser: RequestHandler = async (req, res, next) => {
   } = req.body;
 
   try {
+    // Validate duplicate các username, phone, email và có tồn tại
+    // role hay không?
     const [isDupl, exRole] = await Promise.all([
       User.exists({
         $or: [
@@ -64,6 +66,7 @@ export const insertUser: RequestHandler = async (req, res, next) => {
       throw new BadReqErr("role not found");
     }
 
+    // Tạo user vào db
     const newUser = new User({
       attrs: Object.entries(prof).map(([k, v]) => ({
         k,
@@ -75,6 +78,7 @@ export const insertUser: RequestHandler = async (req, res, next) => {
     });
     await newUser.save();
 
+    // Fetch data đã tạo trả về client
     const user = await User.findById(newUser._id).populate({
       path: "role",
       populate: {
@@ -87,6 +91,7 @@ export const insertUser: RequestHandler = async (req, res, next) => {
 
     await Promise.all([
       new InsertUserPublisher(nats.cli).publish(user!),
+      // Thông báo đến log service
       new LogPublisher(nats.cli).publish({
         userId: req.user?.id,
         model: User.modelName,

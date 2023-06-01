@@ -34,14 +34,17 @@ export const login: RequestHandler = async (req, res, next) => {
         select: "-group",
       },
     });
+    // Kiểm tra người dùng có tồn tại hay không
     if (!user) {
       throw new UnauthorizedErr("user not found");
     }
 
+    // Kiểm tra mật khẩu
     if (!(await compare(passwd, user.passwd))) {
       throw new UnauthorizedErr("wrong password");
     }
 
+    // Mọi thứ ok, tạo accessToken và refreshToken
     const accessToken = sign(
       {
         id: user._id,
@@ -67,6 +70,7 @@ export const login: RequestHandler = async (req, res, next) => {
       refreshToken,
     });
 
+    // Lưu resfreshToken và redis
     await redis.set(`rf-tkn.${user._id}`, refreshToken, {
       EX: 2592001, // 1 + 3600*24*30s
     });

@@ -22,10 +22,12 @@ export const updateUser: RequestHandler = async (req, res, next) => {
   } = req.body;
 
   try {
+    // Thật vô nghĩa nếu req.body = {}
     if (!Object.keys(req.body).length) {
       throw new BadReqErr("body not empty");
     }
 
+    // Kiểm tra người dùng này có tồn tại trong db hay không
     const user = await User.findById(req.params.id).populate({
       path: "role",
       populate: {
@@ -37,6 +39,8 @@ export const updateUser: RequestHandler = async (req, res, next) => {
       throw new BadReqErr("user not found");
     }
 
+    // Kiêm tra duplicate username, phone, email và có tồn tại role
+    // trong db hay không
     const [isDupl, exRole] = await Promise.all([
       User.exists({
         $or: [
@@ -78,6 +82,7 @@ export const updateUser: RequestHandler = async (req, res, next) => {
       throw new BadReqErr("role not found");
     }
 
+    // Tiến hành cập nhật và trả về client
     const updUser = await User.findByIdAndUpdate(
       user._id,
       {
@@ -101,7 +106,9 @@ export const updateUser: RequestHandler = async (req, res, next) => {
     res.json({ user: updUser });
 
     await Promise.all([
+      // Thông báo đến các service khác
       new UpdateUserPublisher(nats.cli).publish(updUser!),
+      // Thông báo đến log service
       new LogPublisher(nats.cli).publish({
         userId: req.user?.id,
         model: User.modelName,

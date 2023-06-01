@@ -16,11 +16,13 @@ export const deleteGroup: RequestHandler = async (req, res, next) => {
     res.json({ msg: "deleted" });
 
     await Promise.all([
+      // Xóa các permission sử dụng group này
       Perm.deleteMany({
         _id: {
           $in: group.perms,
         },
       }),
+      // Thông báo đến log service
       new LogPublisher(nats.cli).publish({
         userId: req.user?.id,
         model: PermGr.modelName,

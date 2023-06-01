@@ -25,23 +25,22 @@ export const insertUsers: RequestHandler = async (req, res, next) => {
   } = req.body;
 
   try {
-    const [usernames, phones, emails] = users.reduce(
-      (
-        a: [string[], string[], string[]],
-        { prof: { username, phone, email } }
-      ) => {
-        a[0].push(username);
-        a[1].push(phone);
-        a[2].push(email);
-
-        return a;
-      },
-      [[], [], []]
-    );
+    const [usernameArr, phoneArr, emailArr, roleArr] = users
+      .reduce(
+        (a, { prof: { username, phone, email }, roleId }) => {
+          a[0].add(username);
+          a[1].add(phone);
+          a[2].add(email);
+          a[3].add(roleId);
+          return a;
+        },
+        [new Set(), new Set(), new Set(), new Set()]
+      )
+      .map((el) => Array.from(el));
     if (
-      new Set(usernames).size < users.length ||
-      new Set(phones).size < users.length ||
-      new Set(emails).size < users.length
+      usernameArr.length < users.length ||
+      phoneArr.length < users.length ||
+      emailArr.length < users.length
     ) {
       throw new ConflictErr("duplicate fields");
     }
@@ -53,7 +52,7 @@ export const insertUsers: RequestHandler = async (req, res, next) => {
             attrs: {
               $elemMatch: {
                 k: "username",
-                v: usernames,
+                v: usernameArr,
               },
             },
           },
@@ -61,7 +60,7 @@ export const insertUsers: RequestHandler = async (req, res, next) => {
             attrs: {
               $elemMatch: {
                 k: "phone",
-                v: phones,
+                v: phoneArr,
               },
             },
           },
@@ -69,20 +68,22 @@ export const insertUsers: RequestHandler = async (req, res, next) => {
             attrs: {
               $elemMatch: {
                 k: "email",
-                v: emails,
+                v: emailArr,
               },
             },
           },
         ],
       }),
       Role.countDocuments({
-        _id: users.map((u) => u.roleId),
+        _id: {
+          $in: roleArr,
+        },
       }),
     ]);
     if (isDupl) {
       throw new ConflictErr("duplicate fields");
     }
-    if (numRoles < new Set(users.map((u) => u.roleId)).size) {
+    if (numRoles < roleArr.length) {
       throw new BadReqErr("roleIds mismatch");
     }
 
@@ -111,6 +112,7 @@ export const insertUsers: RequestHandler = async (req, res, next) => {
 
     await Promise.all([
       new InsertManyUserPublisher(nats.cli).publish(docs),
+      // Thông báo đến log service
       new LogPublisher(nats.cli).publish({
         userId: req.user?.id,
         model: User.modelName,

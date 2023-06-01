@@ -79,16 +79,22 @@ export const insertPerms: RequestHandler = async (req, res, next) => {
 
     res.status(201).json({ perm: docs });
 
-    const permByGroupIds = _perms.reduce((map, { _id, group }) => {
-      if (!map.has(group.toString())) {
-        map.set(group.toString(), []);
-      }
-      map.get(group.toString()).push(_id);
-      return map;
-    }, new Map());
-
     await Promise.all([
-      Array.from(permByGroupIds.entries()).forEach(async ([k, v]) => {
+      Array.from(
+        // Tạo một mảng mới từ danh sách permission đã tạo trước đó với
+        // k là id của group và v là danh sách permission sử dụng group này
+        _perms
+          .reduce((map, { _id, group }) => {
+            const groupStr = group.toString();
+            if (!map.has(groupStr)) {
+              map.set(groupStr, []);
+            }
+            map.get(groupStr).push(_id);
+            return map;
+          }, new Map())
+          .entries()
+      ).forEach(async ([k, v]) => {
+        // Thêm các permission vào group
         await PermGr.findByIdAndUpdate(k, {
           $addToSet: {
             perms: v,

@@ -14,6 +14,7 @@ export const updateAccess: RequestHandler = async (req, res, next) => {
   } = req.body;
 
   try {
+    // Kiểm tra người dùng có tồn tại trong db hay không
     const user = await User.findById(req.params.id).populate({
       path: "role",
       populate: {
@@ -25,12 +26,14 @@ export const updateAccess: RequestHandler = async (req, res, next) => {
       throw new BadReqErr("user not found");
     }
 
+    // Tiến hành cập nhật trạng thái truy cập của người dùng
     await user.updateOne({
       $set: {
         active: status,
       },
     });
 
+    // Fetch data đã cập nhật trả về client
     const updUser = await User.findById(user._id).populate({
       path: "role",
       populate: {
@@ -42,7 +45,9 @@ export const updateAccess: RequestHandler = async (req, res, next) => {
     res.json({ user: updUser });
 
     await Promise.all([
+      // Thông báo cập nhật người dùng cho các service khác
       new UpdateUserPublisher(nats.cli).publish(updUser!),
+      // Thông báo đến log service
       new LogPublisher(nats.cli).publish({
         userId: req.user?.id,
         model: User.modelName,
