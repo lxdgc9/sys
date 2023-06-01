@@ -14,11 +14,18 @@ export const deleteClass: RequestHandler = async (req, res, next) => {
     res.json({ msg: "deleted" });
 
     await Promise.all([
-      School.findOneAndUpdate(_class.school, {
-        $pull: {
-          classes: _class._id,
+      School.updateMany(
+        {
+          classes: {
+            $elemMatch: _class._id,
+          },
         },
-      }),
+        {
+          $pull: {
+            classes: _class._id,
+          },
+        }
+      ),
       User.deleteMany(
         {
           _id: {

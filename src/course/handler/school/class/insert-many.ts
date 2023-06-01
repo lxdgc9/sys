@@ -1,6 +1,7 @@
 import { BadReqErr } from "@lxdgc9/pkg/dist/err";
 import { RequestHandler } from "express";
 import { Types } from "mongoose";
+import { Class } from "../../../model/class";
 import { School } from "../../../model/school";
 import { User } from "../../../model/user";
 
@@ -16,82 +17,97 @@ export const insertClasses: RequestHandler = async (req, res, next) => {
   } = req.body;
 
   try {
-    const [setSchools, setMembers] = classes.reduce(
-      (s, { schoolId, memberIds }) => {
-        s[0].add(schoolId);
-        memberIds.forEach(s[1].add, s[1]);
-        return s;
-      },
-      [new Set(), new Set()]
-    );
+    const [schoolArr, memberArr] = classes
+      .reduce(
+        (s, { schoolId, memberIds }) => {
+          s[0].add(schoolId);
+          memberIds.forEach(s[1].add, s[1]);
+          return s;
+        },
+        [new Set(), new Set()]
+      )
+      .map((el) => Array.from(el));
 
     const [numSchools, numMembers] = await Promise.all([
       School.countDocuments({
         _id: {
-          $in: Array.from(setSchools),
+          $in: schoolArr,
         },
       }),
       User.countDocuments({
         _id: {
-          $in: Array.from(setMembers),
+          $in: memberArr,
         },
       }),
     ]);
-    if (numSchools < setSchools.size) {
+    if (numSchools < schoolArr.length) {
       throw new BadReqErr("schoolId mismatch");
     }
-    if (numMembers < setMembers.size) {
+    if (numMembers < memberArr.length) {
       throw new BadReqErr("memberIds mismatch");
     }
 
-    // const [exUnit, numMembers] = await Promise.all([
-    //   School.exists({ _id: school }),
-    //   User.countDocuments({
-    //     _id: {
-    //       $in: memberIds,
-    //     },
-    //   }),
-    // ]);
-    // if (!exUnit) {
-    //   throw new BadReqErr("unit not found");
-    // }
-    // if (numMembers < memberIds.length) {
-    //   throw new BadReqErr("memberIds mismatch");
-    // }
+    const docs = await Class.insertMany(
+      classes.map(({ name, schoolId, memberIds }) => ({
+        name,
+        school: schoolId,
+        members: Array.from(new Set(memberIds)),
+      }))
+    );
 
-    // const newClass = new Class({
-    //   name,
-    //   school,
-    //   members: memberIds,
-    // });
-    // await newClass.save();
+    const [ids, mapSchools, mapMembers] = docs.reduce(
+      (map, { _id, school, members }) => {
+        map[0].add(_id);
 
-    // const _class = await Class.findById(newClass._id).populate({
-    //   path: "school",
-    //   select: "-classes",
-    // });
+        const schoolStr = school.toString();
+        if (!map[1].has(schoolStr)) {
+          map[1].set(schoolStr, []);
+        }
+        map[1].get(schoolStr).push(_id);
 
-    // res.status(201).json({ class: _class });
+        members.forEach((m) => {
+          const mStr = m.toString();
+          if (!map[2].has(mStr)) {
+            map[2].set(mStr, []);
+          }
+          map[2].get(mStr).push(_id);
+        });
 
-    // await Promise.all([
-    //   School.findByIdAndUpdate(newClass.school, {
-    //     $addToSet: {
-    //       classes: newClass._id,
-    //     },
-    //   }),
-    //   User.updateMany(
-    //     {
-    //       _id: {
-    //         $in: memberIds,
-    //       },
-    //     },
-    //     {
-    //       $addToSet: {
-    //         classes: newClass._id,
-    //       },
-    //     }
-    //   ),
-    // ]);
+        return map;
+      },
+      [new Set(), new Map(), new Map()]
+    );
+
+    const _classes = await Class.find({
+      _id: {
+        $in: Array.from(ids),
+      },
+    })
+      .select("-members")
+      .populate({
+        path: "school",
+        select: "-classes",
+      });
+
+    res.status(201).json({ classes: _classes });
+
+    // Cập nhật danh sách lớp đã thêm vào school
+    Array.from(mapSchools.entries()).forEach(async ([k, v]) => {
+      await School.findByIdAndUpdate(k, {
+        $addToSet: {
+          classes: v,
+        },
+      });
+    });
+
+    // Cập nhật danh sách lớp đã thêm vào users
+    Array.from(mapMembers.entries()).forEach(async ([k, v]) => {
+      await User.findByIdAndUpdate(k, {
+        $addToSet: {
+          classes: v,
+        },
+      });
+    });
   } catch (e) {
     next(e);
   }

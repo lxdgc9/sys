@@ -14,6 +14,7 @@ import { body, param } from "express-validator";
 import { deleteClass } from "../handler/school/class/delete";
 import { deleteClasses } from "../handler/school/class/delete-many";
 import { insertClass } from "../handler/school/class/insert";
+import { insertClasses } from "../handler/school/class/insert-many";
 import { searchClasses } from "../handler/school/class/seach-many";
 import { searchClass } from "../handler/school/class/search";
 import { updateClass } from "../handler/school/class/update";
@@ -58,7 +59,26 @@ r.route("/classes")
   );
 
 r.route("/classes/many")
-  .post(guard(INSERT_CLASS), validate())
+  .post(
+    guard(INSERT_CLASS),
+    validate(
+      body("classes")
+        .notEmpty()
+        .withMessage("required")
+        .isArray({ min: 1 })
+        .withMessage("must be array, has aleast 1 element"),
+      body("classes.*").isObject().withMessage("must be object"),
+      body("classes.*.name")
+        .isString()
+        .withMessage("must be string")
+        .isLength({ min: 1, max: 255 })
+        .withMessage("1 <= len <= 255"),
+      body("classes.*.schoolId").isMongoId().withMessage("must be mongoId"),
+      body("classes.*.memberIds").isArray().withMessage("must be array"),
+      body("classes.*.memberIds.*").isMongoId().withMessage("must be mongoId")
+    ),
+    insertClasses
+  )
   .delete(guard(DELETE_CLASS), validate(), deleteClasses);
 
 r.route("/classes/:id")

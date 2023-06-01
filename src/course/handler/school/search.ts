@@ -6,14 +6,11 @@ export const getSchool: RequestHandler = async (req, res, next) => {
   try {
     const school = await School.findById(req.params.id).populate({
       path: "classes",
+      select: "-members",
       populate: [
         {
           path: "school",
           select: "-classes",
-        },
-        {
-          path: "members",
-          select: "obj",
         },
       ],
     });
