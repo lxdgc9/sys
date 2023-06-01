@@ -17,32 +17,41 @@ export const insertClass: RequestHandler = async (req, res, next) => {
   } = req.body;
 
   try {
+    // Tập hợp members thuộc đầu vào, loại bỏ phần tử trùng
+    const memberArr = Array.from(new Set(memberIds));
+
     const [exSchool, numMembers] = await Promise.all([
       School.exists({ _id: schoolId }),
       User.countDocuments({
         _id: {
-          $in: memberIds,
+          $in: memberArr,
         },
       }),
     ]);
     if (!exSchool) {
-      throw new BadReqErr("unit not found");
+      throw new BadReqErr("school not found");
     }
-    if (numMembers < memberIds.length) {
+    if (numMembers < memberArr.length) {
       throw new BadReqErr("memberIds mismatch");
     }
 
     const newClass = new Class({
       name,
       school: schoolId,
-      members: memberIds,
+      members: memberArr,
     });
     await newClass.save();
 
-    const _class = await Class.findById(newClass._id).populate({
-      path: "school",
-      select: "-classes",
-    });
+    const _class = await Class.findById(newClass._id).populate([
+      {
+        path: "school",
+        select: "-classes",
+      },
+      {
+        path: "members",
+        select: "obj",
+      },
+    ]);
 
     res.status(201).json({ class: _class });
 
@@ -55,7 +64,7 @@ export const insertClass: RequestHandler = async (req, res, next) => {
       User.updateMany(
         {
           _id: {
-            $in: memberIds,
+            $in: memberArr,
           },
         },
         {

@@ -11,7 +11,7 @@ export const deleteClasses: RequestHandler = async (req, res, next) => {
       throw new BadReqErr("class not found");
     }
 
-    res.json({ msg: "deleted class" });
+    res.json({ msg: "deleted" });
 
     await Promise.all([
       School.findOneAndUpdate(_class.school, {

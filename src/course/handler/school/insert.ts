@@ -3,7 +3,7 @@ import { RequestHandler } from "express";
 import { rmSync } from "fs";
 import { School } from "../../model/school";
 
-export const newUnit: RequestHandler = async (req, res, next) => {
+export const insertSchool: RequestHandler = async (req, res, next) => {
   const {
     code,
     name,
@@ -16,22 +16,24 @@ export const newUnit: RequestHandler = async (req, res, next) => {
     desc?: string;
   } = req.body;
 
+  console.log(req.file);
+
   try {
     const isDupl = await School.exists({ code });
     if (isDupl) {
-      throw new ConflictErr("duplicate unit");
+      throw new ConflictErr("duplicate code");
     }
 
-    const newUnit = new School({
+    const newSchool = new School({
       code,
       name,
       addr,
       desc,
       logo: req.file && `/api/courses/${req.file.path}`,
     });
-    await newUnit.save();
+    await newSchool.save();
 
-    res.status(201).json({ unit: newUnit });
+    res.status(201).json({ school: newSchool });
   } catch (e) {
     next(e);
     if (req.file) {

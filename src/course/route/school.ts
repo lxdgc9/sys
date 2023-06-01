@@ -4,6 +4,7 @@ import {
   DELETE_SCHOOL,
   INSERT_CLASS,
   INSERT_SCHOOL,
+  SEARCH_CLASS,
   SEARCH_SCHOOL,
   UPDATE_CLASS,
   UPDATE_SCHOOL,
@@ -13,18 +14,22 @@ import { body, param } from "express-validator";
 import { deleteClass } from "../handler/school/class/delete";
 import { deleteClasses } from "../handler/school/class/delete-many";
 import { insertClass } from "../handler/school/class/insert";
-import { modClass } from "../handler/school/class/mod";
-import { delUnit } from "../handler/school/del";
-import { getUnits } from "../handler/school/get";
-import { getUnit } from "../handler/school/get-id";
-import { modUnit } from "../handler/school/mod";
-import { newUnit } from "../handler/school/new";
+import { searchClasses } from "../handler/school/class/seach-many";
+import { searchClass } from "../handler/school/class/search";
+import { updateClass } from "../handler/school/class/update";
+import { deleteSchool } from "../handler/school/delete";
+import { deleteSchools } from "../handler/school/delete-many";
+import { insertSchool } from "../handler/school/insert";
+import { getSchool } from "../handler/school/search";
+import { searchSchools } from "../handler/school/search-many";
+import { updateSchool } from "../handler/school/update";
 import { allocUsers } from "../handler/school/user/alloc";
 import { uploader } from "../helper/upload";
 
 export const r = Router();
 
 r.route("/classes")
+  .get(guard(SEARCH_CLASS), searchClasses)
   .post(
     guard(INSERT_CLASS),
     validate(
@@ -45,7 +50,7 @@ r.route("/classes")
     ),
     insertClass
   )
-  .patch(guard(UPDATE_CLASS), modClass)
+  .patch(guard(UPDATE_CLASS), updateClass)
   .delete(
     guard(DELETE_CLASS),
     validate(param("id").isMongoId().withMessage("must be mongoId")),
@@ -53,34 +58,109 @@ r.route("/classes")
   );
 
 r.route("/classes/many")
-  .post(guard(), validate())
-  .delete(guard(), validate(), deleteClasses);
+  .post(guard(INSERT_CLASS), validate())
+  .delete(guard(DELETE_CLASS), validate(), deleteClasses);
 
-r.route("/classes/:id");
+r.route("/classes/:id")
+  .get(
+    guard(SEARCH_CLASS),
+    validate(param("id").isMongoId().withMessage("must be mongoId")),
+    searchClass
+  )
+  .patch()
+  .delete();
 
 r.patch("/users", guard(), allocUsers);
 
 r.route("/")
-  .get(guard(SEARCH_SCHOOL), getUnits)
+  .get(guard(SEARCH_SCHOOL), searchSchools)
   .post(
     guard(INSERT_SCHOOL),
-    uploader("unit/logo").single("logo"),
+    uploader("school/logo").single("logo"),
     validate(
-      body("code").notEmpty(),
-      body("name").notEmpty(),
-      body("addr").notEmpty(),
+      body("code")
+        .notEmpty()
+        .withMessage("required")
+        .isString()
+        .withMessage("must be string")
+        .isLength({ min: 1, max: 255 })
+        .withMessage("1 <= len <= 255"),
+      body("name")
+        .notEmpty()
+        .withMessage("required")
+        .isString()
+        .withMessage("must be string")
+        .isLength({ min: 1, max: 255 })
+        .withMessage("1 <= len <= 255"),
+      body("addr")
+        .notEmpty()
+        .withMessage("required")
+        .isString()
+        .withMessage("must be string")
+        .isLength({ min: 1, max: 255 })
+        .withMessage("1 <= len <= 255"),
       body("desc")
         .optional({ values: "undefined" })
+        .isString()
+        .withMessage("must be string")
         .isLength({ min: 1, max: 255 })
+        .withMessage("1 <= len <= 255")
     ),
-    newUnit
+    insertSchool
   );
+
+r.delete(
+  "/many",
+  guard(DELETE_SCHOOL),
+  validate(
+    body("ids")
+      .isArray({ min: 1 })
+      .withMessage("must be array, has aleast 1 element"),
+    body("ids.*").isMongoId().withMessage("must be mongoId")
+  ),
+  deleteSchools
+);
+
 r.route("/:id")
-  .get(validate(param("id").isMongoId()), guard(SEARCH_SCHOOL), getUnit)
+  .get(
+    guard(SEARCH_SCHOOL),
+    validate(param("id").isMongoId().withMessage("must be mongoId")),
+    getSchool
+  )
   .patch(
     guard(UPDATE_SCHOOL),
     uploader("unit/logo").single("logo"),
-    validate(param("id").isMongoId()),
-    modUnit
+    validate(
+      param("id").isMongoId().withMessage("must be mongoId"),
+      body("code")
+        .optional({ values: "undefined" })
+        .isString()
+        .withMessage("must be string")
+        .isLength({ min: 1, max: 255 })
+        .withMessage("1 <= len <= 255"),
+      body("name")
+        .optional({ values: "undefined" })
+        .isString()
+        .withMessage("must be string")
+        .isLength({ min: 1, max: 255 })
+        .withMessage("1 <= len <= 255"),
+      body("addr")
+        .optional({ values: "undefined" })
+        .isString()
+        .withMessage("must be string")
+        .isLength({ min: 1, max: 255 })
+        .withMessage("1 <= len <= 255"),
+      body("desc")
+        .optional({ values: "undefined" })
+        .isString()
+        .withMessage("must be string")
+        .isLength({ min: 1, max: 255 })
+        .withMessage("1 <= len <= 255")
+    ),
+    updateSchool
   )
-  .delete(validate(param("id").isMongoId()), guard(DELETE_SCHOOL), delUnit);
+  .delete(
+    guard(DELETE_SCHOOL),
+    validate(param("id").isMongoId().withMessage("must be mongoId")),
+    deleteSchool
+  );

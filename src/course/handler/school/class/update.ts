@@ -5,7 +5,7 @@ import { Class } from "../../../model/class";
 import { School } from "../../../model/school";
 import { User } from "../../../model/user";
 
-export const modClass: RequestHandler = async (req, res, next) => {
+export const updateClass: RequestHandler = async (req, res, next) => {
   const {
     name,
     unitId,
@@ -15,6 +15,7 @@ export const modClass: RequestHandler = async (req, res, next) => {
     unitId?: Types.ObjectId;
     memberIds?: Types.ObjectId[];
   } = req.body;
+
   try {
     const [_class, exUnit, numMembers] = await Promise.all([
       Class.findById(req.params.id),
