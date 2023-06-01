@@ -49,11 +49,16 @@ export const updateRole: RequestHandler = async (req, res, next) => {
     const updRole = await Role.findByIdAndUpdate(
       req.params.id,
       {
-        $set: {
-          name,
-          level,
-          perms: permArr,
-        },
+        $set: permIds
+          ? {
+              name,
+              level,
+              perms: permArr,
+            }
+          : {
+              name,
+              level,
+            },
       },
       { new: true }
     ).populate({

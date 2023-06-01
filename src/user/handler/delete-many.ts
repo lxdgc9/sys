@@ -30,7 +30,7 @@ export const deleteUsers: RequestHandler = async (req, res, next) => {
       },
     });
     if (users.length < idArr.length) {
-      throw new BadReqErr("userIds mismatch");
+      throw new BadReqErr("ids mismatch");
     }
 
     await User.deleteMany({

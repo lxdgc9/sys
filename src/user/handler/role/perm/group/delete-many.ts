@@ -24,7 +24,7 @@ export const deleteGroups: RequestHandler = async (req, res, next) => {
         $in: idArr,
       },
     });
-    if (groups.length < ids.length) {
+    if (groups.length < idArr.length) {
       throw new BadReqErr("ids mismatch");
     }
 
