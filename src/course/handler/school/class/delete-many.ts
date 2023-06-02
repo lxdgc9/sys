@@ -25,11 +25,17 @@ export const deleteClasses: RequestHandler = async (req, res, next) => {
       throw new BadReqErr("ids mismatch");
     }
 
+    const startTime = process.hrtime();
+
     await Class.deleteMany({
       _id: {
         $in: idsArr,
       },
     });
+
+    const endTime = process.hrtime(startTime);
+    const processingTime = endTime[0] * 1000 + endTime[1] / 1000000;
+    console.log(`Thời gian xử lý: ${processingTime} ms`);
 
     res.json({ msg: "deleted" });
 

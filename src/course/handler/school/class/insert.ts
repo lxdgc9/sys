@@ -1,6 +1,7 @@
 import { BadReqErr } from "@lxdgc9/pkg/dist/err";
 import { RequestHandler } from "express";
 import { Types } from "mongoose";
+import { timer } from "../../../helper/timer";
 import { Class } from "../../../model/class";
 import { School } from "../../../model/school";
 import { User } from "../../../model/user";
@@ -16,33 +17,38 @@ export const insertClass: RequestHandler = async (req, res, next) => {
     memberIds: Types.ObjectId[];
   } = req.body;
 
-  try {
-    // Tập hợp members thuộc đầu vào, loại bỏ phần tử trùng
-    const memberIdArr = Array.from(new Set(memberIds));
+  console.group("Handler: deleteClass");
+  const breakPoint01 = timer.breakPoint();
 
-    // Kiểm tra đầu vào: id trường học có tồn tại trong db hay không,
-    // danh sách id member có phần tử nào không hợp lệ hay không
+  try {
+    const uniqMemberIds = Array.from(new Set(memberIds));
+    timer.cal("Unique memberIds", breakPoint01);
+
+    const breakPoint02 = timer.breakPoint();
     const [exSchool, numMembers] = await Promise.all([
       School.exists({ _id: schoolId }),
       User.countDocuments({
         _id: {
-          $in: memberIdArr,
+          $in: uniqMemberIds,
         },
       }),
     ]);
     if (!exSchool) {
       throw new BadReqErr("school not found");
     }
-    if (numMembers < memberIdArr.length) {
+    if (numMembers < uniqMemberIds.length) {
       throw new BadReqErr("memberIds mismatch");
     }
+    timer.cal("Validate schoolId, memberIds", breakPoint02);
 
+    const breakPoint03 = timer.breakPoint();
     const newClass = new Class({
       name,
       school: schoolId,
-      members: memberIdArr,
+      members: uniqMemberIds,
     });
     await newClass.save();
+    timer.cal("Insert class", breakPoint03);
 
     const _class = await Class.findById(newClass._id).populate([
       {
@@ -68,7 +74,7 @@ export const insertClass: RequestHandler = async (req, res, next) => {
       User.updateMany(
         {
           _id: {
-            $in: memberIdArr,
+            $in: uniqMemberIds,
           },
         },
         {
@@ -81,4 +87,7 @@ export const insertClass: RequestHandler = async (req, res, next) => {
   } catch (e) {
     next(e);
   }
+
+  timer.cal("Total", breakPoint01);
+  console.groupEnd();
 };

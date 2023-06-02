@@ -60,31 +60,31 @@ export const insertClasses: RequestHandler = async (req, res, next) => {
     );
 
     const [ids, mapSchools, mapMembers] = docs.reduce(
-      (map, { _id, school, members }) => {
-        map[0].add(_id);
+      (a, { _id, school, members }) => {
+        a[0].add(_id);
 
         const schoolStr = school.toString();
-        if (!map[1].has(schoolStr)) {
-          map[1].set(schoolStr, []);
+        if (!a[1].has(schoolStr)) {
+          a[1].set(schoolStr, []);
         }
-        map[1].get(schoolStr).push(_id);
+        a[1].get(schoolStr).push(_id);
 
         members.forEach((m) => {
           const mStr = m.toString();
-          if (!map[2].has(mStr)) {
-            map[2].set(mStr, []);
+          if (!a[2].has(mStr)) {
+            a[2].set(mStr, []);
           }
-          map[2].get(mStr).push(_id);
+          a[2].get(mStr).push(_id);
         });
 
-        return map;
+        return a;
       },
       [new Set(), new Map(), new Map()]
     );
 
     const _classes = await Class.find({
       _id: {
-        $in: ids,
+        $in: Array.from(ids),
       },
     })
       .select("-members")
