@@ -4,47 +4,41 @@ import { Types } from "mongoose";
 import { Class } from "../../../model/class";
 import { User } from "../../../model/user";
 
-export const allocUsers: RequestHandler = async (req, res, next) => {
+export const allocUser: RequestHandler = async (req, res, next) => {
   const {
-    userIds,
+    userId,
     classIds,
   }: {
-    userIds: Types.ObjectId[];
+    userId: Types.ObjectId;
     classIds: Types.ObjectId[];
   } = req.body;
+
   try {
-    const [numUserIds, numClassIds] = await Promise.all([
-      User.countDocuments({
-        _id: { $in: userIds },
-      }),
+    // Loại bỏ phần tử trùng
+    const classArr = Array.from(new Set(classIds));
+
+    const [user, numClassIds] = await Promise.all([
+      User.findById(userId),
       Class.countDocuments({
-        _id: { $in: classIds },
+        _id: {
+          $in: classArr,
+        },
       }),
     ]);
-    if (numUserIds < userIds.length) {
-      throw new BadReqErr("userIds mismatch");
+    if (!user) {
+      throw new BadReqErr("userId mismatch");
     }
-    if (numClassIds < classIds.length) {
+    if (numClassIds < classArr.length) {
       throw new BadReqErr("classIds mismatch");
     }
 
-    await Promise.all([
-      User.updateMany(
-        {
-          _id: {
-            $in: userIds,
-          },
-        },
-        {
-          $addToSet: {
-            classes: classIds,
-          },
-        }
-      ),
-    ]);
+    await user.updateOne({
+      $addToSet: {
+        classes: classArr,
+      },
+    });
 
     res.json({
-      numUsers: numUserIds,
       numClasses: numClassIds,
     });
   } catch (e) {

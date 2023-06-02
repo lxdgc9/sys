@@ -1,7 +1,9 @@
 import { connect } from "mongoose";
 import { app } from "./app";
 import { DeleteUserListener } from "./event/listener/user/delete";
+import { DeleteManyUserListener } from "./event/listener/user/delete-many";
 import { InsertUserListener } from "./event/listener/user/insert";
+import { InsertManyUserListener } from "./event/listener/user/insert-many";
 import { UpdateUserListener } from "./event/listener/user/update";
 import { nats } from "./nats";
 
@@ -15,14 +17,14 @@ import { nats } from "./nats";
   if (!process.env.MONGO_URI) {
     throw new Error("MONGO_URI must be defined");
   }
+  if (!process.env.NATS_CLUSTER_ID) {
+    throw new Error("NATS_CLUSTER_ID must be defined");
+  }
   if (!process.env.NATS_CLIENT_ID) {
     throw new Error("NATS_CLIENT_ID must be defined");
   }
   if (!process.env.NATS_URL) {
     throw new Error("NATS_URL must be defined");
-  }
-  if (!process.env.NATS_CLUSTER_ID) {
-    throw new Error("NATS_CLUSTER_ID must be defined");
   }
 
   try {
@@ -41,8 +43,10 @@ import { nats } from "./nats";
     process.on("SIGTERM", () => nats.cli.close());
 
     new InsertUserListener(nats.cli).listen();
+    new InsertManyUserListener(nats.cli).listen();
     new UpdateUserListener(nats.cli).listen();
     new DeleteUserListener(nats.cli).listen();
+    new DeleteManyUserListener(nats.cli).listen();
 
     connect(process.env.MONGO_URI).then(() =>
       console.log("Connected to MongoDb")

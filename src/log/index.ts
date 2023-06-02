@@ -12,14 +12,14 @@ import { nats } from "./nats";
   if (!process.env.MONGO_URI) {
     throw new Error("MONGO_URI must be defined");
   }
+  if (!process.env.NATS_CLUSTER_ID) {
+    throw new Error("NATS_CLUSTER_ID must be defined");
+  }
   if (!process.env.NATS_CLIENT_ID) {
     throw new Error("NATS_CLIENT_ID must be defined");
   }
   if (!process.env.NATS_URL) {
     throw new Error("NATS_URL must be defined");
-  }
-  if (!process.env.NATS_CLUSTER_ID) {
-    throw new Error("NATS_CLUSTER_ID must be defined");
   }
 
   try {
@@ -37,9 +37,9 @@ import { nats } from "./nats";
 
     new InsertUserListener(nats.cli).listen();
     new InsertManyUserListener(nats.cli).listen();
+    new UpdateUserListener(nats.cli).listen();
     new DeleteUserListener(nats.cli).listen();
     new DeleteManyUserListener(nats.cli).listen();
-    new UpdateUserListener(nats.cli).listen();
     new LogListener(nats.cli).listen();
 
     connect(process.env.MONGO_URI).then(() =>

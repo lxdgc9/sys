@@ -1,33 +1,61 @@
 import { BadReqErr } from "@lxdgc9/pkg/dist/err";
 import { RequestHandler } from "express";
+import { Types } from "mongoose";
 import { Class } from "../../../model/class";
 import { School } from "../../../model/school";
 import { User } from "../../../model/user";
 
 export const deleteClasses: RequestHandler = async (req, res, next) => {
+  const {
+    ids,
+  }: {
+    ids: Types.ObjectId[];
+  } = req.body;
+
   try {
-    const _class = await Class.findByIdAndDelete(req.params.id);
-    if (!_class) {
-      throw new BadReqErr("class not found");
+    // Loại bỏ phần tử trùng
+    const idsArr = Array.from(new Set(ids));
+
+    const numClasses = await Class.countDocuments({
+      _id: {
+        $in: idsArr,
+      },
+    });
+    if (numClasses < idsArr.length) {
+      throw new BadReqErr("ids mismatch");
     }
+
+    await Class.deleteMany({
+      _id: {
+        $in: idsArr,
+      },
+    });
 
     res.json({ msg: "deleted" });
 
+    // Cập nhật xóa các lớp này ra khỏi document
     await Promise.all([
-      School.findOneAndUpdate(_class.school, {
-        $pull: {
-          classes: _class._id,
-        },
-      }),
-      User.deleteMany(
+      School.updateMany(
         {
-          _id: {
-            $in: _class.members,
+          classes: {
+            $in: idsArr,
           },
         },
         {
-          $pull: {
-            classes: _class._id,
+          $pullAll: {
+            classes: idsArr,
+          },
+        }
+      ),
+      User.updateMany(
+        {
+          classes: {
+            $in: idsArr,
+          },
+        },
+        {
+          $pullAll: {
+            classes: idsArr,
           },
         }
       ),

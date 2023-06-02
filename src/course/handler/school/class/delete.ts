@@ -13,11 +13,12 @@ export const deleteClass: RequestHandler = async (req, res, next) => {
 
     res.json({ msg: "deleted" });
 
+    // Loại bỏ lớp đã xóa ra khỏi document
     await Promise.all([
       School.updateMany(
         {
           classes: {
-            $elemMatch: _class._id,
+            $in: _class._id,
           },
         },
         {
@@ -26,7 +27,7 @@ export const deleteClass: RequestHandler = async (req, res, next) => {
           },
         }
       ),
-      User.deleteMany(
+      User.updateMany(
         {
           _id: {
             $in: _class.members,

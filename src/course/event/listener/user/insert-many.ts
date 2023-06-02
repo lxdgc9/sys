@@ -12,7 +12,7 @@ export class InsertManyUserListener extends Listener<InsertManyUser> {
     await User.insertMany(
       data.map((u) => ({
         userId: u.id,
-        doc: u,
+        obj: u,
       }))
     );
 

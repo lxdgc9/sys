@@ -2,7 +2,7 @@ import { BadReqErr } from "@lxdgc9/pkg/dist/err";
 import { Actions } from "@lxdgc9/pkg/dist/event/log";
 import { RequestHandler } from "express";
 import { LogPublisher } from "../event/publisher/log";
-import { DeleteUserPublisher } from "../event/publisher/user/del";
+import { DeleteUserPublisher } from "../event/publisher/user/delete";
 import { User } from "../model/user";
 import { nats } from "../nats";
 

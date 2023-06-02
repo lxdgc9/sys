@@ -112,7 +112,6 @@ export const insertUsers: RequestHandler = async (req, res, next) => {
 
     await Promise.all([
       new InsertManyUserPublisher(nats.cli).publish(docs),
-      // Thông báo đến log service
       new LogPublisher(nats.cli).publish({
         userId: req.user?.id,
         model: User.modelName,

@@ -16,8 +16,6 @@ export const insertSchool: RequestHandler = async (req, res, next) => {
     desc?: string;
   } = req.body;
 
-  console.log(req.file);
-
   try {
     const isDupl = await School.exists({ code });
     if (isDupl) {

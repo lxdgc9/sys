@@ -17,6 +17,7 @@ export const insertClasses: RequestHandler = async (req, res, next) => {
   } = req.body;
 
   try {
+    // Lấy tập hợp trường học và thành viên được sử dụng ở đầu vào
     const [schoolArr, memberArr] = classes
       .reduce(
         (s, { schoolId, memberIds }) => {
@@ -28,6 +29,8 @@ export const insertClasses: RequestHandler = async (req, res, next) => {
       )
       .map((el) => Array.from(el));
 
+    // Validate danh sách trường học và thành viên xem có phần tử nào
+    // không tồn tại trong db hay không?
     const [numSchools, numMembers] = await Promise.all([
       School.countDocuments({
         _id: {
@@ -47,6 +50,7 @@ export const insertClasses: RequestHandler = async (req, res, next) => {
       throw new BadReqErr("memberIds mismatch");
     }
 
+    // Tiến hành thêm danh sách lớp học vào db
     const docs = await Class.insertMany(
       classes.map(({ name, schoolId, memberIds }) => ({
         name,
@@ -80,7 +84,7 @@ export const insertClasses: RequestHandler = async (req, res, next) => {
 
     const _classes = await Class.find({
       _id: {
-        $in: Array.from(ids),
+        $in: ids,
       },
     })
       .select("-members")

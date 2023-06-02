@@ -24,7 +24,7 @@ import { insertSchool } from "../handler/school/insert";
 import { getSchool } from "../handler/school/search";
 import { searchSchools } from "../handler/school/search-many";
 import { updateSchool } from "../handler/school/update";
-import { allocUsers } from "../handler/school/user/alloc";
+import { allocUser } from "../handler/school/user/alloc";
 import { uploader } from "../helper/upload";
 
 export const r = Router();
@@ -79,7 +79,16 @@ r.route("/classes/many")
     ),
     insertClasses
   )
-  .delete(guard(DELETE_CLASS), validate(), deleteClasses);
+  .delete(
+    guard(DELETE_CLASS),
+    validate(
+      body("ids")
+        .isArray({ min: 1 })
+        .withMessage("must be array, has aleast 1 element"),
+      body("ids.*").isMongoId().withMessage("must be mongoId")
+    ),
+    deleteClasses
+  );
 
 r.route("/classes/:id")
   .get(
@@ -88,9 +97,13 @@ r.route("/classes/:id")
     searchClass
   )
   .patch()
-  .delete();
+  .delete(
+    guard(DELETE_CLASS),
+    validate(param("id").isMongoId().withMessage("must be mongoId")),
+    deleteClass
+  );
 
-r.patch("/users", guard(), allocUsers);
+r.patch("/users", guard(), allocUser);
 
 r.route("/")
   .get(guard(SEARCH_SCHOOL), searchSchools)
