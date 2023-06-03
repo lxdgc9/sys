@@ -1,85 +1,70 @@
 import { BadReqErr } from "@lxdgc9/pkg/dist/err";
 import { RequestHandler } from "express";
 import { Types } from "mongoose";
-import { timer } from "../../../helper/timer";
 import { Class } from "../../../model/class";
 import { School } from "../../../model/school";
 import { User } from "../../../model/user";
 
-export const insertClass: RequestHandler = async (req, res, next) => {
+export const insrtItem: RequestHandler = async (req, res, next) => {
   const {
     name,
-    schoolId,
-    memberIds,
+    school_id: schId,
+    member_ids: memIds,
   }: {
     name: string;
-    schoolId: Types.ObjectId;
-    memberIds: Types.ObjectId[];
+    school_id: Types.ObjectId;
+    member_ids: Types.ObjectId[];
   } = req.body;
 
-  console.group("Handler: deleteClass");
-  const breakPoint01 = timer.breakPoint();
-
   try {
-    const uniqMemberIds = Array.from(new Set(memberIds));
-    timer.cal("Unique memberIds", breakPoint01);
+    const uMemIds = Array.from(new Set(memIds));
 
-    const breakPoint02 = timer.breakPoint();
-    const [exSchool, numMembers] = await Promise.all([
-      School.exists({ _id: schoolId }),
+    const [exstSch, memCount] = await Promise.all([
+      School.exists({ _id: schId }),
       User.countDocuments({
-        _id: {
-          $in: uniqMemberIds,
-        },
+        _id: { $in: uMemIds },
       }),
     ]);
-    if (!exSchool) {
+    if (!exstSch) {
       throw new BadReqErr("school not found");
     }
-    if (numMembers < uniqMemberIds.length) {
-      throw new BadReqErr("memberIds mismatch");
+    if (memCount < uMemIds.length) {
+      throw new BadReqErr("members mismatch");
     }
-    timer.cal("Validate schoolId, memberIds", breakPoint02);
 
-    const breakPoint03 = timer.breakPoint();
-    const newClass = new Class({
+    const newItem = new Class({
       name,
-      school: schoolId,
-      members: uniqMemberIds,
+      school: schId,
+      members: uMemIds,
     });
-    await newClass.save();
-    timer.cal("Insert class", breakPoint03);
+    await newItem.save();
 
-    const _class = await Class.findById(newClass._id).populate([
-      {
-        path: "school",
-        select: "-classes",
-      },
-      {
-        path: "members",
-        select: "obj",
-      },
-    ]);
-
-    res.status(201).json({ class: _class });
+    res.status(201).json({
+      class: await Class.populate(newItem, [
+        {
+          path: "school",
+          select: "-classes",
+        },
+        {
+          path: "members",
+          select: "obj",
+        },
+      ]),
+    });
 
     await Promise.all([
-      // Thêm lớp vào danh sách tương ứng trường học
-      School.findByIdAndUpdate(newClass.school, {
+      School.findByIdAndUpdate(newItem.school._id, {
         $addToSet: {
-          classes: newClass._id,
+          classes: newItem._id,
         },
       }),
-      // Thêm lớp vào danh sách nếu là member của lớp đó
       User.updateMany(
         {
-          _id: {
-            $in: uniqMemberIds,
-          },
+          _id: { $in: uMemIds },
         },
         {
           $addToSet: {
-            classes: newClass._id,
+            classes: newItem._id,
           },
         }
       ),
@@ -87,7 +72,4 @@ export const insertClass: RequestHandler = async (req, res, next) => {
   } catch (e) {
     next(e);
   }
-
-  timer.cal("Total", breakPoint01);
-  console.groupEnd();
 };

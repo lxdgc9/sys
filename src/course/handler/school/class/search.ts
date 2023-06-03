@@ -2,9 +2,9 @@ import { NotFoundErr } from "@lxdgc9/pkg/dist/err";
 import { RequestHandler } from "express";
 import { Class } from "../../../model/class";
 
-export const searchClass: RequestHandler = async (req, res, next) => {
+export const getItem: RequestHandler = async (req, res, next) => {
   try {
-    const _class = await Class.findById(req.params.id).populate([
+    const item = await Class.findById(req.params.id).populate([
       {
         path: "school",
         select: "-classes",
@@ -14,11 +14,11 @@ export const searchClass: RequestHandler = async (req, res, next) => {
         select: "-classes",
       },
     ]);
-    if (!_class) {
+    if (!item) {
       throw new NotFoundErr("class not found");
     }
 
-    res.json({ class: _class });
+    res.json({ class: item });
   } catch (e) {
     next(e);
   }

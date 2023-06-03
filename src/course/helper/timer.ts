@@ -1,9 +1,20 @@
-export const timer = {
-  breakPoint: () => process.hrtime(),
-  cal: (logStr: string, startTime: [number, number]) => {
-    const endTime = process.hrtime(startTime);
-    const execTime = endTime[0] * 1000 + endTime[1] / 1000000;
+type HrTime = [number, number];
 
-    console.log(`Processing time - ${logStr}: ${execTime} ms`);
-  },
-};
+interface ITimer {
+  cal(p: HrTime, msg: string): void;
+}
+
+export class Timer implements ITimer {
+  readonly point: HrTime;
+
+  constructor() {
+    this.point = process.hrtime();
+  }
+
+  cal(p: HrTime, msg?: string) {
+    const etime = process.hrtime(p);
+    const ptime = etime[0] * 1000 + etime[1] / 1000000;
+
+    console.log(`Processing time - ${msg}: ${ptime} ms`);
+  }
+}

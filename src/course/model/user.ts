@@ -1,14 +1,14 @@
 import { Schema, Types, model } from "mongoose";
 
 interface IUser {
-  userId: Types.ObjectId;
+  uid: Types.ObjectId;
   obj: any;
   classes: Types.ObjectId[];
 }
 
 const schema = new Schema<IUser>(
   {
-    userId: {
+    uid: {
       type: Schema.Types.ObjectId,
       required: true,
       unique: true,
@@ -25,7 +25,10 @@ const schema = new Schema<IUser>(
     ],
   },
   {
-    timestamps: true,
+    timestamps: {
+      createdAt: "created_at",
+      updatedAt: "updated_at",
+    },
     toJSON: {
       virtuals: true,
       transform(_doc, ret, _opts) {

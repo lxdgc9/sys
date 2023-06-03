@@ -7,34 +7,27 @@ import { Perm } from "../../../model/perm";
 import { PermGr } from "../../../model/perm-gr";
 import { nats } from "../../../nats";
 
-export const insertPerms: RequestHandler = async (req, res, next) => {
-  const {
-    perms,
-  }: {
-    perms: {
-      code: string;
-      desc: string;
-      groupId: Types.ObjectId;
-    }[];
-  } = req.body;
+export const insrtItems: RequestHandler = async (req, res, next) => {
+  const items: {
+    code: string;
+    desc: string;
+    group_id: Types.ObjectId[];
+  }[] = req.body;
 
   try {
-    // Tập hợp mã code và groupId đã được loại bỏ duplicate
-    const [codeArr, groupIdArr] = perms
+    const [uCode, uPermGrId] = items
       .reduce(
-        (s, { code, groupId }) => {
+        (s, { code, group_id: permGrId }) => {
           s[0].add(code);
-          s[1].add(groupId);
+          s[1].add(permGrId);
+
           return s;
         },
         [new Set(), new Set()]
       )
       .map((el) => Array.from(el));
 
-    // Nếu danh sách trên có số lượng không đúng bằng số lượng các
-    // permission từ đầu vào, tức có phần tử nào đó đã trùng, tiến
-    // hành thông báo lỗi
-    if (codeArr.length < perms.length) {
+    if (uCode.length < items.length) {
       throw new BadReqErr("duplicate code");
     }
 
@@ -42,25 +35,25 @@ export const insertPerms: RequestHandler = async (req, res, next) => {
     const [isDupl, numGroups] = await Promise.all([
       Perm.exists({
         code: {
-          $in: codeArr,
+          $in: uCode,
         },
       }),
       PermGr.countDocuments({
         _id: {
-          $in: groupIdArr,
+          $in: uPermGrId,
         },
       }),
     ]);
     if (isDupl) {
       throw new BadReqErr("duplicate code");
     }
-    if (numGroups < groupIdArr.length) {
+    if (numGroups < uPermGrId.length) {
       throw new BadReqErr("groupIds mismatch");
     }
 
     // Thêm đồng thời perrmission vào db
     const _perms = await Perm.insertMany(
-      perms.map(({ code, desc, groupId }) => ({
+      items.map(({ code, desc, group_id: groupId }) => ({
         code,
         desc,
         group: groupId,

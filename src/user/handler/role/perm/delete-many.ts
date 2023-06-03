@@ -7,60 +7,41 @@ import { Perm } from "../../../model/perm";
 import { PermGr } from "../../../model/perm-gr";
 import { nats } from "../../../nats";
 
-export const deletePerms: RequestHandler = async (req, res, next) => {
-  const {
-    ids,
-  }: {
-    ids: Types.ObjectId[];
-  } = req.body;
+export const delItems: RequestHandler = async (req, res, next) => {
+  const ids: Types.ObjectId[] = req.body;
 
   try {
-    // Danh sách id đã lượt bỏ trùng
-    const idArr = Array.from(new Set(ids));
+    const uids = Array.from(new Set(ids));
 
-    const perms = await Perm.find({
-      _id: {
-        $in: idArr,
-      },
-    }).populate({
-      path: "group",
-      select: "-perms",
-    });
-    // Kiểm tra có permission nào không tồn tại trong db hay không
-    if (perms.length < idArr.length) {
+    const items = await Perm.find({
+      _id: { $in: uids },
+    }).populate("group", "-perms");
+    if (items.length < uids.length) {
       throw new BadReqErr("ids mismatch");
     }
 
-    // Tiến hành xóa permissions
     await Perm.deleteMany({
-      _id: {
-        $in: idArr,
-      },
+      _id: { $in: uids },
     });
 
-    res.json({ msg: "deleted" });
+    res.json({ msg: "ok" });
 
     await Promise.all([
-      // Tìm kiếm các group chứa permission đã xóa và cập nhật loại
-      // bỏ chúng ra khỏi property perms
       PermGr.updateMany(
         {
-          _id: {
-            $in: perms.map((p) => p.group._id),
-          },
+          perms: { $in: uids },
         },
         {
           $pullAll: {
-            perms: idArr,
+            perms: uids,
           },
         }
       ),
-      // Thông báo đến log service
       new LogPublisher(nats.cli).publish({
         userId: req.user?.id,
         model: Perm.modelName,
         act: Actions.delete,
-        doc: perms,
+        doc: items,
       }),
     ]);
   } catch (e) {

@@ -5,7 +5,7 @@ import { Class } from "../../../model/class";
 import { School } from "../../../model/school";
 import { User } from "../../../model/user";
 
-export const updateClass: RequestHandler = async (req, res, next) => {
+export const updateItem: RequestHandler = async (req, res, next) => {
   const {
     name,
     schoolId,

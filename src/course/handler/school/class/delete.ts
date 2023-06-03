@@ -1,28 +1,28 @@
 import { BadReqErr } from "@lxdgc9/pkg/dist/err";
 import { RequestHandler } from "express";
-import { timer } from "../../../helper/timer";
 import { Class } from "../../../model/class";
+import { User } from "../../../model/user";
 
-export const deleteClass: RequestHandler = async (req, res, next) => {
-  console.group("Handler: deleteClass");
-  const breakPoint01 = timer.breakPoint();
-
+export const delItem: RequestHandler = async (req, res, next) => {
   try {
-    const _class = await Class.findById(req.params.id);
-    if (!_class) {
-      throw new BadReqErr("class not found");
+    const item = await Class.findByIdAndDelete(req.params.id);
+    if (!item) {
+      throw new BadReqErr("item not found");
     }
-    timer.cal("Check id", breakPoint01);
 
-    const breakPoint02 = timer.breakPoint();
-    await _class.deleteOne();
-    timer.cal("Handle deleteOne()", breakPoint02);
+    res.json({ msg: "ok" });
 
-    res.json({ msg: "deleted" });
+    await User.updateMany(
+      {
+        classes: { $in: item._id },
+      },
+      {
+        $pull: {
+          classes: item._id,
+        },
+      }
+    );
   } catch (e) {
     next(e);
   }
-
-  timer.cal("Total", breakPoint01);
-  console.groupEnd();
 };

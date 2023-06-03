@@ -6,33 +6,29 @@ import { Perm } from "../../../model/perm";
 import { PermGr } from "../../../model/perm-gr";
 import { nats } from "../../../nats";
 
-export const deletePerm: RequestHandler = async (req, res, next) => {
+export const delItem: RequestHandler = async (req, res, next) => {
   try {
-    // Tiến hành xóa, nếu không tồn tại trong db thì thông báo
-    const perm = await Perm.findByIdAndDelete(req.params.id).populate({
-      path: "group",
-      select: "-perms",
-    });
-    if (!perm) {
-      throw new BadReqErr("permission not found");
+    const item = await Perm.findByIdAndDelete(req.params.id).populate(
+      "group",
+      "-perms"
+    );
+    if (!item) {
+      throw new BadReqErr("item not found");
     }
 
-    res.json({ msg: "deleted" });
+    res.json({ msg: "ok" });
 
     await Promise.all([
-      // Sau khi xóa thành công, cập nhật property của group chứa permission
-      // đã xóa này
-      PermGr.findByIdAndUpdate(perm.group, {
+      PermGr.findByIdAndUpdate(item.group._id, {
         $pull: {
-          perms: perm._id,
+          perms: item._id,
         },
       }),
-      // Thông báo đến log service
       new LogPublisher(nats.cli).publish({
         userId: req.user?.id,
         model: Perm.modelName,
         act: Actions.delete,
-        doc: perm,
+        doc: item,
       }),
     ]);
   } catch (e) {

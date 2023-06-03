@@ -6,28 +6,38 @@ import { Perm } from "../../../../model/perm";
 import { PermGr } from "../../../../model/perm-gr";
 import { nats } from "../../../../nats";
 
-export const deleteGroup: RequestHandler = async (req, res, next) => {
+export const delItem: RequestHandler = async (req, res, next) => {
   try {
-    const group = await PermGr.findByIdAndDelete(req.params.id);
-    if (!group) {
-      throw new BadReqErr("group not found");
+    if (
+      await Perm.exists({
+        group: { $in: req.params.id },
+      })
+    ) {
+      throw new BadReqErr("found dependent");
+    }
+    const item = await PermGr.findByIdAndDelete(req.params.id);
+    if (!item) {
+      throw new BadReqErr("not found");
     }
 
-    res.json({ msg: "deleted" });
+    res.json({ msg: "ok" });
 
     await Promise.all([
-      // Xóa các permission sử dụng group này
-      Perm.deleteMany({
-        _id: {
-          $in: group.perms,
+      Perm.updateMany(
+        {
+          _id: { $in: item.perms },
         },
-      }),
-      // Thông báo đến log service
+        {
+          $unset: {
+            group: 1,
+          },
+        }
+      ),
       new LogPublisher(nats.cli).publish({
         userId: req.user?.id,
         model: PermGr.modelName,
         act: Actions.delete,
-        doc: group,
+        doc: item,
       }),
     ]);
   } catch (e) {

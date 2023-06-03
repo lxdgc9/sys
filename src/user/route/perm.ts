@@ -7,17 +7,14 @@ import {
 } from "@lxdgc9/pkg/dist/rule/manage";
 import { Router } from "express";
 import { body, param } from "express-validator";
-import { deletePerm } from "../handler/role/perm/delete";
-import { deletePerms } from "../handler/role/perm/delete-many";
-import { deleteGroup } from "../handler/role/perm/group/delete";
-import { deleteGroups } from "../handler/role/perm/group/delete-many";
-import { insertGroup } from "../handler/role/perm/group/insert";
-import { insertGroups } from "../handler/role/perm/group/insert-many";
-import { searchGroup } from "../handler/role/perm/group/search";
-import { searchGroups } from "../handler/role/perm/group/search-many";
-import { updateGroup } from "../handler/role/perm/group/update";
+import { delItem } from "../handler/role/perm/delete";
+import { delItems } from "../handler/role/perm/delete-many";
+import { insrtItem } from "../handler/role/perm/group/insert";
+import { insrtItems } from "../handler/role/perm/group/insert-many";
+import { getItem } from "../handler/role/perm/group/search";
+import { getItems } from "../handler/role/perm/group/search-many";
+import { updateItem } from "../handler/role/perm/group/update";
 import { insertPerm } from "../handler/role/perm/insert";
-import { insertPerms } from "../handler/role/perm/insert-many";
 import { searchPerm } from "../handler/role/perm/search";
 import { getPerms } from "../handler/role/perm/search-many";
 import { updatePerm } from "../handler/role/perm/update";
@@ -25,7 +22,7 @@ import { updatePerm } from "../handler/role/perm/update";
 export const r = Router();
 
 r.route("/group")
-  .get(guard(SEARCH_PERM), searchGroups)
+  .get(guard(SEARCH_PERM), getItems)
   .post(
     guard(INSERT_PERM),
     validate(
@@ -37,7 +34,7 @@ r.route("/group")
         .isLength({ min: 1, max: 255 })
         .withMessage("1 <= len <= 255")
     ),
-    insertGroup
+    insrtItem
   );
 
 r.route("/group/many")
@@ -56,7 +53,7 @@ r.route("/group/many")
         .isLength({ min: 1, max: 255 })
         .withMessage("1 <= len <= 255")
     ),
-    insertGroups
+    insrtItems
   )
   .delete(
     guard(DELETE_PERM),
@@ -68,14 +65,14 @@ r.route("/group/many")
         .withMessage("must be array, has aleast 1 element"),
       body("ids.*").isMongoId().withMessage("must be mongoId")
     ),
-    deleteGroups
+    delItems
   );
 
 r.route("/group/:id")
   .get(
     guard(SEARCH_PERM),
     validate(param("id").isMongoId().withMessage("must be mongoId")),
-    searchGroup
+    getItem
   )
   .patch(
     guard(UPDATE_PERM),
@@ -93,12 +90,12 @@ r.route("/group/:id")
         .withMessage("must be array, has aleast 1 element"),
       body("permIds.*").isMongoId().withMessage("must be mongoId")
     ),
-    updateGroup
+    updateItem
   )
   .delete(
     guard(DELETE_PERM),
     validate(param("id").isMongoId().withMessage("must be mongoId")),
-    deleteGroup
+    delItem
   );
 
 r.route("/")
@@ -151,7 +148,7 @@ r.route("/many")
         .withMessage("1 <= len <= 255"),
       body("perms.*.groupId").isMongoId().withMessage("must be mongoId")
     ),
-    insertPerms
+    insrtItems
   )
   .delete(
     guard(DELETE_PERM),
@@ -163,7 +160,7 @@ r.route("/many")
         .withMessage("must be array, has aleast 1 element"),
       body("ids.*").isMongoId().withMessage("must be mongoId")
     ),
-    deletePerms
+    delItems
   );
 
 r.route("/:id")
@@ -197,5 +194,5 @@ r.route("/:id")
   .delete(
     guard(DELETE_PERM),
     validate(param("id").isMongoId().withMessage("must be mongoId")),
-    deletePerm
+    delItem
   );

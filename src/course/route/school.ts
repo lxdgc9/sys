@@ -11,13 +11,13 @@ import {
 } from "@lxdgc9/pkg/dist/rule/course";
 import { Router } from "express";
 import { body, param } from "express-validator";
-import { deleteClass } from "../handler/school/class/delete";
-import { deleteClasses } from "../handler/school/class/delete-many";
-import { insertClass } from "../handler/school/class/insert";
-import { insertClasses } from "../handler/school/class/insert-many";
-import { searchClasses } from "../handler/school/class/seach-many";
-import { searchClass } from "../handler/school/class/search";
-import { updateClass } from "../handler/school/class/update";
+import { delItem } from "../handler/school/class/delete";
+import { delItems } from "../handler/school/class/delete-many";
+import { insrtItem } from "../handler/school/class/insert";
+import { insrtItems } from "../handler/school/class/insert-many";
+import { getItems } from "../handler/school/class/seach-many";
+import { getItem } from "../handler/school/class/search";
+import { updateItem } from "../handler/school/class/update";
 import { deleteSchool } from "../handler/school/delete";
 import { deleteSchools } from "../handler/school/delete-many";
 import { insertSchool } from "../handler/school/insert";
@@ -30,7 +30,7 @@ import { uploader } from "../helper/upload";
 export const r = Router();
 
 r.route("/classes")
-  .get(guard(SEARCH_CLASS), searchClasses)
+  .get(guard(SEARCH_CLASS), getItems)
   .post(
     guard(INSERT_CLASS),
     validate(
@@ -49,13 +49,13 @@ r.route("/classes")
       body("memberIds").isArray().withMessage("must be array"),
       body("memberIds.*").isMongoId().withMessage("must be mongoId")
     ),
-    insertClass
+    insrtItem
   )
-  .patch(guard(UPDATE_CLASS), updateClass)
+  .patch(guard(UPDATE_CLASS), updateItem)
   .delete(
     guard(DELETE_CLASS),
     validate(param("id").isMongoId().withMessage("must be mongoId")),
-    deleteClass
+    delItem
   );
 
 r.route("/classes/many")
@@ -77,7 +77,7 @@ r.route("/classes/many")
       body("classes.*.memberIds").isArray().withMessage("must be array"),
       body("classes.*.memberIds.*").isMongoId().withMessage("must be mongoId")
     ),
-    insertClasses
+    insrtItems
   )
   .delete(
     guard(DELETE_CLASS),
@@ -87,20 +87,20 @@ r.route("/classes/many")
         .withMessage("must be array, has aleast 1 element"),
       body("ids.*").isMongoId().withMessage("must be mongoId")
     ),
-    deleteClasses
+    delItems
   );
 
 r.route("/classes/:id")
   .get(
     guard(SEARCH_CLASS),
     validate(param("id").isMongoId().withMessage("must be mongoId")),
-    searchClass
+    getItem
   )
   .patch()
   .delete(
     guard(DELETE_CLASS),
     validate(param("id").isMongoId().withMessage("must be mongoId")),
-    deleteClass
+    delItem
   );
 
 r.patch("/users", guard(), allocUser);

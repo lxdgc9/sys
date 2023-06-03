@@ -7,45 +7,41 @@ import { Perm } from "../../../../model/perm";
 import { PermGr } from "../../../../model/perm-gr";
 import { nats } from "../../../../nats";
 
-export const updateGroup: RequestHandler = async (req, res, next) => {
+export const updateItem: RequestHandler = async (req, res, next) => {
   const {
     name,
-    permIds,
+    perm_ids: permIds,
   }: {
     name?: string;
-    permIds?: Types.ObjectId[];
+    perm_ids?: Types.ObjectId[];
   } = req.body;
 
   try {
-    // Thật vô nghĩa nếu req.body = {}
     if (!Object.keys(req.body).length) {
       throw new BadReqErr("body not empty");
     }
 
-    // Loại bỏ phần tử trùng
-    const permArr = Array.from(new Set(permIds));
+    const uPermIds = Array.from(new Set(permIds));
 
-    const [group, numGroups] = await Promise.all([
+    const [item, permCount] = await Promise.all([
       PermGr.findById(req.params.id),
       Perm.countDocuments({
-        _id: {
-          $in: permArr,
-        },
+        _id: { $in: uPermIds },
       }),
     ]);
-    if (!group) {
-      throw new BadReqErr("group not found");
+    if (!item) {
+      throw new BadReqErr("not found");
     }
-    if (permIds && numGroups < permArr.length) {
-      throw new BadReqErr("permIds mismatch");
+    if (permIds && permCount < uPermIds.length) {
+      throw new BadReqErr("perm mismatch");
     }
 
-    const updGroup = await PermGr.findByIdAndUpdate(
-      group._id,
+    const updItem = await PermGr.findByIdAndUpdate(
+      item._id,
       {
         $set: {
           name,
-          perms: permArr,
+          perms: uPermIds,
         },
       },
       { new: true }
@@ -54,33 +50,32 @@ export const updateGroup: RequestHandler = async (req, res, next) => {
       select: "-group",
     });
 
-    res.json({ group: updGroup });
+    res.json({ group: updItem });
 
     await Promise.all([
       permIds &&
         (await Promise.all([
           Perm.deleteMany({
-            _id: group.perms.filter((p) => !permArr.includes(p)),
+            _id: item.perms.filter((p) => !uPermIds.includes(p)),
           }),
           Perm.updateMany(
             {
               _id: {
-                $in: permArr,
+                $in: uPermIds,
               },
             },
             {
               $set: {
-                group: group._id,
+                group: item._id,
               },
             }
           ),
         ])),
-      // Thông báo đến log service
       new LogPublisher(nats.cli).publish({
         userId: req.user?.id,
         model: PermGr.modelName,
         act: Actions.update,
-        doc: group,
+        doc: item,
       }),
     ]);
   } catch (e) {

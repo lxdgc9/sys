@@ -38,7 +38,10 @@ const schema = new Schema<IUser>(
     },
   },
   {
-    timestamps: true,
+    timestamps: {
+      createdAt: "created_at",
+      updatedAt: "updated_at",
+    },
     toJSON: {
       virtuals: true,
       transform(_doc, ret, _opts) {
@@ -73,11 +76,11 @@ schema.pre("save", async function (next) {
   }
 });
 
-schema.pre("insertMany", async function (next, users) {
+schema.pre("insertMany", async function (next, docs) {
   try {
     const salt = await genSalt(10);
-    for (const u of users) {
-      u.passwd = await hash(u.passwd, salt);
+    for (const i of docs) {
+      i.passwd = await hash(i.passwd, salt);
     }
     next();
   } catch (e) {

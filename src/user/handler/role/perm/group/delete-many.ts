@@ -7,48 +7,41 @@ import { Perm } from "../../../../model/perm";
 import { PermGr } from "../../../../model/perm-gr";
 import { nats } from "../../../../nats";
 
-export const deleteGroups: RequestHandler = async (req, res, next) => {
-  const {
-    ids,
-  }: {
-    ids: Types.ObjectId[];
-  } = req.body;
+export const delItems: RequestHandler = async (req, res, next) => {
+  const ids: Types.ObjectId[] = req.body;
 
   try {
-    // Loại bỏ phần tử trùng trong ids
-    const idArr = Array.from(new Set(ids));
+    const uids = Array.from(new Set(ids));
 
-    // Kiểm tra có phần tử nào trong mảng không tồn tại trong db hay không
-    const groups = await PermGr.find({
-      _id: {
-        $in: idArr,
-      },
+    const items = await PermGr.find({
+      _id: { $in: uids },
     });
-    if (groups.length < idArr.length) {
-      throw new BadReqErr("ids mismatch");
+    if (items.length < uids.length) {
+      throw new BadReqErr("mismatch");
     }
 
     await PermGr.deleteMany({
-      _id: {
-        $in: idArr,
-      },
+      _id: { $in: uids },
     });
 
-    res.json({ msg: "deleted" });
+    res.json({ msg: "ok" });
 
     await Promise.all([
-      // Xóa các permission nếu có sử dụng group này
-      Perm.deleteMany({
-        group: {
-          $in: idArr,
+      Perm.updateMany(
+        {
+          group: { $in: uids },
         },
-      }),
-      // Thông báo đến log service
+        {
+          $pullAll: {
+            perms: uids,
+          },
+        }
+      ),
       new LogPublisher(nats.cli).publish({
         userId: req.user?.id,
-        model: PermGr.modelName,
+        model: Perm.modelName,
         act: Actions.delete,
-        doc: groups,
+        doc: items,
       }),
     ]);
   } catch (e) {

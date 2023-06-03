@@ -3,9 +3,11 @@ import { Schema, Types, model } from "mongoose";
 interface ISchool {
   code: string;
   name: string;
+
   addr?: string;
   desc?: string;
   logo?: string;
+
   classes: Types.ObjectId[];
 }
 
@@ -37,7 +39,10 @@ const schema = new Schema<ISchool>(
     ],
   },
   {
-    timestamps: true,
+    timestamps: {
+      createdAt: "created_at",
+      updatedAt: "updated_at",
+    },
     toJSON: {
       virtuals: true,
       transform(_doc, ret, _opts) {

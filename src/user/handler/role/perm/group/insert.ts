@@ -4,25 +4,18 @@ import { LogPublisher } from "../../../../event/publisher/log";
 import { PermGr } from "../../../../model/perm-gr";
 import { nats } from "../../../../nats";
 
-export const insertGroup: RequestHandler = async (req, res, next) => {
-  const {
-    name,
-  }: {
-    name: string;
-  } = req.body;
-
+export const insrtItem: RequestHandler = async (req, res, next) => {
   try {
-    const group = new PermGr({ name });
-    await group.save();
+    const newItem = new PermGr(req.body);
+    await newItem.save();
 
-    res.status(201).json({ group });
+    res.status(201).json({ group: newItem });
 
-    // Thông báo đến log service
     await new LogPublisher(nats.cli).publish({
       userId: req.user?.id,
       model: PermGr.modelName,
       act: Actions.insert,
-      doc: group,
+      doc: newItem,
     });
   } catch (e) {
     next(e);

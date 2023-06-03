@@ -10,7 +10,7 @@ export class DeleteManyUserListener extends Listener<DeleteManyUser> {
 
   async onMsg(ids: DeleteManyUser["data"], msg: Message) {
     await User.deleteMany({
-      userId: {
+      uid: {
         $in: ids,
       },
     });
