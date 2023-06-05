@@ -119,12 +119,12 @@ r.route("/many")
           minUppercase: 0,
         })
         .withMessage("password not strong enough"),
-      body("users.*.roleId")
+      body("users.*.role_id")
         .notEmpty()
         .withMessage("required")
         .isMongoId()
         .withMessage("must be mongoId"),
-      body("users.*.active")
+      body("users.*.is_active")
         .isBoolean()
         .withMessage("must be boolean")
         .optional({ values: "undefined" })
@@ -182,7 +182,7 @@ r.route("/:id")
         .isEmail()
         .withMessage("must be email")
         .trim(),
-      body("roleId")
+      body("role_id")
         .optional({ values: "undefined" })
         .isMongoId()
         .withMessage("must be mongoId")

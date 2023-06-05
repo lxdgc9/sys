@@ -1,6 +1,6 @@
 import { BadReqErr } from "@lxdgc9/pkg/dist/err";
 import { RequestHandler } from "express";
-import { Course } from "../../model/course";
+import { Course } from "../../models/course";
 
 export const delCourse: RequestHandler = async (req, res, next) => {
   try {

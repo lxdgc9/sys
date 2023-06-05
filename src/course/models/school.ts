@@ -3,11 +3,9 @@ import { Schema, Types, model } from "mongoose";
 interface ISchool {
   code: string;
   name: string;
-
   addr?: string;
   desc?: string;
   logo?: string;
-
   classes: Types.ObjectId[];
 }
 

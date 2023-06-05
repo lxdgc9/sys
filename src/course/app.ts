@@ -1,6 +1,6 @@
 import { errHandler } from "@lxdgc9/pkg/dist/middleware";
 import compress from "compression";
-import express from "express";
+import express, { json } from "express";
 import { r as school } from "./route/school";
 import { r as upload } from "./route/upload";
 import { r as user } from "./route/user";
@@ -8,8 +8,9 @@ import { r as user } from "./route/user";
 const app = express();
 
 app.use(compress());
-app.use(express.json());
+app.use(json());
 
+app.use("/api/courses/schools/classes");
 app.use("/api/courses/schools", school);
 app.use("/api/courses/users", user);
 app.use("/api/courses/uploads", upload);

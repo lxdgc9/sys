@@ -1,7 +1,7 @@
 import { Listener, Subject } from "@lxdgc9/pkg/dist/event";
 import { InsertUser } from "@lxdgc9/pkg/dist/event/user";
 import { Message } from "node-nats-streaming";
-import { User } from "../../../model/user";
+import { User } from "../../../models/user";
 import { qGroup } from "../qgroup";
 
 export class InsertUserListener extends Listener<InsertUser> {

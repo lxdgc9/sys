@@ -1,5 +1,5 @@
 import { RequestHandler } from "express";
-import { Course } from "../../model/course";
+import { Course } from "../../models/course";
 
 export const getCourses: RequestHandler = async (req, res, next) => {
   try {

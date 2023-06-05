@@ -3,7 +3,6 @@ import { Actions } from "@lxdgc9/pkg/dist/event/log";
 import { RequestHandler } from "express";
 import { Types } from "mongoose";
 import { LogPublisher } from "../../events/publisher/log";
-import { Perm } from "../../models/perm";
 import { PermGrp } from "../../models/perm-gr";
 import { nats } from "../../nats";
 
@@ -28,7 +27,7 @@ export const delItems: RequestHandler = async (req, res, next) => {
     res.json({ msg: "ok" });
 
     await new LogPublisher(nats.cli).publish({
-      model: Perm.modelName,
+      model: PermGrp.modelName,
       uid: req.user?.id,
       act: Actions.delete,
       doc: items,

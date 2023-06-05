@@ -1,7 +1,7 @@
 import { BadReqErr } from "@lxdgc9/pkg/dist/err";
 import { RequestHandler } from "express";
-import { Class } from "../../../model/class";
-import { User } from "../../../model/user";
+import { Class } from "../../../models/class";
+import { User } from "../../../models/user";
 
 export const delItem: RequestHandler = async (req, res, next) => {
   try {

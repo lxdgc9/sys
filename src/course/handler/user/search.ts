@@ -1,6 +1,6 @@
 import { NotFoundErr } from "@lxdgc9/pkg/dist/err";
 import { RequestHandler } from "express";
-import { User } from "../../model/user";
+import { User } from "../../models/user";
 
 export const getItem: RequestHandler = async (req, res, next) => {
   try {

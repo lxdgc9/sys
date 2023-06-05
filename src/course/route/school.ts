@@ -2,12 +2,12 @@ import { guard, validate } from "@lxdgc9/pkg/dist/middleware";
 import {
   DELETE_CLASS,
   DELETE_SCHOOL,
-  INSERT_CLASS,
-  INSERT_SCHOOL,
-  SEARCH_CLASS,
-  SEARCH_SCHOOL,
+  READ_CLASS,
+  READ_SCHOOL,
   UPDATE_CLASS,
   UPDATE_SCHOOL,
+  WRITE_CLASS,
+  WRITE_SCHOOL,
 } from "@lxdgc9/pkg/dist/rule/course";
 import { Router } from "express";
 import { body, param } from "express-validator";
@@ -25,14 +25,14 @@ import { getSchool } from "../handler/school/search";
 import { searchSchools } from "../handler/school/search-many";
 import { updateSchool } from "../handler/school/update";
 import { allocUser } from "../handler/school/user/alloc";
-import { uploader } from "../helper/upload";
+import { uploader } from "../helpers/upload";
 
 export const r = Router();
 
 r.route("/classes")
-  .get(guard(SEARCH_CLASS), getItems)
+  .get(guard(READ_CLASS), getItems)
   .post(
-    guard(INSERT_CLASS),
+    guard(WRITE_CLASS),
     validate(
       body("name")
         .notEmpty()
@@ -60,7 +60,7 @@ r.route("/classes")
 
 r.route("/classes/many")
   .post(
-    guard(INSERT_CLASS),
+    guard(WRITE_CLASS),
     validate(
       body("classes")
         .notEmpty()
@@ -92,7 +92,7 @@ r.route("/classes/many")
 
 r.route("/classes/:id")
   .get(
-    guard(SEARCH_CLASS),
+    guard(READ_CLASS),
     validate(param("id").isMongoId().withMessage("must be mongoId")),
     getItem
   )
@@ -106,9 +106,9 @@ r.route("/classes/:id")
 r.patch("/users", guard(), allocUser);
 
 r.route("/")
-  .get(guard(SEARCH_SCHOOL), searchSchools)
+  .get(guard(READ_SCHOOL), searchSchools)
   .post(
-    guard(INSERT_SCHOOL),
+    guard(WRITE_SCHOOL),
     uploader("school/logo").single("logo"),
     validate(
       body("code")
@@ -156,7 +156,7 @@ r.delete(
 
 r.route("/:id")
   .get(
-    guard(SEARCH_SCHOOL),
+    guard(READ_SCHOOL),
     validate(param("id").isMongoId().withMessage("must be mongoId")),
     getSchool
   )

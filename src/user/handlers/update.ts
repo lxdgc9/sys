@@ -72,17 +72,19 @@ export const updateItem: RequestHandler = async (req, res, next) => {
       throw new BadReqErr("role not found");
     }
 
-    await item.updateOne({
-      $set: {
-        attrs: Object.entries(prof || {}).map(([k, v]) => ({
-          k,
-          v,
-        })),
-        role: roleId,
+    const updItem = await User.findByIdAndUpdate(
+      item._id,
+      {
+        $set: {
+          attrs: Object.entries(prof || {}).map(([k, v]) => ({
+            k,
+            v,
+          })),
+          role: roleId,
+        },
       },
-    });
-
-    const updItem = await User.findById(item._id).populate({
+      { new: true }
+    ).populate({
       path: "role",
       populate: {
         path: "perms",

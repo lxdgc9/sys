@@ -1,9 +1,9 @@
 import { BadReqErr } from "@lxdgc9/pkg/dist/err";
 import { RequestHandler } from "express";
 import { Types } from "mongoose";
-import { Class } from "../../../model/class";
-import { School } from "../../../model/school";
-import { User } from "../../../model/user";
+import { Class } from "../../../models/class";
+import { School } from "../../../models/school";
+import { User } from "../../../models/user";
 
 export const delItems: RequestHandler = async (req, res, next) => {
   const ids: Types.ObjectId[] = req.body;

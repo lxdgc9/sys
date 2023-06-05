@@ -1,7 +1,7 @@
 import { BadReqErr } from "@lxdgc9/pkg/dist/err";
 import { RequestHandler } from "express";
 import { rmSync } from "fs";
-import { School } from "../../model/school";
+import { School } from "../../models/school";
 
 export const deleteSchool: RequestHandler = async (req, res, next) => {
   try {

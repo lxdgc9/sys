@@ -33,7 +33,7 @@ export const updateItem: RequestHandler = async (req, res, next) => {
       throw new BadReqErr("item not found");
     }
     if (permIds && permCount < _permIds.length) {
-      throw new BadReqErr("perm_ids mismatch");
+      throw new BadReqErr("permission mismatch");
     }
 
     await item.updateOne({
@@ -58,9 +58,7 @@ export const updateItem: RequestHandler = async (req, res, next) => {
           }),
           Perm.updateMany(
             {
-              _id: {
-                $in: _permIds,
-              },
+              _id: { $in: _permIds },
             },
             {
               $set: {
@@ -73,7 +71,10 @@ export const updateItem: RequestHandler = async (req, res, next) => {
         model: PermGrp.modelName,
         uid: req.user?.id,
         act: Actions.update,
-        doc: item,
+        doc: await PermGrp.populate(item, {
+          path: "perms",
+          select: "-perm_grp",
+        }),
       }),
     ]);
   } catch (e) {

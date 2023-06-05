@@ -1,6 +1,6 @@
 import { RequestHandler } from "express";
 import { Types } from "mongoose";
-import { Course } from "../../model/course";
+import { Course } from "../../models/course";
 
 export const newCourse: RequestHandler = async (req, res, next) => {
   const { userId }: { userId: Types.ObjectId } = req.body;
