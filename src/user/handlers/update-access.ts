@@ -7,7 +7,7 @@ import { User } from "../models/user";
 import { nats } from "../nats";
 
 export const changeAccess: RequestHandler = async (req, res, next) => {
-  const status: boolean = req.body;
+  const { status }: { status: boolean } = req.body;
 
   try {
     const item = await User.findByIdAndUpdate(req.params.id, {
@@ -24,12 +24,6 @@ export const changeAccess: RequestHandler = async (req, res, next) => {
     if (!item) {
       throw new BadReqErr("item not found");
     }
-
-    await item.updateOne({
-      $set: {
-        active: status,
-      },
-    });
 
     const updItem = await User.findById(item._id).populate({
       path: "role",

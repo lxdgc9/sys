@@ -10,11 +10,11 @@ export class LogListener extends Listener<Log> {
   qGroup = qGroup;
 
   async onMsg(data: Log["data"], msg: Message) {
-    const { userId, model: _model, act, doc } = data;
+    const { uid, model: _model, act, doc } = data;
 
     const Model = model(_model, schema);
     const newDoc = new Model({
-      actor: userId,
+      actor: uid,
       act,
       doc,
     });

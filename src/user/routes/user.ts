@@ -14,7 +14,7 @@ import { login } from "../handlers/login";
 import { readItem } from "../handlers/read";
 import { readItems } from "../handlers/read-many";
 import { refreshToken } from "../handlers/refresh-token";
-import { updateUser } from "../handlers/update";
+import { updateItem } from "../handlers/update";
 import { changeAccess } from "../handlers/update-access";
 import { writeItem } from "../handlers/write";
 import { writeItems } from "../handlers/write-many";
@@ -61,12 +61,12 @@ r.route("/")
           minUppercase: 0,
         })
         .withMessage("password not strong enough"),
-      body("roleId")
+      body("role_id")
         .notEmpty()
         .withMessage("required")
         .isMongoId()
         .withMessage("must be mongoId"),
-      body("active")
+      body("is_active")
         .isBoolean()
         .withMessage("must be boolean")
         .optional({ values: "undefined" })
@@ -187,7 +187,7 @@ r.route("/:id")
         .isMongoId()
         .withMessage("must be mongoId")
     ),
-    updateUser
+    updateItem
   )
   .delete(
     guard(DELETE_USER),
@@ -202,7 +202,7 @@ r.post(
       .notEmpty()
       .withMessage("required")
       .isIn(["username", "phone", "email"])
-      .withMessage("invalid field, must be username, phone, email"),
+      .withMessage("invalid field, must be username, phone or email"),
     body("v").notEmpty().withMessage("required"),
     body("passwd").notEmpty().withMessage("required")
   ),

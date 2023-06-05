@@ -31,7 +31,7 @@ export const login: RequestHandler = async (req, res, next) => {
       path: "role",
       populate: {
         path: "perms",
-        select: "-group",
+        select: "-perm_grp",
       },
     });
     if (!user) {
@@ -46,7 +46,7 @@ export const login: RequestHandler = async (req, res, next) => {
       {
         id: user._id,
         perms: user.role.perms.map((p) => p.code),
-        active: user.active,
+        is_active: user.active,
       },
       process.env.ACCESS_TOKEN_SECRET!,
       {

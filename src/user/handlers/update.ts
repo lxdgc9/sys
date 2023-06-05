@@ -8,44 +8,34 @@ import { Role } from "../models/role";
 import { User } from "../models/user";
 import { nats } from "../nats";
 
-export const updateUser: RequestHandler = async (req, res, next) => {
+export const updateItem: RequestHandler = async (req, res, next) => {
   const {
     prof,
-    roleId,
+    role_id: roleId,
   }: {
     prof?: object & {
       username: string;
       phone: string;
       email: string;
     };
-    roleId?: Types.ObjectId;
+    role_id?: Types.ObjectId;
   } = req.body;
 
   try {
-    // Thật vô nghĩa nếu req.body = {}
     if (!Object.keys(req.body).length) {
       throw new BadReqErr("body not empty");
     }
 
-    // Kiểm tra người dùng này có tồn tại trong db hay không
-    const user = await User.findById(req.params.id).populate({
-      path: "role",
-      populate: {
-        path: "perms",
-        select: "-group",
-      },
-    });
-    if (!user) {
-      throw new BadReqErr("user not found");
+    const item = await User.findById(req.params.id);
+    if (!item) {
+      throw new BadReqErr("item not found");
     }
 
-    // Kiêm tra duplicate username, phone, email và có tồn tại role
-    // trong db hay không
-    const [isDupl, exRole] = await Promise.all([
+    const [dupl, exstRole] = await Promise.all([
       User.exists({
         $or: [
           {
-            _id: { $ne: user._id },
+            _id: { $ne: item._id },
             attrs: {
               $elemMatch: {
                 k: "username",
@@ -54,7 +44,7 @@ export const updateUser: RequestHandler = async (req, res, next) => {
             },
           },
           {
-            _id: { $ne: user._id },
+            _id: { $ne: item._id },
             attrs: {
               $elemMatch: {
                 k: "phone",
@@ -63,7 +53,7 @@ export const updateUser: RequestHandler = async (req, res, next) => {
             },
           },
           {
-            _id: { $ne: user._id },
+            _id: { $ne: item._id },
             attrs: {
               $elemMatch: {
                 k: "email",
@@ -75,45 +65,46 @@ export const updateUser: RequestHandler = async (req, res, next) => {
       }),
       Role.exists({ _id: roleId }),
     ]);
-    if (prof && isDupl) {
+    if (prof && dupl) {
       throw new ConflictErr("duplicate username, phone or email");
     }
-    if (roleId && !exRole) {
+    if (roleId && !exstRole) {
       throw new BadReqErr("role not found");
     }
 
-    // Tiến hành cập nhật và trả về client
-    const updUser = await User.findByIdAndUpdate(
-      user._id,
-      {
-        $set: {
-          attrs: Object.entries(prof || {}).map(([k, v]) => ({
-            k,
-            v,
-          })),
-          role: roleId,
-        },
-      },
-      { new: true }
-    ).populate({
-      path: "role",
-      populate: {
-        path: "perms",
-        select: "-group",
+    await item.updateOne({
+      $set: {
+        attrs: Object.entries(prof || {}).map(([k, v]) => ({
+          k,
+          v,
+        })),
+        role: roleId,
       },
     });
 
-    res.json({ user: updUser });
+    const updItem = await User.findById(item._id).populate({
+      path: "role",
+      populate: {
+        path: "perms",
+        select: "-perm_grp",
+      },
+    });
+
+    res.json({ user: updItem });
 
     await Promise.all([
-      // Thông báo đến các service khác
-      new UpdateUserPublisher(nats.cli).publish(updUser!),
-      // Thông báo đến log service
+      new UpdateUserPublisher(nats.cli).publish(updItem!),
       new LogPublisher(nats.cli).publish({
         model: User.modelName,
         uid: req.user?.id,
         act: Actions.update,
-        doc: user,
+        doc: await User.populate(item, {
+          path: "role",
+          populate: {
+            path: "perms",
+            select: "-perm_grp",
+          },
+        }),
       }),
     ]);
   } catch (e) {
