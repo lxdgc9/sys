@@ -1,0 +1,45 @@
+import { BadReqErr } from "@lxdgc9/pkg/dist/err";
+import { Actions } from "@lxdgc9/pkg/dist/event/log";
+import { RequestHandler } from "express";
+import { Types } from "mongoose";
+import { LogPublisher } from "../events/publisher/log";
+import { DeleteManyUserPublisher } from "../events/publisher/user/delete-many";
+import { User } from "../models/user";
+import { nats } from "../nats";
+
+export const delItems: RequestHandler = async (req, res, next) => {
+  const ids: Types.ObjectId[] = Array.from(new Set(req.body));
+
+  try {
+    const items = await User.find({
+      _id: { $in: ids },
+    });
+    if (items.length < ids.length) {
+      throw new BadReqErr("items mismatch");
+    }
+
+    await User.deleteMany({
+      _id: { $in: ids },
+    });
+
+    res.json({ msg: "ok" });
+
+    await Promise.all([
+      new DeleteManyUserPublisher(nats.cli).publish(ids),
+      new LogPublisher(nats.cli).publish({
+        model: User.modelName,
+        uid: req.user?.id,
+        act: Actions.delete,
+        doc: await User.populate(items, {
+          path: "role",
+          populate: {
+            path: "perms",
+            select: "-group",
+          },
+        }),
+      }),
+    ]);
+  } catch (e) {
+    next(e);
+  }
+};

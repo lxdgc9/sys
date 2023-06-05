@@ -1,15 +1,17 @@
 import { errHandler } from "@lxdgc9/pkg/dist/middleware";
 import compress from "compression";
-import express from "express";
-import { r as perm } from "./route/perm";
-import { r as role } from "./route/role";
-import { r as user } from "./route/user";
+import express, { json } from "express";
+import { r as perm } from "./routes/perm";
+import { r as permGrp } from "./routes/perm-grp";
+import { r as role } from "./routes/role";
+import { r as user } from "./routes/user";
 
 const app = express();
 
 app.use(compress());
-app.use(express.json());
+app.use(json());
 
+app.use("/api/users/roles/perms/grps/", permGrp);
 app.use("/api/users/roles/perms", perm);
 app.use("/api/users/roles", role);
 app.use("/api/users", user);

@@ -27,10 +27,10 @@
     "@jridgewell/resolve-uri" "^3.0.3"
     "@jridgewell/sourcemap-codec" "^1.4.10"
 
-"@lxdgc9/pkg@^1.0.5":
-  version "1.0.5"
-  resolved "https://npm.pkg.github.com/download/@lxdgc9/pkg/1.0.5/8180b2ecc8aefd46bfe782c14dbff486f3bb8a8a#8180b2ecc8aefd46bfe782c14dbff486f3bb8a8a"
-  integrity sha512-Z/x8m5rzkncJ9UC5cMWSvE5plVwPQy2zXkkRJDqK6wNqsJ3OXk8F3hNuZS7ktrxK4tv3dboGE6hboAMOTZgYnA==
+"@lxdgc9/pkg@^1.0.6":
+  version "1.0.6"
+  resolved "https://npm.pkg.github.com/download/@lxdgc9/pkg/1.0.6/25deac53fe1e191524e445909ce9ed4c52468a57#25deac53fe1e191524e445909ce9ed4c52468a57"
+  integrity sha512-wCbMrHFGKu1cY8DqpHbwqye6GsDGTAG6TMMjloH6/BerwF4LSwXlpx5MhoAeTMEZdrOH+GPmu+hdaI4R9ZATdg==
   dependencies:
     express "^4.18.2"
     express-validator "^7.0.1"
@@ -789,9 +789,9 @@ mongoose@^7.0.5:
     sift "16.0.1"
 
 mongoose@^7.1.0:
-  version "7.2.1"
-  resolved "https://registry.yarnpkg.com/mongoose/-/mongoose-7.2.1.tgz#654ffebbcecceed6c4dd085e562e66e584fcc2f2"
-  integrity sha512-c2OOl+ch9NlmPeJw7UjSb2jHNjoOw1XXHyzwygIf4z1GmaBx1OYb8OYqHkYPivvEmfY/vUWZFCgePsDqZgFn2w==
+  version "7.2.2"
+  resolved "https://registry.yarnpkg.com/mongoose/-/mongoose-7.2.2.tgz#5e4c9b87f20b0ef74382706da810bad292fa0f03"
+  integrity sha512-JPBMTF+oYfLGVFWbHSZ/H+f1GajNanGLYH6c/P0nE3bNJfwGhX573vieGR0kNlNhj3cZk8WCPrnVsTNeUmFUag==
   dependencies:
     bson "^5.3.0"
     kareem "2.5.1"

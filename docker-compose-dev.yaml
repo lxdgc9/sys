@@ -28,14 +28,6 @@ services:
       - user
       - course
       - log
-  db:
-    image: mongo
-    ports:
-      - 27017:27017
-    volumes:
-      - ./db:/data/db:rw
-    networks:
-      - bridge
   nats:
     image: nats-streaming:alpine
     command:
@@ -79,7 +71,7 @@ services:
       - .env
     environment:
       - NODE_ENV=dev
-      - MONGO_URI=mongodb://db:27017/user
+      - MONGO_URI=${MONGO_URI_USER_SRV}
       - NATS_URL=http://nats:4222
       - NATS_CLIENT_ID=nats-cli_user
       - NATS_CLUSTER_ID=nats_clus
@@ -89,7 +81,6 @@ services:
     networks:
       - bridge
     depends_on:
-      - db
       - nats
       - redis
   course:
@@ -106,7 +97,7 @@ services:
       - .env
     environment:
       - NODE_ENV=dev
-      - MONGO_URI=mongodb://db:27017/course
+      - MONGO_URI=${MONGO_URI_COURSE_SRV}
       - NATS_URL=http://nats:4222
       - NATS_CLIENT_ID=nats-cli_course
       - NATS_CLUSTER_ID=nats_clus
@@ -115,7 +106,6 @@ services:
     networks:
       - bridge
     depends_on:
-      - db
       - nats
   log:
     image: sys/log
@@ -131,7 +121,7 @@ services:
       - .env
     environment:
       - NODE_ENV=dev
-      - MONGO_URI=mongodb://db:27017/log
+      - MONGO_URI=${MONGO_URI_LOG_SRV}
       - NATS_URL=http://nats:4222
       - NATS_CLIENT_ID=nats-cli_log
       - NATS_CLUSTER_ID=nats_clus
@@ -140,7 +130,6 @@ services:
     networks:
       - bridge
     depends_on:
-      - db
       - nats
 
 secrets:

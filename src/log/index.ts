@@ -1,11 +1,11 @@
 import { connect } from "mongoose";
 import { app } from "./app";
-import { LogListener } from "./event/listener/log";
-import { DeleteUserListener } from "./event/listener/user/delete";
-import { DeleteManyUserListener } from "./event/listener/user/delete-many";
-import { InsertUserListener } from "./event/listener/user/insert";
-import { InsertManyUserListener } from "./event/listener/user/insert-many";
-import { UpdateUserListener } from "./event/listener/user/update";
+import { LogListener } from "./events/listener/log";
+import { DeleteUserListener } from "./events/listener/user/delete";
+import { DeleteManyUserListener } from "./events/listener/user/delete-many";
+import { InsertUserListener } from "./events/listener/user/insert";
+import { InsertManyUserListener } from "./events/listener/user/insert-many";
+import { UpdateUserListener } from "./events/listener/user/update";
 import { nats } from "./nats";
 
 (async () => {
