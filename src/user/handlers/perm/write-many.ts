@@ -8,54 +8,54 @@ import { PermGrp } from "../../models/perm-gr";
 import { nats } from "../../nats";
 
 export const writeItems: RequestHandler = async (req, res, next) => {
-  const items: {
+  const data: {
     code: string;
     desc: string;
     grp_id: Types.ObjectId;
   }[] = req.body;
 
   try {
-    const [_code, _grpId] = items
+    const [codes, grpIds] = data
       .reduce(
-        (a, { code, grp_id: grpId }) => {
+        (a, { code, grp_id }) => {
           a[0].add(code);
-          a[1].add(grpId);
+          a[1].add(grp_id);
 
           return a;
         },
         [new Set(), new Set()]
       )
-      .map((set) => Array.from(set));
+      .map((s) => Array.from(s));
 
-    if (_code.length < items.length) {
+    if (codes.length < data.length) {
       throw new BadReqErr("duplicate code");
     }
 
     const [dupl, grpCount] = await Promise.all([
       Perm.exists({
-        code: { $in: _code },
+        code: { $in: codes },
       }),
       PermGrp.countDocuments({
-        _id: { $in: _grpId },
+        _id: { $in: grpIds },
       }),
     ]);
     if (dupl) {
       throw new BadReqErr("duplicate code");
     }
-    if (grpCount < _grpId.length) {
+    if (grpCount < grpIds.length) {
       throw new BadReqErr("group mismatch");
     }
 
-    const newItems = await Perm.insertMany(
-      items.map(({ code, desc, grp_id: grpId }) => ({
+    const nItems = await Perm.insertMany(
+      data.map(({ code, desc, grp_id }) => ({
         code,
         desc,
-        perm_grp: grpId,
+        perm_grp: grp_id,
       }))
     );
 
     res.status(201).json({
-      perm: await Perm.populate(newItems, {
+      item: await Perm.populate(nItems, {
         path: "perm_grp",
         select: "-perms",
       }),
@@ -63,9 +63,9 @@ export const writeItems: RequestHandler = async (req, res, next) => {
 
     await Promise.all([
       Array.from(
-        newItems
-          .reduce((map, { _id, perm_grp: permGrp }) => {
-            const grpStr = permGrp._id.toString();
+        nItems
+          .reduce((map, { _id, perm_grp }) => {
+            const grpStr = perm_grp._id.toString();
             if (!map.has(grpStr)) {
               map.set(grpStr, []);
             }
@@ -86,7 +86,7 @@ export const writeItems: RequestHandler = async (req, res, next) => {
         model: Perm.modelName,
         uid: req.user?.id,
         act: Actions.insert,
-        doc: newItems,
+        doc: nItems,
       }),
     ]);
   } catch (e) {

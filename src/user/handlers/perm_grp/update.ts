@@ -8,38 +8,35 @@ import { PermGrp } from "../../models/perm-gr";
 import { nats } from "../../nats";
 
 export const updateItem: RequestHandler = async (req, res, next) => {
-  const {
-    name,
-    perm_ids: permIds,
-  }: {
+  const data: {
     name?: string;
     perm_ids?: Types.ObjectId[];
   } = req.body;
 
   try {
-    if (!Object.keys(req.body).length) {
-      throw new BadReqErr("body not empty");
+    if (!Object.keys(data).length) {
+      throw new BadReqErr("data not empty");
     }
 
-    const _permIds = Array.from(new Set(permIds));
+    const pids = Array.from(new Set(data.perm_ids));
 
     const [item, permCount] = await Promise.all([
       PermGrp.findById(req.params.id),
       Perm.countDocuments({
-        _id: { $in: _permIds },
+        _id: { $in: pids },
       }),
     ]);
     if (!item) {
       throw new BadReqErr("item not found");
     }
-    if (permIds && permCount < _permIds.length) {
+    if (data.perm_ids && permCount < pids.length) {
       throw new BadReqErr("permission mismatch");
     }
 
     await item.updateOne({
       $set: {
-        name,
-        perms: _permIds,
+        name: data.name,
+        perms: pids,
       },
     });
 
@@ -51,14 +48,14 @@ export const updateItem: RequestHandler = async (req, res, next) => {
     });
 
     await Promise.all([
-      permIds &&
+      data.perm_ids &&
         (await Promise.all([
           Perm.deleteMany({
-            _id: item.perms.filter((p) => !_permIds.includes(p)),
+            _id: item.perms.filter((p) => !pids.includes(p)),
           }),
           Perm.updateMany(
             {
-              _id: { $in: _permIds },
+              _id: { $in: pids },
             },
             {
               $set: {

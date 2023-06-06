@@ -8,11 +8,7 @@ import { PermGrp } from "../../models/perm-gr";
 import { nats } from "../../nats";
 
 export const updateItem: RequestHandler = async (req, res, next) => {
-  const {
-    code,
-    desc,
-    grp_id: grpId,
-  }: {
+  const data: {
     code?: string;
     desc?: string;
     grp_id?: Types.ObjectId;
@@ -29,26 +25,25 @@ export const updateItem: RequestHandler = async (req, res, next) => {
         _id: {
           $ne: req.params.id,
         },
-        code,
+        code: data.code,
       }),
-      PermGrp.exists({ _id: grpId }),
+      PermGrp.exists({ _id: data.grp_id }),
     ]);
     if (!item) {
       throw new BadReqErr("item not found");
     }
-    if (code && dupl) {
+    if (data.code && dupl) {
       throw new ConflictErr("duplicate code");
     }
-    if (grpId && !exstGrp) {
+    if (data.grp_id && !exstGrp) {
       throw new BadReqErr("group not found");
     }
 
-    console.log(grpId);
     await item.updateOne({
       $set: {
-        code,
-        desc,
-        perm_grp: grpId,
+        code: data.code,
+        desc: data.desc,
+        perm_grp: data.grp_id,
       },
     });
 
@@ -60,10 +55,10 @@ export const updateItem: RequestHandler = async (req, res, next) => {
     res.json({ perm: updItem });
 
     await Promise.all([
-      grpId &&
-        !item.perm_grp.equals(grpId) &&
+      data.grp_id &&
+        !item.perm_grp.equals(data.grp_id) &&
         (await Promise.all([
-          PermGrp.findByIdAndUpdate(grpId, {
+          PermGrp.findByIdAndUpdate(data.grp_id, {
             $addToSet: {
               perms: item._id,
             },

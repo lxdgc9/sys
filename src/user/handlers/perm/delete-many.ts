@@ -21,7 +21,7 @@ export const delItems: RequestHandler = async (req, res, next) => {
       }),
     ]);
     if (items.length < ids.length) {
-      throw new BadReqErr("item mismatch");
+      throw new BadReqErr("items mismatch");
     }
     if (depend) {
       throw new BadReqErr("found dependent");

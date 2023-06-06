@@ -4,15 +4,15 @@ import { PermGrp } from "../../models/perm-gr";
 
 export const readItem: RequestHandler = async (req, res, next) => {
   try {
-    const group = await PermGrp.findById(req.params.id).populate({
+    const item = await PermGrp.findById(req.params.id).populate({
       path: "perms",
       select: "-perm_grp",
     });
-    if (!group) {
+    if (!item) {
       throw new NotFoundErr("item not found");
     }
 
-    res.json({ group });
+    res.json({ item });
   } catch (e) {
     next(e);
   }

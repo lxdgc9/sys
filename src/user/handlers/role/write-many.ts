@@ -8,32 +8,32 @@ import { Role } from "../../models/role";
 import { nats } from "../../nats";
 
 export const writeItems: RequestHandler = async (req, res, next) => {
-  const items: {
+  const data: {
     name: string;
     level: number;
     perm_ids: Types.ObjectId[];
   }[] = req.body;
 
-  const permIds = Array.from(new Set(items.map((el) => el.perm_ids).flat()));
+  const pids = Array.from(new Set(data.map((el) => el.perm_ids).flat()));
 
   try {
     const permCount = await Perm.countDocuments({
-      _id: { $in: permIds },
+      _id: { $in: pids },
     });
-    if (permCount < permIds.length) {
-      throw new BadReqErr("permission mismatch");
+    if (permCount < pids.length) {
+      throw new BadReqErr("perm_ids mismatch");
     }
 
-    const newItems = await Role.insertMany(
-      items.map(({ name, level, perm_ids: permIds }) => ({
+    const nItems = await Role.insertMany(
+      data.map(({ name, level, perm_ids }) => ({
         name,
         level,
-        perms: Array.from(new Set(permIds)),
+        perms: Array.from(new Set(perm_ids)),
       }))
     );
 
     res.status(201).json({
-      roles: await Role.populate(newItems, {
+      items: await Role.populate(nItems, {
         path: "perms",
         select: "-perm_grp",
       }),
@@ -43,7 +43,7 @@ export const writeItems: RequestHandler = async (req, res, next) => {
       model: Role.modelName,
       uid: req.user?.id,
       act: Actions.insert,
-      doc: newItems,
+      doc: nItems,
     });
   } catch (e) {
     next(e);

@@ -1,15 +1,15 @@
 import { BadReqErr } from "@lxdgc9/pkg/dist/err";
 import { RequestHandler } from "express";
 import { Types } from "mongoose";
-import { Class } from "../../../models/class";
-import { School } from "../../../models/school";
-import { User } from "../../../models/user";
+import { Class } from "../../models/class";
+import { School } from "../../models/school";
+import { User } from "../../models/user";
 
-export const insrtItem: RequestHandler = async (req, res, next) => {
+export const writeItem: RequestHandler = async (req, res, next) => {
   const {
     name,
-    school_id: schId,
-    member_ids: memIds,
+    school_id,
+    member_ids,
   }: {
     name: string;
     school_id: Types.ObjectId;
@@ -17,30 +17,30 @@ export const insrtItem: RequestHandler = async (req, res, next) => {
   } = req.body;
 
   try {
-    const uMemIds = Array.from(new Set(memIds));
+    const uMemIds = Array.from(new Set(member_ids));
 
-    const [exstSch, memCount] = await Promise.all([
-      School.exists({ _id: schId }),
+    const [school, userCount] = await Promise.all([
+      School.findById(school_id),
       User.countDocuments({
         _id: { $in: uMemIds },
       }),
     ]);
-    if (!exstSch) {
+    if (!school) {
       throw new BadReqErr("school not found");
     }
-    if (memCount < uMemIds.length) {
-      throw new BadReqErr("member mismatch");
+    if (userCount < uMemIds.length) {
+      throw new BadReqErr("members mismatch");
     }
 
-    const newItem = new Class({
+    const nItem = new Class({
       name,
-      school: schId,
+      school: school_id,
       members: uMemIds,
     });
-    await newItem.save();
+    await nItem.save();
 
     res.status(201).json({
-      class: await Class.populate(newItem, [
+      class: await Class.populate(nItem, [
         {
           path: "school",
           select: "-classes",
@@ -53,9 +53,9 @@ export const insrtItem: RequestHandler = async (req, res, next) => {
     });
 
     await Promise.all([
-      School.findByIdAndUpdate(newItem.school._id, {
+      school.updateOne({
         $addToSet: {
-          classes: newItem._id,
+          classes: nItem._id,
         },
       }),
       User.updateMany(
@@ -64,7 +64,7 @@ export const insrtItem: RequestHandler = async (req, res, next) => {
         },
         {
           $addToSet: {
-            classes: newItem._id,
+            classes: nItem._id,
           },
         }
       ),

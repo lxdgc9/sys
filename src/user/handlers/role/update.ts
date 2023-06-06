@@ -8,51 +8,47 @@ import { Role } from "../../models/role";
 import { nats } from "../../nats";
 
 export const updateItem: RequestHandler = async (req, res, next) => {
-  const {
-    name,
-    level,
-    perm_ids: permIds,
-  }: {
+  const data: {
     name?: string;
     level?: number;
     perm_ids?: Types.ObjectId[];
   } = req.body;
 
   try {
-    if (!Object.keys(req.body).length) {
+    if (!Object.keys(data).length) {
       throw new BadReqErr("body not empty");
     }
 
-    const _permIds = Array.from(new Set(permIds));
+    const pids = Array.from(new Set(data.perm_ids));
 
     const [item, permCount] = await Promise.all([
       Role.findById(req.params.id),
       Perm.countDocuments({
-        _id: { $in: _permIds },
+        _id: { $in: pids },
       }),
     ]);
     if (!item) {
       throw new BadReqErr("item not found");
     }
-    if (permIds && permCount < _permIds.length) {
+    if (data.perm_ids && permCount < pids.length) {
       throw new BadReqErr("permission mismatch");
     }
 
     await item.updateOne({
-      $set: permIds
+      $set: data.perm_ids
         ? {
-            name,
-            level,
-            perms: _permIds,
+            name: data.name,
+            level: data.level,
+            perms: pids,
           }
         : {
-            name,
-            level,
+            name: data.name,
+            level: data.level,
           },
     });
 
     res.json({
-      role: await Role.findById(req.params.id).populate({
+      item: await Role.findById(req.params.id).populate({
         path: "perms",
         select: "-perm_grp",
       }),

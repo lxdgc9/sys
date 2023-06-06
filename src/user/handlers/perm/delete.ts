@@ -27,7 +27,7 @@ export const delItem: RequestHandler = async (req, res, next) => {
     res.json({ msg: "ok" });
 
     await Promise.all([
-      PermGrp.findByIdAndUpdate(item.perm_grp._id, {
+      PermGrp.findByIdAndUpdate(item.perm_grp, {
         $pull: {
           perms: item._id,
         },

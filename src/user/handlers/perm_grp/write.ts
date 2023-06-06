@@ -6,16 +6,16 @@ import { nats } from "../../nats";
 
 export const writeItem: RequestHandler = async (req, res, next) => {
   try {
-    const newItem = new PermGrp(req.body);
-    await newItem.save();
+    const nItem = new PermGrp(req.body);
+    await nItem.save();
 
-    res.status(201).json({ group: newItem });
+    res.status(201).json({ item: nItem });
 
     await new LogPublisher(nats.cli).publish({
       model: PermGrp.modelName,
       uid: req.user?.id,
       act: Actions.insert,
-      doc: newItem,
+      doc: nItem,
     });
   } catch (e) {
     next(e);

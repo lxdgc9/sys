@@ -3,9 +3,7 @@ import { Schema, Types, model } from "mongoose";
 interface ISchool {
   code: string;
   name: string;
-  addr?: string;
-  desc?: string;
-  logo?: string;
+  addr: string;
   classes: Types.ObjectId[];
 }
 
@@ -22,12 +20,7 @@ const schema = new Schema<ISchool>(
     },
     addr: {
       type: String,
-    },
-    desc: {
-      type: String,
-    },
-    logo: {
-      type: String,
+      required: true,
     },
     classes: [
       {

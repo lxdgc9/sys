@@ -8,53 +8,45 @@ import { PermGrp } from "../../models/perm-gr";
 import { nats } from "../../nats";
 
 export const writeItem: RequestHandler = async (req, res, next) => {
-  const {
-    code,
-    desc,
-    grp_id: grpId,
-  }: {
+  const data: {
     code: string;
     desc: string;
     grp_id: Types.ObjectId;
   } = req.body;
 
   try {
-    const [isDupl, item] = await Promise.all([
-      Perm.exists({ code }),
-      PermGrp.findById(grpId),
+    const [dupl, grp] = await Promise.all([
+      Perm.exists({ code: data.code }),
+      PermGrp.findById(data.grp_id),
     ]);
-    if (isDupl) {
+    if (dupl) {
       throw new ConflictErr("duplicate code");
     }
-    if (!item) {
+    if (!grp) {
       throw new BadReqErr("group not found");
     }
 
-    const newItem = new Perm({
-      code,
-      desc,
-      perm_grp: grpId,
-    });
-    await newItem.save();
+    const nItem = new Perm(data);
+    await nItem.save();
 
     res.status(201).send({
-      perm: await Perm.populate(newItem, {
+      item: await Perm.populate(nItem, {
         path: "perm_grp",
         select: "-perms",
       }),
     });
 
     await Promise.all([
-      item.updateOne({
+      grp.updateOne({
         $addToSet: {
-          perms: newItem._id,
+          perms: nItem._id,
         },
       }),
       new LogPublisher(nats.cli).publish({
         model: Perm.modelName,
         uid: req.user?.id,
         act: Actions.insert,
-        doc: newItem,
+        doc: nItem,
       }),
     ]);
   } catch (e) {
