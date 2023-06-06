@@ -10,7 +10,7 @@ export class InsertUserListener extends Listener<InsertUser> {
 
   async onMsg(data: InsertUser["data"], msg: Message) {
     const newUser = new User({
-      userId: data.id,
+      uid: data.id,
       obj: data,
     });
     newUser.save();

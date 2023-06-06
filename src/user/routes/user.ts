@@ -78,18 +78,18 @@ r.route("/many")
   .post(
     guard(WRITE_USER),
     validate(
-      body("users")
+      body()
         .notEmpty()
         .withMessage("required")
         .isArray({ min: 1 })
         .withMessage("must be array, has aleast 1 element"),
-      body("users.*").isObject().withMessage("must be object"),
-      body("users.*.prof")
+      body("*").isObject().withMessage("must be object"),
+      body("*.prof")
         .notEmpty()
         .withMessage("required")
         .isObject()
         .withMessage("must be object"),
-      body("users.*.prof.username")
+      body("*.prof.username")
         .notEmpty()
         .withMessage("required")
         .isString()
@@ -98,18 +98,18 @@ r.route("/many")
         .withMessage("1 <= len <= 255")
         .trim()
         .toLowerCase(),
-      body("users.*.prof.phone")
+      body("*.prof.phone")
         .notEmpty()
         .withMessage("required")
         .isMobilePhone("vi-VN")
         .withMessage("invalid phone number"),
-      body("users.*.prof.email")
+      body("*.prof.email")
         .notEmpty()
         .withMessage("required")
         .isEmail()
         .withMessage("must be email")
         .trim(),
-      body("users.*.passwd")
+      body("*.passwd")
         .notEmpty()
         .withMessage("required")
         .isStrongPassword({
@@ -119,7 +119,7 @@ r.route("/many")
           minUppercase: 0,
         })
         .withMessage("password not strong enough"),
-      body("users.*.role_id")
+      body("*.role_id")
         .notEmpty()
         .withMessage("required")
         .isMongoId()
@@ -134,12 +134,12 @@ r.route("/many")
   .delete(
     guard(DELETE_USER),
     validate(
-      body("ids")
+      body()
         .notEmpty()
         .withMessage("required")
         .isArray({ min: 1 })
         .withMessage("must be array, has aleast 1 element"),
-      body("ids.*").isMongoId().withMessage("must be mongoId")
+      body("*").isMongoId().withMessage("must be mongoId")
     ),
     delItems
   );

@@ -1,8 +1,8 @@
 import { validate } from "@lxdgc9/pkg/dist/middleware";
 import { Router } from "express";
 import { param } from "express-validator";
-import { getItem } from "../handler/user/search";
-import { getItems } from "../handler/user/search-many";
+import { getItem } from "../handlers/user/search";
+import { getItems } from "../handlers/user/search-many";
 
 export const r = Router();
 

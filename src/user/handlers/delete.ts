@@ -25,7 +25,7 @@ export const delItem: RequestHandler = async (req, res, next) => {
           path: "role",
           populate: {
             path: "perms",
-            select: "-group",
+            select: "-perm_grp",
           },
         }),
       }),

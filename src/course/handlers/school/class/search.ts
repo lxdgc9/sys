@@ -15,7 +15,7 @@ export const getItem: RequestHandler = async (req, res, next) => {
       },
     ]);
     if (!item) {
-      throw new NotFoundErr("class not found");
+      throw new NotFoundErr("item not found");
     }
 
     res.json({ class: item });

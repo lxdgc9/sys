@@ -11,7 +11,7 @@ export class InsertManyUserListener extends Listener<InsertManyUser> {
   async onMsg(data: InsertManyUser["data"], msg: Message) {
     await User.insertMany(
       data.map((u) => ({
-        userId: u.id,
+        uid: u.id,
         obj: u,
       }))
     );

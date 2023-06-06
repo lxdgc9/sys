@@ -29,7 +29,7 @@ export const insrtItem: RequestHandler = async (req, res, next) => {
       throw new BadReqErr("school not found");
     }
     if (memCount < uMemIds.length) {
-      throw new BadReqErr("members mismatch");
+      throw new BadReqErr("member mismatch");
     }
 
     const newItem = new Class({

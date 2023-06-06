@@ -6,10 +6,10 @@ import {
   WRITE_COURSE,
 } from "@lxdgc9/pkg/dist/rule/course";
 import { Router } from "express";
-import { delCourse } from "../handler/course/del";
-import { getCourse } from "../handler/course/get";
-import { getCourses } from "../handler/course/get-s";
-import { newCourse } from "../handler/course/new";
+import { delCourse } from "../handlers/course/del";
+import { getCourse } from "../handlers/course/get";
+import { getCourses } from "../handlers/course/get-s";
+import { newCourse } from "../handlers/course/new";
 
 export const r = Router();
 

@@ -35,9 +35,9 @@ export const writeItems: RequestHandler = async (req, res, next) => {
       )
       .map((set) => Array.from(set));
     if (
-      usrnames.length < usrnames.length ||
-      phones.length < phones.length ||
-      emails.length < emails.length
+      usrnames.length < items.length ||
+      phones.length < items.length ||
+      emails.length < items.length
     ) {
       throw new ConflictErr("duplicate fields");
     }

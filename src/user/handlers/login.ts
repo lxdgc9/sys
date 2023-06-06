@@ -46,7 +46,7 @@ export const login: RequestHandler = async (req, res, next) => {
       {
         id: user._id,
         perms: user.role.perms.map((p) => p.code),
-        is_active: user.active,
+        is_active: user.is_active,
       },
       process.env.ACCESS_TOKEN_SECRET!,
       {

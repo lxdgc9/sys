@@ -10,8 +10,8 @@ export enum Actions {
 export interface Log {
   subject: Subject.LOG;
   data: {
-    uid?: Types.ObjectId;
     model: string;
+    uid?: Types.ObjectId;
     act: Actions;
     doc: any;
   };

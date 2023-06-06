@@ -6,7 +6,7 @@ import { ForbiddenErr, UnauthorizedErr } from "../err";
 export interface JwtPayload {
   id: Types.ObjectId;
   perms: string[];
-  active: boolean;
+  is_active: boolean;
 }
 
 declare global {
@@ -30,7 +30,7 @@ export function guard(...perms: string[]) {
     try {
       req.user = verify(token, process.env.ACCESS_TOKEN_SECRET!) as JwtPayload;
 
-      if (!req.user.active) {
+      if (!req.user.is_active) {
         throw new ForbiddenErr("access denied");
       }
 

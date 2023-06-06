@@ -15,7 +15,7 @@ export const delItems: RequestHandler = async (req, res, next) => {
       _id: { $in: ids },
     });
     if (items.length < ids.length) {
-      throw new BadReqErr("items mismatch");
+      throw new BadReqErr("item mismatch");
     }
 
     await User.deleteMany({
@@ -34,7 +34,7 @@ export const delItems: RequestHandler = async (req, res, next) => {
           path: "role",
           populate: {
             path: "perms",
-            select: "-group",
+            select: "-perm_grp",
           },
         }),
       }),

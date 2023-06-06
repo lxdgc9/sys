@@ -8,7 +8,7 @@ interface IUser {
   }[];
   passwd: string;
   role: Types.ObjectId;
-  active: boolean;
+  is_active: boolean;
 }
 
 const schema = new Schema<IUser>(
@@ -32,7 +32,7 @@ const schema = new Schema<IUser>(
       ref: "role",
       required: true,
     },
-    active: {
+    is_active: {
       type: Boolean,
       default: true,
     },

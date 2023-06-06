@@ -12,7 +12,7 @@ export const changeAccess: RequestHandler = async (req, res, next) => {
   try {
     const item = await User.findByIdAndUpdate(req.params.id, {
       $set: {
-        active: status,
+        is_active: status,
       },
     }).populate({
       path: "role",
