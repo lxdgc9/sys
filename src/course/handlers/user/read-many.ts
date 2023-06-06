@@ -1,10 +1,10 @@
 import { RequestHandler } from "express";
 import { User } from "../../models/user";
 
-export const getItems: RequestHandler = async (req, res, next) => {
+export const readItems: RequestHandler = async (_req, res, next) => {
   try {
     res.json({
-      users: await User.find({}, "obj"),
+      items: await User.find(),
     });
   } catch (e) {
     next(e);

@@ -18,9 +18,7 @@ export const delItems: RequestHandler = async (req, res, next) => {
     }
 
     await School.deleteMany({
-      _id: {
-        $in: ids,
-      },
+      _id: { $in: ids },
     });
 
     res.json({ msg: "ok" });

@@ -1,7 +1,7 @@
 import { guard } from "@lxdgc9/pkg/dist/middleware";
 import { Router } from "express";
-import { getFile } from "../handlers/upload/get";
+import { readFile } from "../handlers/upload/read";
 
 export const r = Router();
 
-r.get("/*", guard(), getFile);
+r.get("/*", guard(), readFile);

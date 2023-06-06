@@ -3,12 +3,7 @@ import { RequestHandler } from "express";
 import { School } from "../../models/school";
 
 export const updateItem: RequestHandler = async (req, res, next) => {
-  const {
-    code,
-    name,
-    addr,
-    desc,
-  }: {
+  const data: {
     code?: string;
     name?: string;
     addr?: string;
@@ -16,7 +11,7 @@ export const updateItem: RequestHandler = async (req, res, next) => {
   } = req.body;
 
   try {
-    if (!Object.keys(req.body)) {
+    if (!Object.keys(data)) {
       throw new BadReqErr("body not empty");
     }
 
@@ -26,13 +21,13 @@ export const updateItem: RequestHandler = async (req, res, next) => {
         _id: {
           $ne: req.params.id,
         },
-        code,
+        code: data.code,
       }),
     ]);
     if (!school) {
       throw new BadReqErr("school not found");
     }
-    if (code && isDupl) {
+    if (data.code && isDupl) {
       throw new ConflictErr("duplicate code");
     }
 
@@ -40,10 +35,10 @@ export const updateItem: RequestHandler = async (req, res, next) => {
       school._id,
       {
         $set: {
-          code,
-          name,
-          addr,
-          desc,
+          code: data.code,
+          name: data.name,
+          addr: data.addr,
+          desc: data.desc,
           logo: req.file && `/api/courses/${req.file?.path}`,
         },
       },

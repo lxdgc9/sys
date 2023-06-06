@@ -6,7 +6,7 @@ import {
   WRITE_COURSE,
 } from "@lxdgc9/pkg/dist/rule/course";
 import { Router } from "express";
-import { delCourse } from "../handlers/course/del";
+import { delItem } from "../handlers/course/delete";
 import { getCourse } from "../handlers/course/get";
 import { getCourses } from "../handlers/course/get-s";
 import { newCourse } from "../handlers/course/new";
@@ -19,4 +19,4 @@ r.route("/")
 r.route("/:id")
   .get(guard(READ_COURSE), getCourse)
   .patch(guard(UPDATE_COURSE))
-  .delete(guard(DELETE_COURSE), delCourse);
+  .delete(guard(DELETE_COURSE), delItem);

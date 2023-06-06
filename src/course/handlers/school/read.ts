@@ -18,7 +18,7 @@ export const readItem: RequestHandler = async (req, res, next) => {
       throw new NotFoundErr("item not found");
     }
 
-    res.json({ item });
+    res.json(item);
   } catch (e) {
     next(e);
   }

@@ -14,16 +14,12 @@ export const writeItems: RequestHandler = async (req, res, next) => {
   try {
     if (
       codes.length < items.length ||
-      (await School.exists({
-        code: { $in: codes },
-      }))
+      (await School.exists({ code: { $in: codes } }))
     ) {
       throw new ConflictErr("duplicate code");
     }
 
-    res.status(201).json({
-      items: await School.insertMany(items),
-    });
+    res.status(201).json(await School.insertMany(items));
   } catch (e) {
     next(e);
   }

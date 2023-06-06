@@ -3,15 +3,15 @@ import { RequestHandler } from "express";
 import { createReadStream, existsSync } from "fs";
 import { join } from "path";
 
-export const getFile: RequestHandler = (req, res, next) => {
-  const file = join("uploads", req.params[0]);
+export const readFile: RequestHandler = (req, res, next) => {
+  const dest = join("uploads", req.params[0]);
 
   try {
-    if (!existsSync(file)) {
+    if (!existsSync(dest)) {
       throw new NotFoundErr("file not found");
     }
 
-    const stream = createReadStream(file);
+    const stream = createReadStream(dest);
     stream.pipe(res);
   } catch (e) {
     next(e);

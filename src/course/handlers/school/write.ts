@@ -1,24 +1,40 @@
 import { ConflictErr } from "@lxdgc9/pkg/dist/err";
 import { RequestHandler } from "express";
+import { rmSync } from "fs";
 import { School } from "../../models/school";
 
 export const writeItem: RequestHandler = async (req, res, next) => {
-  const item: {
+  const {
+    code,
+    name,
+    addr,
+    desc,
+  }: {
     code: string;
     name: string;
-    addr: string;
+    addr?: string;
+    desc?: string;
   } = req.body;
 
   try {
-    if (await School.exists({ code: item.code })) {
+    if (await School.exists({ code })) {
       throw new ConflictErr("duplicate code");
     }
 
-    const nItem = new School(item);
+    const nItem = new School({
+      code,
+      name,
+      addr,
+      desc,
+      logo: req.file && `/api/courses/${req.file.path}`,
+    });
     await nItem.save();
 
-    res.status(201).json({ item: nItem });
+    res.status(201).json(nItem);
   } catch (e) {
     next(e);
+    if (req.file) {
+      rmSync(req.file.path);
+    }
   }
 };

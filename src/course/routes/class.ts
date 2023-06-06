@@ -13,7 +13,7 @@ import { readItems } from "../handlers/class/read-many";
 import { updateItem } from "../handlers/class/update";
 import { writeItem } from "../handlers/class/write";
 import { writeItems } from "../handlers/class/write-many";
-import { getItem } from "../handlers/user/search";
+import { readItem } from "../handlers/user/read";
 
 export const r = Router();
 
@@ -86,7 +86,7 @@ r.route("/:id")
   .get(
     guard(READ_CLASS),
     validate(param("id").isMongoId().withMessage("must be mongoId")),
-    getItem
+    readItem
   )
   .patch()
   .delete(

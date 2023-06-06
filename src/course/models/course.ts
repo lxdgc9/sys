@@ -22,6 +22,10 @@ const schema = new Schema<ICourse>(
     },
   },
   {
+    timestamps: {
+      createdAt: "created_at",
+      updatedAt: "updated_at",
+    },
     toJSON: {
       virtuals: true,
       transform(_doc, ret, _opts) {

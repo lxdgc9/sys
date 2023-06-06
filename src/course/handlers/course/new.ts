@@ -4,6 +4,7 @@ import { Course } from "../../models/course";
 
 export const newCourse: RequestHandler = async (req, res, next) => {
   const { userId }: { userId: Types.ObjectId } = req.body;
+
   try {
     const newCourse = new Course({
       user: userId,
