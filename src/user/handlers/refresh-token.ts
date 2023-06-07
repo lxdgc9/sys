@@ -6,14 +6,16 @@ import { User } from "../models/user";
 import { redis } from "../redis";
 
 export const refreshToken: RequestHandler = async (req, res, next) => {
+  const { token }: { token: string } = req.body;
+
   try {
     const { id } = verify(
-      req.body,
+      token,
       process.env.REFRESH_TOKEN_SECRET!
     ) as JwtPayload;
 
     const storedTk = await redis.get(`rf-tkn.${id}`);
-    if (storedTk !== req.body) {
+    if (storedTk !== token) {
       throw new UnauthorizedErr("require login, can't refresh token");
     }
 
@@ -38,7 +40,7 @@ export const refreshToken: RequestHandler = async (req, res, next) => {
       {
         id: user._id,
         perms: user.role.perms.map((p) => p.code),
-        active: user.is_active,
+        is_active: user.is_active,
       },
       process.env.ACCESS_TOKEN_SECRET!,
       {

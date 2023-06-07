@@ -29,6 +29,7 @@ export function guard(...perms: string[]) {
 
     try {
       req.user = verify(token, process.env.ACCESS_TOKEN_SECRET!) as JwtPayload;
+      console.log(req.user);
 
       if (!req.user.is_active) {
         throw new ForbiddenErr("access denied");

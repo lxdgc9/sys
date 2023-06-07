@@ -92,10 +92,10 @@ r.route("/many")
   .delete(
     guard(DELETE_SCHOOL),
     validate(
-      body("ids")
+      body()
         .isArray({ min: 1 })
         .withMessage("must be array, has aleast 1 element"),
-      body("ids.*").isMongoId().withMessage("must be mongoId")
+      body("*").isMongoId().withMessage("must be mongoId")
     ),
     delItems
   );

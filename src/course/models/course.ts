@@ -1,14 +1,23 @@
 import { Schema, Types, model } from "mongoose";
 
 interface ICourse {
-  user: Types.ObjectId;
+  title: string;
+  author: Types.ObjectId;
   content: string;
-  desc?: string;
+  lessons: Types.ObjectId[];
+  classes: Types.ObjectId[];
+  is_publish: boolean;
+  comments: Types.ObjectId[];
+  ratings: Types.ObjectId[];
 }
 
 const schema = new Schema<ICourse>(
   {
-    user: {
+    title: {
+      type: String,
+      required: true,
+    },
+    author: {
       type: Schema.Types.ObjectId,
       ref: "user",
       required: true,
@@ -17,9 +26,28 @@ const schema = new Schema<ICourse>(
       type: String,
       required: true,
     },
-    desc: {
-      type: String,
+    is_publish: {
+      type: Boolean,
+      default: false,
     },
+    classes: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "class",
+      },
+    ],
+    comments: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "comment",
+      },
+    ],
+    ratings: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "rating",
+      },
+    ],
   },
   {
     timestamps: {

@@ -2,7 +2,9 @@ import { BadReqErr } from "@lxdgc9/pkg/dist/err";
 import { RequestHandler } from "express";
 import { Course } from "../../models/course";
 
-export const modCourse: RequestHandler = async (req, res, next) => {
+export const updateCourse: RequestHandler = async (req, res, next) => {
+  const items: {} = req.body;
+
   try {
     const course = await Course.findById(req.params.id);
     if (!course) {

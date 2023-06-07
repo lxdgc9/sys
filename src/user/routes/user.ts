@@ -11,8 +11,8 @@ import { changePasswd } from "../handlers/change-passwd";
 import { delItem } from "../handlers/delete";
 import { delItems } from "../handlers/delete-many";
 import { login } from "../handlers/login";
-import { readItem } from "../handlers/read";
-import { readItems } from "../handlers/read-many";
+import { readUser } from "../handlers/read";
+import { readUsers } from "../handlers/read-many";
 import { refreshToken } from "../handlers/refresh-token";
 import { updateItem } from "../handlers/update";
 import { changeAccess } from "../handlers/update-access";
@@ -22,7 +22,7 @@ import { writeItems } from "../handlers/write-many";
 export const r = Router();
 
 r.route("/")
-  .get(guard(READ_USER), readItems)
+  .get(guard(READ_USER), readUsers)
   .post(
     guard(WRITE_USER),
     validate(
@@ -148,7 +148,7 @@ r.route("/:id")
   .get(
     guard(READ_USER),
     validate(param("id").isMongoId().withMessage("must be mongoId")),
-    readItem
+    readUser
   )
   .patch(
     guard(UPDATE_USER),

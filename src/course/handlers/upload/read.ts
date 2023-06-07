@@ -11,8 +11,7 @@ export const readFile: RequestHandler = (req, res, next) => {
       throw new NotFoundErr("file not found");
     }
 
-    const stream = createReadStream(dest);
-    stream.pipe(res);
+    createReadStream(dest).pipe(res);
   } catch (e) {
     next(e);
   }

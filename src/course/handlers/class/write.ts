@@ -5,7 +5,11 @@ import { Class } from "../../models/class";
 import { School } from "../../models/school";
 import { User } from "../../models/user";
 
-export const writeItem: RequestHandler = async (req, res, next) => {
+export const writeItem: RequestHandler = async (
+  req,
+  res,
+  next
+) => {
   const {
     name,
     school_id,
@@ -29,7 +33,7 @@ export const writeItem: RequestHandler = async (req, res, next) => {
       throw new BadReqErr("school not found");
     }
     if (userCount < uMemIds.length) {
-      throw new BadReqErr("members mismatch");
+      throw new BadReqErr("member_ids mismatch");
     }
 
     const nItem = new Class({
@@ -39,8 +43,8 @@ export const writeItem: RequestHandler = async (req, res, next) => {
     });
     await nItem.save();
 
-    res.status(201).json({
-      class: await Class.populate(nItem, [
+    res.status(201).json(
+      await Class.populate(nItem, [
         {
           path: "school",
           select: "-classes",
@@ -49,8 +53,8 @@ export const writeItem: RequestHandler = async (req, res, next) => {
           path: "members",
           select: "obj",
         },
-      ]),
-    });
+      ])
+    );
 
     await Promise.all([
       school.updateOne({

@@ -2,8 +2,12 @@ import { Schema, Types, model } from "mongoose";
 
 interface IUser {
   uid: Types.ObjectId;
-  obj: any;
+  payload: any;
   classes: Types.ObjectId[];
+  courses: {
+    course_id: Types.ObjectId;
+    process: number;
+  }[];
 }
 
 const schema = new Schema<IUser>(
@@ -13,7 +17,7 @@ const schema = new Schema<IUser>(
       required: true,
       unique: true,
     },
-    obj: {
+    payload: {
       type: Schema.Types.Mixed,
       required: true,
     },
@@ -21,6 +25,18 @@ const schema = new Schema<IUser>(
       {
         type: Schema.Types.ObjectId,
         ref: "user",
+      },
+    ],
+    courses: [
+      {
+        course_id: {
+          type: Schema.Types.ObjectId,
+          ref: "course",
+        },
+        process: {
+          type: Number,
+          min: 0,
+        },
       },
     ],
   },

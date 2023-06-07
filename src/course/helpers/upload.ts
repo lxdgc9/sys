@@ -27,7 +27,8 @@ export const uploader = (path: string = "/") => {
         file.originalname = Buffer.from(file.originalname, "latin1").toString(
           "utf8"
         );
-        cb(null, `${Date.now()}-${file.originalname}`);
+
+        cb(null, `${Date.now()}.${file.mimetype.split("/")[1]}`);
       },
     }),
     limits: {

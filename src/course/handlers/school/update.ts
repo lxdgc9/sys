@@ -15,7 +15,7 @@ export const updateItem: RequestHandler = async (req, res, next) => {
       throw new BadReqErr("body not empty");
     }
 
-    const [school, isDupl] = await Promise.all([
+    const [school, dupl] = await Promise.all([
       School.findById(req.params.id),
       School.exists({
         _id: {
@@ -27,7 +27,7 @@ export const updateItem: RequestHandler = async (req, res, next) => {
     if (!school) {
       throw new BadReqErr("school not found");
     }
-    if (data.code && isDupl) {
+    if (data.code && dupl) {
       throw new ConflictErr("duplicate code");
     }
 
