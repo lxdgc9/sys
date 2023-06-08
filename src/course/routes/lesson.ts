@@ -1,7 +1,9 @@
 import { guard, validate } from "@lxdgc9/pkg/dist/middleware";
 import { READ_USER } from "@lxdgc9/pkg/dist/rule/manage";
 import { Router } from "express";
-import { writeItem as createLesson } from "../handlers/lesson/write";
+import { deleteLesson } from "../handlers/lesson/delete";
+import { delManyLesson } from "../handlers/lesson/delete-many";
+import { createLesson } from "../handlers/lesson/write";
 import { uploader } from "../helpers/upload";
 
 export const r = Router();
@@ -15,6 +17,8 @@ r.route("/")
   )
   .get(guard(READ_USER), validate());
 
+r.route("/many").delete(guard(), validate(), delManyLesson);
+
 r.route("/:id")
-  .get(guard(READ_USER), validate())
-  .post(guard(READ_USER), validate());
+  .get(guard(), validate())
+  .delete(guard(), validate(), deleteLesson);

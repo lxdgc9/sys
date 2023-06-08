@@ -2,7 +2,7 @@ import { ConflictErr } from "@lxdgc9/pkg/dist/err";
 import { RequestHandler } from "express";
 import { School } from "../../models/school";
 
-export const writeItems: RequestHandler = async (req, res, next) => {
+export const createSchools: RequestHandler = async (req, res, next) => {
   const items: {
     code: string;
     name: string;
@@ -19,7 +19,9 @@ export const writeItems: RequestHandler = async (req, res, next) => {
       throw new ConflictErr("duplicate code");
     }
 
-    res.status(201).json(await School.insertMany(items));
+    const schools = await School.insertMany(items);
+
+    res.status(201).json(schools);
   } catch (e) {
     next(e);
   }

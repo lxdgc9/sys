@@ -1,20 +1,25 @@
 import { BadReqErr } from "@lxdgc9/pkg/dist/err";
 import { RequestHandler } from "express";
 import { School } from "../../models/school";
+import { rmSync } from "fs";
 
-export const delItem: RequestHandler = async (req, res, next) => {
+export const delSchool: RequestHandler = async (req, res, next) => {
   try {
-    const item = await School.findById(req.params.id);
-    if (!item) {
-      throw new BadReqErr("item not found");
+    const school = await School.findById(req.params.id);
+    if (!school) {
+      throw new BadReqErr("school not found");
     }
-    if (item.classes.length) {
+    if (school.classes.length) {
       throw new BadReqErr("found dependent");
     }
 
-    await item.deleteOne();
+    await school.deleteOne();
 
-    res.json({ msg: "ok" });
+    if (school.logo) {
+      rmSync(school.logo.replace("/api/courses/", ""));
+    }
+
+    res.sendStatus(204);
   } catch (e) {
     next(e);
   }

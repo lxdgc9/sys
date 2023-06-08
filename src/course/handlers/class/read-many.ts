@@ -1,7 +1,7 @@
 import { RequestHandler } from "express";
 import { Class } from "../../models/class";
 
-export const readItems: RequestHandler = async (_req, res, next) => {
+export const getClasses: RequestHandler = async (_req, res, next) => {
   try {
     res.json(
       await Class.find({}, "-members").populate({

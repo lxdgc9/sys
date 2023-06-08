@@ -49,12 +49,12 @@ export const writeItems: RequestHandler = async (req, res, next) => {
       }))
     );
 
-    res.status(201).json({
-      classes: await Class.populate(nItems, {
+    res.status(201).json(
+      await Class.populate(nItems, {
         path: "school",
         select: "-classes",
-      }),
-    });
+      })
+    );
 
     const [arr2dSchool, arr2dMember] = nItems
       .reduce(

@@ -4,7 +4,7 @@ import { Types } from "mongoose";
 import { Class } from "../../models/class";
 import { Course } from "../../models/course";
 
-export const writeItem: RequestHandler = async (req, res, next) => {
+export const createCourse: RequestHandler = async (req, res, next) => {
   const {
     title,
     content,
@@ -27,16 +27,16 @@ export const writeItem: RequestHandler = async (req, res, next) => {
       throw new BadReqErr("class_ids mismatch");
     }
 
-    const newItem = new Course({
+    const newCourse = new Course({
       title,
       content,
       author: req.user?.id,
       is_publish,
       classes: cids,
     });
-    await newItem.save();
+    await newCourse.save();
 
-    res.status(201).json(newItem);
+    res.status(201).json(newCourse);
   } catch (e) {
     next(e);
   }

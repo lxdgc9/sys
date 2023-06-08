@@ -9,16 +9,16 @@ import { Router } from "express";
 import { body, param } from "express-validator";
 import { delItem } from "../handlers/class/delete";
 import { delItems } from "../handlers/class/delete-many";
-import { readItems } from "../handlers/class/read-many";
+import { getClasses } from "../handlers/class/read-many";
 import { updateItem } from "../handlers/class/update";
-import { writeItem } from "../handlers/class/write";
+import { createClass } from "../handlers/class/write";
 import { writeItems } from "../handlers/class/write-many";
-import { readItem } from "../handlers/user/read";
+import { getUser } from "../handlers/user/read";
 
 export const r = Router();
 
 r.route("/")
-  .get(guard(READ_CLASS), readItems)
+  .get(guard(READ_CLASS), getClasses)
   .post(
     guard(WRITE_CLASS),
     validate(
@@ -37,7 +37,7 @@ r.route("/")
       body("member_ids").isArray().withMessage("must be array"),
       body("member_ids.*").isMongoId().withMessage("must be mongoId")
     ),
-    writeItem
+    createClass
   )
   .patch(guard(UPDATE_CLASS), updateItem)
   .delete(
@@ -86,7 +86,7 @@ r.route("/:id")
   .get(
     guard(READ_CLASS),
     validate(param("id").isMongoId().withMessage("must be mongoId")),
-    readItem
+    getUser
   )
   .patch()
   .delete(

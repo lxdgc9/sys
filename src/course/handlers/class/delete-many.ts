@@ -22,7 +22,7 @@ export const delItems: RequestHandler = async (req, res, next) => {
       _id: { $in: ids },
     });
 
-    res.json({ msg: "ok" });
+    res.sendStatus(204);
 
     await School.updateMany(
       {

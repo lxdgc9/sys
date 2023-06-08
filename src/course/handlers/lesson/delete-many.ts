@@ -1,16 +1,17 @@
 import { BadReqErr } from "@lxdgc9/pkg/dist/err";
 import { RequestHandler } from "express";
+import { rmSync } from "fs";
 import { Course } from "../../models/course";
 import { Lesson } from "../../models/lesson";
 
-export const delItems: RequestHandler = async (req, res, next) => {
+export const delManyLesson: RequestHandler = async (req, res, next) => {
   const ids = Array.from(new Set(req.body));
 
   try {
-    const items = await Lesson.find({
+    const lessons = await Lesson.find({
       _id: { $in: ids },
     });
-    if (items.length < ids.length) {
+    if (lessons.length < ids.length) {
       throw new BadReqErr("ids mismatch");
     }
 
@@ -18,7 +19,13 @@ export const delItems: RequestHandler = async (req, res, next) => {
       _id: { $in: ids },
     });
 
-    res.json({ msg: "ok" });
+    res.sendStatus(204);
+
+    lessons.forEach((el) => {
+      el.files.forEach((el) => {
+        rmSync(el.path.replace("/api/courses", ""));
+      });
+    });
 
     await Course.updateMany(
       {

@@ -1,22 +1,27 @@
 import { BadReqErr } from "@lxdgc9/pkg/dist/err";
 import { RequestHandler } from "express";
+import { rmSync } from "fs";
 import { Course } from "../../models/course";
 import { Lesson } from "../../models/lesson";
 
-export const deleteItem: RequestHandler = async (req, res, next) => {
+export const deleteLesson: RequestHandler = async (req, res, next) => {
   try {
-    const item = await Lesson.findById(req.params.id);
-    if (!item) {
-      throw new BadReqErr("item not found");
+    const lesson = await Lesson.findById(req.params.id);
+    if (!lesson) {
+      throw new BadReqErr("lesson not found");
     }
 
-    await item.deleteOne();
+    await lesson.deleteOne();
 
-    res.json({ msg: "ok" });
+    res.sendStatus(204);
 
-    await Course.findByIdAndUpdate(item.course_id, {
+    lesson.files.forEach((el) => {
+      rmSync(el.path.replace("/api/courses", ""));
+    });
+
+    await Course.findByIdAndUpdate(lesson.course_id, {
       $pull: {
-        lessons: item._id,
+        lessons: lesson._id,
       },
     });
   } catch (e) {

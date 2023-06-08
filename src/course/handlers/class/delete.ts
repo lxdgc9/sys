@@ -15,7 +15,7 @@ export const delItem: RequestHandler = async (req, res, next) => {
 
     await item.deleteOne();
 
-    res.json({ msg: "ok" });
+    res.sendStatus(204);
 
     await School.findByIdAndUpdate(item.school, {
       $pull: {

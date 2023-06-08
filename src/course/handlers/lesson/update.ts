@@ -1,15 +1,24 @@
 import { BadReqErr } from "@lxdgc9/pkg/dist/err";
 import { RequestHandler } from "express";
+import { Types } from "mongoose";
+import { Course } from "../../models/course";
 import { Lesson } from "../../models/lesson";
 
 export const updateItem: RequestHandler = async (req, res, next) => {
-  const item: {
+  const {
+    course_id,
+    title,
+    content,
+  }: {
+    course_id: Types.ObjectId;
     title: string;
     content: string;
   } = req.body;
 
   if (req.files) {
+    console.log(req.files);
   } else {
+    console.log("no files");
   }
 
   try {
@@ -17,12 +26,38 @@ export const updateItem: RequestHandler = async (req, res, next) => {
       throw new BadReqErr("body not empty");
     }
 
-    const item = await Lesson.findById(req.params.id);
-    if (!item) {
-      throw new BadReqErr("item not found");
+    const course = await Course.findById(course_id);
+    if (!course) {
+      throw new BadReqErr("couse not found");
     }
 
-    res.json({});
+    const lesson = await Lesson.findById(req.params.id);
+    if (!lesson) {
+      throw new BadReqErr("lesson not found");
+    }
+
+    await lesson.updateOne({
+      $set: {
+        course_id,
+        title,
+        content,
+      },
+    });
+
+    await Promise.all([
+      Course.findByIdAndUpdate(lesson.course_id, {
+        $pull: {
+          lessons: lesson._id,
+        },
+      }),
+      course.updateOne({
+        $addToSet: {
+          lessons: lesson._id,
+        },
+      }),
+    ]);
+
+    res.json(await Lesson.findById(lesson._id));
   } catch (e) {
     next(e);
   }

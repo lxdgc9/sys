@@ -41,12 +41,12 @@ import { redis } from "./redis";
     process.on("SIGINT", () => nats.cli.close());
     process.on("SIGTERM", () => nats.cli.close());
 
-    connect(process.env.MONGO_URI).then(() =>
-      console.log("Connected to MongoDb")
-    );
+    connect(process.env.MONGO_URI);
+    console.log("Connected to MongoDb");
 
     await redis.connect();
-    await redis.ping().then(() => console.log("Connected to Redis"));
+    await redis.ping();
+    console.log("Connected to Redis");
   } catch (e) {
     console.log(e);
   }

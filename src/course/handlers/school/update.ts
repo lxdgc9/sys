@@ -2,7 +2,7 @@ import { BadReqErr, ConflictErr } from "@lxdgc9/pkg/dist/err";
 import { RequestHandler } from "express";
 import { School } from "../../models/school";
 
-export const updateItem: RequestHandler = async (req, res, next) => {
+export const updateSchool: RequestHandler = async (req, res, next) => {
   const data: {
     code?: string;
     name?: string;
@@ -48,7 +48,7 @@ export const updateItem: RequestHandler = async (req, res, next) => {
       select: "-school",
     });
 
-    res.json({ school: updItem });
+    res.json(updItem);
   } catch (e) {
     next(e);
   }

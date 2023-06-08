@@ -8,7 +8,7 @@ export const getCourse: RequestHandler = async (req, res, next) => {
     if (!course) {
       throw new BadReqErr("course not found");
     }
-    res.json({ course });
+    res.json(course);
   } catch (e) {
     next(e);
   }

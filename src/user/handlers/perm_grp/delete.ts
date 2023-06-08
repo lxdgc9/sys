@@ -5,25 +5,25 @@ import { LogPublisher } from "../../events/publisher/log";
 import { PermGrp } from "../../models/perm-gr";
 import { nats } from "../../nats";
 
-export const delItem: RequestHandler = async (req, res, next) => {
+export const delPermGrp: RequestHandler = async (req, res, next) => {
   try {
-    const item = await PermGrp.findById(req.params.id);
-    if (!item) {
-      throw new BadReqErr("item not found");
+    const permGrp = await PermGrp.findById(req.params.id);
+    if (!permGrp) {
+      throw new BadReqErr("perm group not found");
     }
-    if (item.perms.length) {
+    if (permGrp.perms.length) {
       throw new BadReqErr("found dependent");
     }
 
-    await item.deleteOne();
+    await permGrp.deleteOne();
 
-    res.json({ msg: "ok" });
+    res.sendStatus(204);
 
     await new LogPublisher(nats.cli).publish({
       model: PermGrp.modelName,
       uid: req.user?.id,
       act: Actions.delete,
-      doc: item,
+      doc: permGrp,
     });
   } catch (e) {
     next(e);

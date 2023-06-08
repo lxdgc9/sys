@@ -12,7 +12,7 @@ declare global {
   }
 }
 
-export const writeItem: RequestHandler = async (req, res, next) => {
+export const createLesson: RequestHandler = async (req, res, next) => {
   const {
     course_id,
     title,
@@ -33,24 +33,22 @@ export const writeItem: RequestHandler = async (req, res, next) => {
       throw new BadReqErr("course not found");
     }
 
-    const files = req.files.map((f: any) => ({
-      path: f.path,
-      mime_type: f.mimetype,
-    }));
-
-    const nLesson = new Lesson({
+    const newLesson = new Lesson({
       course_id,
       title,
       content,
-      files,
+      files: req.files.map((f: any) => ({
+        path: f.path,
+        mime_type: f.mimetype,
+      })),
     });
-    await nLesson.save();
+    await newLesson.save();
 
-    res.status(201).json(nLesson);
+    res.status(201).json(newLesson);
 
     await course.updateOne({
       $addToSet: {
-        lessons: nLesson._id,
+        lessons: newLesson._id,
       },
     });
   } catch (e) {

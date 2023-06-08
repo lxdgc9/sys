@@ -7,14 +7,14 @@ import {
 } from "@lxdgc9/pkg/dist/rule/course";
 import { Router } from "express";
 import { body, param } from "express-validator";
-import { delItem } from "../handlers/school/delete";
-import { delItems } from "../handlers/school/delete-many";
-import { readItem } from "../handlers/school/read";
-import { readItems } from "../handlers/school/read-many";
-import { updateItem } from "../handlers/school/update";
-import { allocUser } from "../handlers/school/user/alloc";
-import { writeItem } from "../handlers/school/write";
-import { writeItems } from "../handlers/school/write-many";
+import { allocUser } from "../handlers/school/alloc-user";
+import { delSchool } from "../handlers/school/delete";
+import { delSchools } from "../handlers/school/delete-many";
+import { getSchool } from "../handlers/school/read";
+import { getSchools } from "../handlers/school/read-many";
+import { updateSchool } from "../handlers/school/update";
+import { createSchool } from "../handlers/school/write";
+import { createSchools } from "../handlers/school/write-many";
 import { uploader } from "../helpers/upload";
 
 export const r = Router();
@@ -22,7 +22,7 @@ export const r = Router();
 r.patch("/users", guard(), allocUser);
 
 r.route("/")
-  .get(guard(READ_SCHOOL), readItems)
+  .get(guard(READ_SCHOOL), getSchools)
   .post(
     guard(WRITE_SCHOOL),
     uploader("school/logo").single("logo"),
@@ -54,7 +54,7 @@ r.route("/")
         .isLength({ min: 1, max: 255 })
         .withMessage("1 <= len <= 255")
     ),
-    writeItem
+    createSchool
   );
 
 r.route("/many")
@@ -87,7 +87,7 @@ r.route("/many")
         .isLength({ min: 1, max: 255 })
         .withMessage("1 <= len <= 255")
     ),
-    writeItems
+    createSchools
   )
   .delete(
     guard(DELETE_SCHOOL),
@@ -97,14 +97,14 @@ r.route("/many")
         .withMessage("must be array, has aleast 1 element"),
       body("*").isMongoId().withMessage("must be mongoId")
     ),
-    delItems
+    delSchools
   );
 
 r.route("/:id")
   .get(
     guard(READ_SCHOOL),
     validate(param("id").isMongoId().withMessage("must be mongoId")),
-    readItem
+    getSchool
   )
   .patch(
     guard(UPDATE_SCHOOL),
@@ -136,10 +136,10 @@ r.route("/:id")
         .isLength({ min: 1, max: 255 })
         .withMessage("1 <= len <= 255")
     ),
-    updateItem
+    updateSchool
   )
   .delete(
     guard(DELETE_SCHOOL),
     validate(param("id").isMongoId().withMessage("must be mongoId")),
-    delItem
+    delSchool
   );

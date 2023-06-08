@@ -1,5 +1,6 @@
 import { genSalt, hash } from "bcryptjs";
 import { Schema, Types, model } from "mongoose";
+import { promisify } from "util";
 
 interface IUser {
   attrs: {
@@ -70,7 +71,8 @@ schema.pre("save", async function (next) {
   }
 
   try {
-    this.passwd = await hash(this.passwd, await genSalt(10));
+    const salt = await genSalt(10);
+    this.passwd = await promisify(hash)(this.passwd, salt);
     next();
   } catch (e) {
     console.log(e);
@@ -80,9 +82,14 @@ schema.pre("save", async function (next) {
 schema.pre("insertMany", async function (next, docs) {
   try {
     const salt = await genSalt(10);
-    for (const user of docs) {
-      user.passwd = await hash(user.passwd, salt);
-    }
+    const hashPromises = docs.map((user: { passwd: string }) => {
+      promisify(hash)(user.passwd, salt);
+    });
+    const hashedPasswords = await Promise.all(hashPromises);
+
+    docs.forEach((user: { passwd: string }, index: number) => {
+      user.passwd = hashedPasswords[index];
+    });
     next();
   } catch (e) {
     console.log(e);

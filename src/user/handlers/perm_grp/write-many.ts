@@ -4,17 +4,19 @@ import { LogPublisher } from "../../events/publisher/log";
 import { PermGrp } from "../../models/perm-gr";
 import { nats } from "../../nats";
 
-export const writeItems: RequestHandler = async (req, res, next) => {
-  try {
-    const nItems = await PermGrp.insertMany(req.body);
+export const createManyPermGrp: RequestHandler = async (req, res, next) => {
+  const permGrps: { name: string }[] = req.body;
 
-    res.status(201).json({ items: nItems });
+  try {
+    const newPermGrps = await PermGrp.insertMany(permGrps);
+
+    res.status(201).json(newPermGrps);
 
     await new LogPublisher(nats.cli).publish({
       model: PermGrp.modelName,
       uid: req.user?.id,
       act: Actions.insert,
-      doc: nItems,
+      doc: newPermGrps,
     });
   } catch (e) {
     next(e);

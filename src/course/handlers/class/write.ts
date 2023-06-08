@@ -5,11 +5,7 @@ import { Class } from "../../models/class";
 import { School } from "../../models/school";
 import { User } from "../../models/user";
 
-export const writeItem: RequestHandler = async (
-  req,
-  res,
-  next
-) => {
+export const createClass: RequestHandler = async (req, res, next) => {
   const {
     name,
     school_id,
@@ -21,30 +17,48 @@ export const writeItem: RequestHandler = async (
   } = req.body;
 
   try {
-    const uMemIds = Array.from(new Set(member_ids));
+    const memIds = [...new Set(member_ids)];
 
     const [school, userCount] = await Promise.all([
       School.findById(school_id),
       User.countDocuments({
-        _id: { $in: uMemIds },
+        _id: { $in: memIds },
       }),
     ]);
     if (!school) {
       throw new BadReqErr("school not found");
     }
-    if (userCount < uMemIds.length) {
+    if (userCount < memIds.length) {
       throw new BadReqErr("member_ids mismatch");
     }
 
-    const nItem = new Class({
+    const newClass = new Class({
       name,
       school: school_id,
-      members: uMemIds,
+      members: memIds,
     });
-    await nItem.save();
+    await newClass.save();
+
+    await Promise.all([
+      school.updateOne({
+        $addToSet: {
+          classes: newClass,
+        },
+      }),
+      User.updateMany(
+        {
+          _id: { $in: memIds },
+        },
+        {
+          $addToSet: {
+            classes: newClass,
+          },
+        }
+      ),
+    ]);
 
     res.status(201).json(
-      await Class.populate(nItem, [
+      await Class.populate(newClass, [
         {
           path: "school",
           select: "-classes",
@@ -55,24 +69,6 @@ export const writeItem: RequestHandler = async (
         },
       ])
     );
-
-    await Promise.all([
-      school.updateOne({
-        $addToSet: {
-          classes: nItem._id,
-        },
-      }),
-      User.updateMany(
-        {
-          _id: { $in: uMemIds },
-        },
-        {
-          $addToSet: {
-            classes: nItem._id,
-          },
-        }
-      ),
-    ]);
   } catch (e) {
     next(e);
   }

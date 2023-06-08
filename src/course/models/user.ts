@@ -4,6 +4,7 @@ interface IUser {
   uid: Types.ObjectId;
   payload: any;
   classes: Types.ObjectId[];
+  schools: Types.ObjectId[];
   courses: {
     course_id: Types.ObjectId;
     process: number;
@@ -25,6 +26,12 @@ const schema = new Schema<IUser>(
       {
         type: Schema.Types.ObjectId,
         ref: "user",
+      },
+    ],
+    schools: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "school",
       },
     ],
     courses: [

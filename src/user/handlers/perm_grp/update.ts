@@ -7,59 +7,59 @@ import { Perm } from "../../models/perm";
 import { PermGrp } from "../../models/perm-gr";
 import { nats } from "../../nats";
 
-export const updateItem: RequestHandler = async (req, res, next) => {
-  const data: {
+export const updatePermGrp: RequestHandler = async (req, res, next) => {
+  const permGrp: {
     name?: string;
     perm_ids?: Types.ObjectId[];
   } = req.body;
 
   try {
-    if (!Object.keys(data).length) {
-      throw new BadReqErr("data not empty");
+    if (!Object.keys(permGrp).length) {
+      throw new BadReqErr("perm group not empty");
     }
 
-    const pids = Array.from(new Set(data.perm_ids));
+    const permIds = Array.from(new Set(permGrp.perm_ids));
 
-    const [item, permCount] = await Promise.all([
+    const [_permGrp, permCount] = await Promise.all([
       PermGrp.findById(req.params.id),
       Perm.countDocuments({
-        _id: { $in: pids },
+        _id: { $in: permIds },
       }),
     ]);
-    if (!item) {
-      throw new BadReqErr("item not found");
+    if (!_permGrp) {
+      throw new BadReqErr("perm group not found");
     }
-    if (data.perm_ids && permCount < pids.length) {
+    if (permGrp.perm_ids && permCount < permIds.length) {
       throw new BadReqErr("permission mismatch");
     }
 
-    await item.updateOne({
+    await _permGrp.updateOne({
       $set: {
-        name: data.name,
-        perms: pids,
+        name: permGrp.name,
+        perms: permIds,
       },
     });
 
-    res.json({
-      group: await PermGrp.findById(item._id).populate({
+    res.json(
+      await PermGrp.findById(_permGrp._id).populate({
         path: "perms",
         select: "-perm_grp",
-      }),
-    });
+      })
+    );
 
     await Promise.all([
-      data.perm_ids &&
+      permGrp.perm_ids &&
         (await Promise.all([
           Perm.deleteMany({
-            _id: item.perms.filter((p) => !pids.includes(p)),
+            _id: _permGrp.perms.filter((p) => !permIds.includes(p)),
           }),
           Perm.updateMany(
             {
-              _id: { $in: pids },
+              _id: { $in: permIds },
             },
             {
               $set: {
-                perm_grp: item._id,
+                perm_grp: _permGrp._id,
               },
             }
           ),
@@ -68,7 +68,7 @@ export const updateItem: RequestHandler = async (req, res, next) => {
         model: PermGrp.modelName,
         uid: req.user?.id,
         act: Actions.update,
-        doc: await PermGrp.populate(item, {
+        doc: await PermGrp.populate(_permGrp, {
           path: "perms",
           select: "-perm_grp",
         }),

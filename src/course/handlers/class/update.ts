@@ -65,7 +65,7 @@ export const updateItem: RequestHandler = async (req, res, next) => {
       select: "-classes",
     });
 
-    res.json({ class: updClass });
+    res.json(updClass);
   } catch (e) {
     next(e);
   }

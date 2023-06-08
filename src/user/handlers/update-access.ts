@@ -7,41 +7,43 @@ import { User } from "../models/user";
 import { nats } from "../nats";
 
 export const changeAccess: RequestHandler = async (req, res, next) => {
-  const { status }: { status: boolean } = req.body;
+  const { status } = req.body;
 
   try {
-    const item = await User.findByIdAndUpdate(req.params.id, {
-      $set: {
-        is_active: status,
+    const user = await User.findByIdAndUpdate(
+      req.params.id,
+      {
+        $set: {
+          is_active: status,
+        },
       },
-    }).populate({
-      path: "role",
-      populate: {
-        path: "perms",
-        select: "-perm_grp",
-      },
-    });
-    if (!item) {
-      throw new BadReqErr("item not found");
+      {
+        new: true,
+        populate: {
+          path: "role",
+          populate: {
+            path: "perms",
+            select: "-perm_grp",
+          },
+        },
+      }
+    );
+    if (!user) {
+      throw new BadReqErr("user not found");
     }
 
-    const updItem = await User.findById(item._id).populate({
-      path: "role",
-      populate: {
-        path: "perms",
-        select: "-perm_grp",
-      },
-    });
+    res.json(user);
 
-    res.json({ user: updItem });
+    const updateUserPublisher = new UpdateUserPublisher(nats.cli);
+    const logPublisher = new LogPublisher(nats.cli);
 
-    await Promise.all([
-      new UpdateUserPublisher(nats.cli).publish(updItem!),
-      new LogPublisher(nats.cli).publish({
+    await Promise.allSettled([
+      updateUserPublisher.publish(user),
+      logPublisher.publish({
         model: User.modelName,
         uid: req.user?.id,
         act: Actions.update,
-        doc: item,
+        doc: user,
       }),
     ]);
   } catch (e) {
