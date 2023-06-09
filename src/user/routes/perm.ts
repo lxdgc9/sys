@@ -1,24 +1,24 @@
-import { guard, validate } from "@lxdgc9/pkg/dist/middleware";
+import { guard, validate } from "@lxdgc9/pkg/dist/handlers";
 import {
   DELETE_PERM,
   READ_PERM,
   UPDATE_PERM,
   WRITE_PERM,
-} from "@lxdgc9/pkg/dist/rule/manage";
+} from "@lxdgc9/pkg/dist/rules/manage";
 import { Router } from "express";
 import { body, param } from "express-validator";
-import { delItem } from "../handlers/perm/delete";
-import { delItems } from "../handlers/perm/delete-many";
-import { readItem } from "../handlers/perm/read";
-import { readItems } from "../handlers/perm/read-many";
-import { updateItem } from "../handlers/perm/update";
-import { writeItem } from "../handlers/perm/write";
+import { delPerm } from "../handlers/perm/delete";
+import { delPerms } from "../handlers/perm/delete-many";
+import { readPerm } from "../handlers/perm/read";
+import { readPerms } from "../handlers/perm/read-many";
+import { modifyPerm } from "../handlers/perm/modify";
+import { writePerm } from "../handlers/perm/write";
 import { writeItems } from "../handlers/perm/write-many";
 
 export const r = Router();
 
 r.route("/")
-  .get(guard(READ_PERM), readItems)
+  .get(guard(READ_PERM), readPerms)
   .post(
     guard(WRITE_PERM),
     validate(
@@ -42,7 +42,7 @@ r.route("/")
         .isMongoId()
         .withMessage("must be mongoId")
     ),
-    writeItem
+    writePerm
   );
 
 r.route("/many")
@@ -79,14 +79,14 @@ r.route("/many")
         .withMessage("must be array, has aleast 1 element"),
       body("*").isMongoId().withMessage("must be mongoId")
     ),
-    delItems
+    delPerms
   );
 
 r.route("/:id")
   .get(
     guard(READ_PERM),
     validate(param("id").isMongoId().withMessage("must be mongoId")),
-    readItem
+    readPerm
   )
   .patch(
     guard(UPDATE_PERM),
@@ -108,10 +108,10 @@ r.route("/:id")
         .isMongoId()
         .withMessage("must be mongoId")
     ),
-    updateItem
+    modifyPerm
   )
   .delete(
     guard(DELETE_PERM),
     validate(param("id").isMongoId().withMessage("must be mongoId")),
-    delItem
+    delPerm
   );

@@ -1,45 +1,44 @@
 import { BadReqErr } from "@lxdgc9/pkg/dist/err";
-import { Actions } from "@lxdgc9/pkg/dist/event/log";
 import { RequestHandler } from "express";
 import { LogPublisher } from "../../events/publisher/log";
 import { Perm } from "../../models/perm";
-import { PermSet } from "../../models/perm-set";
+import { PermGroup } from "../../models/perm-group";
 import { Role } from "../../models/role";
 import { nats } from "../../nats";
 
-export const delItem: RequestHandler = async (req, res, next) => {
+export const delPerm: RequestHandler = async (req, res, next) => {
   try {
-    const [item, depend] = await Promise.all([
-      Perm.findById(req.params.id),
+    const [perm, depend] = await Promise.all([
+      Perm.findById(req.params.id).populate({
+        path: "perm_set",
+        select: "-items",
+      }),
       Role.exists({
-        permissions: { $in: req.params.id },
+        perms: { $in: req.params.id },
       }),
     ]);
-    if (!item) {
-      throw new BadReqErr("item not found");
+    if (!perm) {
+      throw new BadReqErr("permission not found");
     }
     if (depend) {
       throw new BadReqErr("found dependent");
     }
 
-    await item.deleteOne();
+    await perm.deleteOne();
 
-    res.json({ msg: "ok" });
+    res.sendStatus(204);
 
-    await Promise.all([
-      PermSet.findByIdAndUpdate(item.perm_set, {
+    await Promise.allSettled([
+      PermGroup.findByIdAndUpdate(perm.perm_group._id, {
         $pull: {
-          items: item._id,
+          items: perm._id,
         },
       }),
       new LogPublisher(nats.cli).publish({
+        user_id: req.user?.id,
         model: Perm.modelName,
-        uid: req.user?.id,
-        act: Actions.delete,
-        doc: await Perm.populate(item, {
-          path: "perm_grp",
-          select: "-perms",
-        }),
+        action: "delete",
+        doc: perm,
       }),
     ]);
   } catch (e) {

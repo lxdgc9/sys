@@ -1,5 +1,4 @@
 import { BadReqErr } from "@lxdgc9/pkg/dist/err";
-import { Actions } from "@lxdgc9/pkg/dist/event/log";
 import { RequestHandler } from "express";
 import { Types } from "mongoose";
 import { LogPublisher } from "../../events/publisher/log";
@@ -39,7 +38,7 @@ export const updateItem: RequestHandler = async (req, res, next) => {
         ? {
             name: data.name,
             level: data.level,
-            permissions: pids,
+            perms: pids,
           }
         : {
             name: data.name,
@@ -55,9 +54,9 @@ export const updateItem: RequestHandler = async (req, res, next) => {
     });
 
     await new LogPublisher(nats.cli).publish({
+      user_id: req.user?.id,
       model: Role.modelName,
-      uid: req.user?.id,
-      act: Actions.update,
+      action: "update",
       doc: await Role.populate(item, {
         path: "perms",
         select: "-perm_grp",

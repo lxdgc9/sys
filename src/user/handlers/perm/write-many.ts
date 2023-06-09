@@ -1,92 +1,89 @@
 import { BadReqErr } from "@lxdgc9/pkg/dist/err";
-import { Actions } from "@lxdgc9/pkg/dist/event/log";
 import { RequestHandler } from "express";
 import { Types } from "mongoose";
 import { LogPublisher } from "../../events/publisher/log";
 import { Perm } from "../../models/perm";
-import { PermSet } from "../../models/perm-set";
+import { PermGroup } from "../../models/perm-group";
 import { nats } from "../../nats";
 
 export const writeItems: RequestHandler = async (req, res, next) => {
-  const data: {
+  const items: {
     code: string;
-    desc: string;
-    grp_id: Types.ObjectId;
+    info: string;
+    perm_group_id: Types.ObjectId;
   }[] = req.body;
 
   try {
-    const [codes, grpIds] = data
+    const [codes, permSetIds] = items
       .reduce(
-        (a, { code, grp_id }) => {
-          a[0].add(code);
-          a[1].add(grp_id);
-
+        (a, item) => {
+          a[0].add(item.code);
+          a[1].add(item.perm_group_id);
           return a;
         },
         [new Set(), new Set()]
       )
-      .map((s) => Array.from(s));
+      .map((set) => Array.from(set));
 
-    if (codes.length < data.length) {
-      throw new BadReqErr("duplicate code");
+    if (codes.length < items.length) {
+      throw new BadReqErr("code already exist");
     }
 
-    const [dupl, grpCount] = await Promise.all([
+    const [dupl, numPermSets] = await Promise.all([
       Perm.exists({
         code: { $in: codes },
       }),
-      PermSet.countDocuments({
-        _id: { $in: grpIds },
+      PermGroup.countDocuments({
+        _id: { $in: permSetIds },
       }),
     ]);
     if (dupl) {
-      throw new BadReqErr("duplicate code");
+      throw new BadReqErr("code already exist");
     }
-    if (grpCount < grpIds.length) {
-      throw new BadReqErr("group mismatch");
+    if (numPermSets < permSetIds.length) {
+      throw new BadReqErr("perm_set_id mismatch");
     }
 
-    const nItems = await Perm.insertMany(
-      data.map(({ code, desc, grp_id }) => ({
+    const perms = await Perm.insertMany(
+      items.map(({ code, info, perm_group_id: perm_set_id }) => ({
         code,
-        desc,
-        perm_grp: grp_id,
+        info,
+        perm_set: perm_set_id,
       }))
     );
 
-    res.status(201).json({
-      item: await Perm.populate(nItems, {
-        path: "perm_grp",
-        select: "-perms",
-      }),
+    await Perm.populate(perms, {
+      path: "perm_set",
+      select: "-items",
     });
 
-    await Promise.all([
-      Array.from(
-        nItems
-          .reduce((map, { _id, perm_set: perm_grp }) => {
-            const grpStr = perm_grp._id.toString();
-            if (!map.has(grpStr)) {
-              map.set(grpStr, []);
-            }
+    res.status(201).json(perms);
 
-            map.get(grpStr).push(_id);
+    await Promise.allSettled([
+      Array.from(
+        perms
+          .reduce((map, perm) => {
+            const key = perm.perm_group._id.toString();
+            if (!map.has(key)) {
+              map.set(key, []);
+            }
+            map.get(key).push(perm._id);
 
             return map;
           }, new Map())
           .entries()
       ).forEach(async ([k, v]) => {
-        await PermSet.findByIdAndUpdate(k, {
+        await PermGroup.findByIdAndUpdate(k, {
           $addToSet: {
             items: v,
           },
         });
       }),
       new LogPublisher(nats.cli).publish({
+        user_id: req.user?.id,
         model: Perm.modelName,
-        uid: req.user?.id,
-        act: Actions.insert,
-        doc: nItems,
+        action: "insert",
+        doc: perms,
       }),
     ]);
   } catch (e) {

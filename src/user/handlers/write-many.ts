@@ -1,5 +1,4 @@
 import { BadReqErr, ConflictErr } from "@lxdgc9/pkg/dist/err";
-import { Actions } from "@lxdgc9/pkg/dist/event/log";
 import { RequestHandler } from "express";
 import { Types } from "mongoose";
 import { LogPublisher } from "../events/publisher/log";
@@ -105,8 +104,8 @@ export const writeItems: RequestHandler = async (req, res, next) => {
       new InsertManyUserPublisher(nats.cli).publish(newItems),
       new LogPublisher(nats.cli).publish({
         model: User.modelName,
-        uid: req.user?.id,
-        act: Actions.insert,
+        user_id: req.user?.id,
+        action: "insert",
         doc: newItems,
       }),
     ]);

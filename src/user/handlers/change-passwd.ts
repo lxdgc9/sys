@@ -1,5 +1,4 @@
 import { BadReqErr } from "@lxdgc9/pkg/dist/err";
-import { Actions } from "@lxdgc9/pkg/dist/event/log";
 import { compare } from "bcryptjs";
 import { RequestHandler } from "express";
 import { LogPublisher } from "../events/publisher/log";
@@ -31,9 +30,9 @@ export const changePasswd: RequestHandler = async (req, res, next) => {
     res.json({ msg: "changed" });
 
     await new LogPublisher(nats.cli).publish({
+      user_id: req.user?.id,
       model: User.modelName,
-      uid: req.user?.id,
-      act: Actions.update,
+      action: "update",
       doc: user,
     });
   } catch (e) {

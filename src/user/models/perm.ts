@@ -3,35 +3,24 @@ import { Schema, Types, model } from "mongoose";
 interface IPerm {
   code: string;
   info: string;
-  perm_set: Types.ObjectId;
+  perm_group: Types.ObjectId;
 }
 
-const schema = new Schema<IPerm>(
-  {
-    code: {
-      type: String,
-      required: true,
-      unique: true,
-    },
-    info: {
-      type: String,
-      required: true,
-    },
-    perm_set: {
-      type: Schema.Types.ObjectId,
-      ref: "perm_set",
-      required: true,
-    },
+const schema = new Schema<IPerm>({
+  code: {
+    type: String,
+    required: true,
+    unique: true,
   },
-  {
-    toJSON: {
-      virtuals: true,
-      transform(_doc, ret, _opts) {
-        delete ret._id;
-        delete ret.__v;
-      },
-    },
-  }
-);
+  info: {
+    type: String,
+    required: true,
+  },
+  perm_group: {
+    type: Schema.Types.ObjectId,
+    ref: "perm_group",
+    required: true,
+  },
+});
 
 export const Perm = model<IPerm>("perm", schema);

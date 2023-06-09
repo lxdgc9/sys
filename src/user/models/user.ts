@@ -9,6 +9,7 @@ interface IUser {
   }[];
   password: string;
   role: Types.ObjectId;
+  spec_perms: Types.ObjectId[];
   is_active: boolean;
 }
 
@@ -33,6 +34,12 @@ const schema = new Schema<IUser>(
       ref: "role",
       required: true,
     },
+    spec_perms: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "perm",
+      },
+    ],
     is_active: {
       type: Boolean,
       default: true,
@@ -42,20 +49,6 @@ const schema = new Schema<IUser>(
     timestamps: {
       createdAt: "created_at",
       updatedAt: "updated_at",
-    },
-    toJSON: {
-      virtuals: true,
-      transform(_doc, ret, _opts) {
-        ret.prof = {};
-        ret.attrs.forEach(
-          ({ k, v }: { k: string; v: string }) => (ret.prof[k] = v)
-        );
-
-        delete ret._id;
-        delete ret.attrs;
-        delete ret.password;
-        delete ret.__v;
-      },
     },
   }
 );
@@ -77,9 +70,9 @@ schema.pre("save", async function (next) {
 schema.pre("insertMany", async function (next, users: IUser[]) {
   try {
     const salt = await genSalt(10);
-    const hashedPwds = await Promise.all(users.map((user) => 
-       promisify(hash)(user.password, salt)
-    ));
+    const hashedPwds = await Promise.all(
+      users.map((user) => promisify(hash)(user.password, salt))
+    );
 
     users.forEach((user, idx) => {
       user.password = hashedPwds[idx];

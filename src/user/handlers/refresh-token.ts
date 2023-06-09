@@ -1,5 +1,5 @@
 import { UnauthorizedErr } from "@lxdgc9/pkg/dist/err";
-import { JwtPayload } from "@lxdgc9/pkg/dist/middleware";
+import { JwtPayload } from "@lxdgc9/pkg/dist/handlers";
 import { RequestHandler } from "express";
 import { sign, verify } from "jsonwebtoken";
 import { User } from "../models/user";

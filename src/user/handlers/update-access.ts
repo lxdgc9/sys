@@ -1,5 +1,4 @@
 import { BadReqErr } from "@lxdgc9/pkg/dist/err";
-import { Actions } from "@lxdgc9/pkg/dist/event/log";
 import { RequestHandler } from "express";
 import { LogPublisher } from "../events/publisher/log";
 import { UpdateUserPublisher } from "../events/publisher/user/mod";
@@ -40,9 +39,9 @@ export const changeAccess: RequestHandler = async (req, res, next) => {
     await Promise.allSettled([
       updateUserPublisher.publish(user),
       logPublisher.publish({
+        user_id: req.user?.id,
         model: User.modelName,
-        uid: req.user?.id,
-        act: Actions.update,
+        action: "update",
         doc: user,
       }),
     ]);

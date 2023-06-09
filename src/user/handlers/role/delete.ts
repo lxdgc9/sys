@@ -1,5 +1,4 @@
 import { BadReqErr } from "@lxdgc9/pkg/dist/err";
-import { Actions } from "@lxdgc9/pkg/dist/event/log";
 import { RequestHandler } from "express";
 import { LogPublisher } from "../../events/publisher/log";
 import { Role } from "../../models/role";
@@ -24,9 +23,9 @@ export const delItem: RequestHandler = async (req, res, next) => {
     res.json({ msg: "ok" });
 
     await new LogPublisher(nats.cli).publish({
+      user_id: req.user?.id,
       model: Role.modelName,
-      uid: req.user?.id,
-      act: Actions.delete,
+      action: "delete",
       doc: await Role.populate(item, {
         path: "perms",
         select: "-perm_grp",

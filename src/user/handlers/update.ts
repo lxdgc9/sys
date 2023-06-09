@@ -1,5 +1,4 @@
 import { BadReqErr, ConflictErr } from "@lxdgc9/pkg/dist/err";
-import { Actions } from "@lxdgc9/pkg/dist/event/log";
 import { RequestHandler } from "express";
 import { Types } from "mongoose";
 import { LogPublisher } from "../events/publisher/log";
@@ -97,9 +96,9 @@ export const updateItem: RequestHandler = async (req, res, next) => {
     await Promise.all([
       new UpdateUserPublisher(nats.cli).publish(updItem!),
       new LogPublisher(nats.cli).publish({
+        user_id: req.user?.id,
         model: User.modelName,
-        uid: req.user?.id,
-        act: Actions.update,
+        action: "update",
         doc: await User.populate(item, {
           path: "role",
           populate: {

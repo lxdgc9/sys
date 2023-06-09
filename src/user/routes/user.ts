@@ -1,10 +1,10 @@
-import { guard, validate } from "@lxdgc9/pkg/dist/middleware";
+import { guard, validate } from "@lxdgc9/pkg/dist/handlers";
 import {
   DELETE_USER,
   READ_USER,
   UPDATE_USER,
   WRITE_USER,
-} from "@lxdgc9/pkg/dist/rule/manage";
+} from "@lxdgc9/pkg/dist/rules/manage";
 import { Router } from "express";
 import { body, param } from "express-validator";
 import { changePasswd } from "../handlers/change-passwd";

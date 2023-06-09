@@ -5,7 +5,7 @@ import { ForbiddenErr, UnauthorizedErr } from "../err";
 
 export interface JwtPayload {
   id: Types.ObjectId;
-  perms: string[];
+  rules: string[];
   is_active: boolean;
 }
 
@@ -17,8 +17,8 @@ declare global {
   }
 }
 
-export function guard(...perms: string[]) {
-  const _: RequestHandler = (req, _res, next) => {
+export function guard(...rules: string[]) {
+  const hfunc: RequestHandler = (req, _res, next) => {
     const token = req.headers.authorization?.split(" ")[1];
     if (!token) {
       if (process.env.NODE_ENV === "dev") {
@@ -34,14 +34,15 @@ export function guard(...perms: string[]) {
         throw new ForbiddenErr("access denied");
       }
 
-      if (perms.length && !req.user.perms.some((p) => perms.includes(p))) {
+      if (rules.length && !req.user.rules.some((p) => rules.includes(p))) {
         throw new ForbiddenErr("permission denied");
       }
+
       next();
     } catch (e) {
       next(e);
     }
   };
 
-  return _;
+  return hfunc;
 }

@@ -1,10 +1,10 @@
-import { guard, validate } from "@lxdgc9/pkg/dist/middleware";
+import { guard, validate } from "@lxdgc9/pkg/dist/handlers";
 import {
   DELETE_ROLE,
   READ_ROLE,
   UPDATE_ROLE,
   WRITE_ROLE,
-} from "@lxdgc9/pkg/dist/rule/manage";
+} from "@lxdgc9/pkg/dist/rules/manage";
 import { Router } from "express";
 import { body, param } from "express-validator";
 import { delItem } from "../handlers/role/delete";

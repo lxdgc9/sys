@@ -2,17 +2,16 @@ import { NotFoundErr } from "@lxdgc9/pkg/dist/err";
 import { RequestHandler } from "express";
 import { Perm } from "../../models/perm";
 
-export const readItem: RequestHandler = async (req, res, next) => {
+export const readPerm: RequestHandler = async (req, res, next) => {
   try {
-    const item = await Perm.findById(req.params.id).populate({
-      path: "perm_grp",
-      select: "-perms",
+    const perm = await Perm.findById(req.params.id).populate({
+      path: "perm_set",
+      select: "-items",
     });
-    if (!item) {
-      throw new NotFoundErr("item not found");
+    if (!perm) {
+      throw new NotFoundErr("permission not found");
     }
-
-    res.json({ item });
+    res.json(perm);
   } catch (e) {
     next(e);
   }

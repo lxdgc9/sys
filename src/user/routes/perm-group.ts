@@ -1,24 +1,24 @@
-import { guard, validate } from "@lxdgc9/pkg/dist/middleware";
+import { guard, validate } from "@lxdgc9/pkg/dist/handlers";
 import {
   DELETE_PERM,
   READ_PERM,
   UPDATE_PERM,
   WRITE_PERM,
-} from "@lxdgc9/pkg/dist/rule/manage";
+} from "@lxdgc9/pkg/dist/rules/manage";
 import { Router } from "express";
 import { body, param } from "express-validator";
-import { delPermGrp } from "../handlers/perm_grp/delete";
-import { delManyPermGrp } from "../handlers/perm_grp/delete-many";
-import { readGroup } from "../handlers/perm_grp/read";
-import { getManyPermGrp } from "../handlers/perm_grp/read-many";
-import { updatePermGrp } from "../handlers/perm_grp/update";
-import { writePermSet } from "../handlers/perm_grp/write";
-import { writePermSets } from "../handlers/perm_grp/write-many";
+import { delPermGroup } from "../handlers/perm_group/delete";
+import { delPermSets } from "../handlers/perm_group/delete-many";
+import { readPermGroup } from "../handlers/perm_group/read";
+import { readPermGroup } from "../handlers/perm_group/read-many";
+import { modifyPermSet } from "../handlers/perm_group/modify";
+import { writePermGroup } from "../handlers/perm_group/write";
+import { writePermSets } from "../handlers/perm_group/write-many";
 
 export const r = Router();
 
 r.route("/")
-  .get(guard(READ_PERM), getManyPermGrp)
+  .get(guard(READ_PERM), readPermGroup)
   .post(
     guard(WRITE_PERM),
     validate(
@@ -30,7 +30,7 @@ r.route("/")
         .isLength({ min: 1, max: 255 })
         .withMessage("1 <= len <= 255")
     ),
-    writePermSet
+    writePermGroup
   );
 
 r.route("/many")
@@ -61,14 +61,14 @@ r.route("/many")
         .withMessage("must be array, has aleast 1 element"),
       body("*").isMongoId().withMessage("must be mongoId")
     ),
-    delManyPermGrp
+    delPermSets
   );
 
 r.route("/:id")
   .get(
     guard(READ_PERM),
     validate(param("id").isMongoId().withMessage("must be mongoId")),
-    readGroup
+    readPermGroup
   )
   .patch(
     guard(UPDATE_PERM),
@@ -86,10 +86,10 @@ r.route("/:id")
         .withMessage("must be array, has aleast 1 element"),
       body("perm_ids.*").isMongoId().withMessage("must be mongoId")
     ),
-    updatePermGrp
+    modifyPermSet
   )
   .delete(
     guard(DELETE_PERM),
     validate(param("id").isMongoId().withMessage("must be mongoId")),
-    delPermGrp
+    delPermGroup
   );

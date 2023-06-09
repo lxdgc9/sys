@@ -1,18 +1,12 @@
 import { Types } from "mongoose";
 import { Subject } from "./subject";
 
-export enum Actions {
-  insert = "insert",
-  update = "update",
-  delete = "delete",
-}
-
 export interface Log {
   subject: Subject.LOG;
   data: {
+    user_id?: Types.ObjectId;
     model: string;
-    uid?: Types.ObjectId;
-    act: Actions;
+    action: "insert" | "update" | "delete";
     doc: any;
   };
 }

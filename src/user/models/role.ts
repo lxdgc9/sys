@@ -3,39 +3,24 @@ import { Schema, Types, model } from "mongoose";
 interface IRole {
   name: string;
   level: number;
-  permissions: Types.ObjectId[];
+  perms: Types.ObjectId[];
 }
 
-const schema = new Schema<IRole>(
-  {
-    name: {
-      type: String,
-      required: true,
-    },
-    level: {
-      type: Number,
-      required: true,
-    },
-    permissions: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "perm",
-      },
-    ],
+const schema = new Schema<IRole>({
+  name: {
+    type: String,
+    required: true,
   },
-  {
-    timestamps: {
-      createdAt: "created_at",
-      updatedAt: "updated_at",
+  level: {
+    type: Number,
+    required: true,
+  },
+  perms: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "perm",
     },
-    toJSON: {
-      virtuals: true,
-      transform(_doc, ret, _opts) {
-        delete ret._id;
-        delete ret.__v;
-      },
-    },
-  }
-);
+  ],
+});
 
 export const Role = model<IRole>("role", schema);

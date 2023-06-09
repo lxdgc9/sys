@@ -1,52 +1,60 @@
 import { BadReqErr, ConflictErr } from "@lxdgc9/pkg/dist/err";
-import { Actions } from "@lxdgc9/pkg/dist/event/log";
 import { RequestHandler } from "express";
 import { Types } from "mongoose";
 import { LogPublisher } from "../../events/publisher/log";
 import { Perm } from "../../models/perm";
-import { PermSet } from "../../models/perm-set";
+import { PermGroup } from "../../models/perm-group";
 import { nats } from "../../nats";
 
-export const writeItem: RequestHandler = async (req, res, next) => {
-  const data: {
+export const writePerm: RequestHandler = async (req, res, next) => {
+  const {
+    code,
+    info,
+    perm_group_id,
+  }: {
     code: string;
-    desc: string;
-    grp_id: Types.ObjectId;
+    info: string;
+    perm_group_id: Types.ObjectId;
   } = req.body;
 
   try {
-    const [dupl, grp] = await Promise.all([
-      Perm.exists({ code: data.code }),
-      PermSet.findById(data.grp_id),
+    const [dupl, permGroup] = await Promise.all([
+      Perm.exists({ code: code }),
+      PermGroup.findById(perm_group_id),
     ]);
+
     if (dupl) {
-      throw new ConflictErr("duplicate code");
+      throw new ConflictErr("code already exist");
     }
-    if (!grp) {
-      throw new BadReqErr("group not found");
+    if (!permGroup) {
+      throw new BadReqErr("permission group not found");
     }
 
-    const nItem = new Perm(data);
-    await nItem.save();
+    const perm = new Perm({
+      code,
+      info,
+      perm_group: permGroup,
+    });
+    await perm.save();
 
-    res.status(201).send({
-      item: await Perm.populate(nItem, {
-        path: "perm_grp",
-        select: "-perms",
-      }),
+    await Perm.populate(perm, {
+      path: "perm_set",
+      select: "-items",
     });
 
-    await Promise.all([
-      grp.updateOne({
+    res.status(201).json(perm);
+
+    await Promise.allSettled([
+      permGroup.updateOne({
         $addToSet: {
-          items: nItem._id,
+          items: perm,
         },
       }),
       new LogPublisher(nats.cli).publish({
+        user_id: req.user?.id,
         model: Perm.modelName,
-        uid: req.user?.id,
-        act: Actions.insert,
-        doc: nItem,
+        action: "insert",
+        doc: perm,
       }),
     ]);
   } catch (e) {
