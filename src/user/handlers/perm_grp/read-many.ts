@@ -1,9 +1,9 @@
 import { RequestHandler } from "express";
-import { PermGrp } from "../../models/perm-gr";
+import { PermSet } from "../../models/perm-set";
 
 export const getManyPermGrp: RequestHandler = async (_req, res, next) => {
   try {
-    const permGrps = await PermGrp.find().populate({
+    const permGrps = await PermSet.find().populate({
       path: "perms",
       select: "-perm_grp",
     });

@@ -9,11 +9,11 @@ import { Router } from "express";
 import { body, param } from "express-validator";
 import { delPermGrp } from "../handlers/perm_grp/delete";
 import { delManyPermGrp } from "../handlers/perm_grp/delete-many";
-import { getPermGrp } from "../handlers/perm_grp/read";
+import { readGroup } from "../handlers/perm_grp/read";
 import { getManyPermGrp } from "../handlers/perm_grp/read-many";
 import { updatePermGrp } from "../handlers/perm_grp/update";
-import { createPermGrp } from "../handlers/perm_grp/write";
-import { createManyPermGrp } from "../handlers/perm_grp/write-many";
+import { writePermSet } from "../handlers/perm_grp/write";
+import { writePermSets } from "../handlers/perm_grp/write-many";
 
 export const r = Router();
 
@@ -30,7 +30,7 @@ r.route("/")
         .isLength({ min: 1, max: 255 })
         .withMessage("1 <= len <= 255")
     ),
-    createPermGrp
+    writePermSet
   );
 
 r.route("/many")
@@ -49,7 +49,7 @@ r.route("/many")
         .isLength({ min: 1, max: 255 })
         .withMessage("1 <= len <= 255")
     ),
-    createManyPermGrp
+    writePermSets
   )
   .delete(
     guard(DELETE_PERM),
@@ -68,7 +68,7 @@ r.route("/:id")
   .get(
     guard(READ_PERM),
     validate(param("id").isMongoId().withMessage("must be mongoId")),
-    getPermGrp
+    readGroup
   )
   .patch(
     guard(UPDATE_PERM),

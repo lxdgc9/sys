@@ -4,7 +4,7 @@ import { RequestHandler } from "express";
 import { Types } from "mongoose";
 import { LogPublisher } from "../../events/publisher/log";
 import { Perm } from "../../models/perm";
-import { PermGrp } from "../../models/perm-gr";
+import { PermSet } from "../../models/perm-set";
 import { nats } from "../../nats";
 
 export const writeItems: RequestHandler = async (req, res, next) => {
@@ -35,7 +35,7 @@ export const writeItems: RequestHandler = async (req, res, next) => {
       Perm.exists({
         code: { $in: codes },
       }),
-      PermGrp.countDocuments({
+      PermSet.countDocuments({
         _id: { $in: grpIds },
       }),
     ]);
@@ -64,7 +64,7 @@ export const writeItems: RequestHandler = async (req, res, next) => {
     await Promise.all([
       Array.from(
         nItems
-          .reduce((map, { _id, perm_grp }) => {
+          .reduce((map, { _id, perm_set: perm_grp }) => {
             const grpStr = perm_grp._id.toString();
             if (!map.has(grpStr)) {
               map.set(grpStr, []);
@@ -76,9 +76,9 @@ export const writeItems: RequestHandler = async (req, res, next) => {
           }, new Map())
           .entries()
       ).forEach(async ([k, v]) => {
-        await PermGrp.findByIdAndUpdate(k, {
+        await PermSet.findByIdAndUpdate(k, {
           $addToSet: {
-            perms: v,
+            items: v,
           },
         });
       }),

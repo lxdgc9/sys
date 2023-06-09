@@ -7,7 +7,7 @@ interface IUser {
     k: string;
     v: string;
   }[];
-  passwd: string;
+  password: string;
   role: Types.ObjectId;
   is_active: boolean;
 }
@@ -24,7 +24,7 @@ const schema = new Schema<IUser>(
         },
       },
     ],
-    passwd: {
+    password: {
       type: String,
       required: true,
     },
@@ -53,7 +53,7 @@ const schema = new Schema<IUser>(
 
         delete ret._id;
         delete ret.attrs;
-        delete ret.passwd;
+        delete ret.password;
         delete ret.__v;
       },
     },
@@ -66,29 +66,23 @@ schema.index({
 });
 
 schema.pre("save", async function (next) {
-  if (!this.isModified("passwd")) {
-    return next();
-  }
-
   try {
-    const salt = await genSalt(10);
-    this.passwd = await promisify(hash)(this.passwd, salt);
+    this.password = await promisify(hash)(this.password, await genSalt(10));
     next();
   } catch (e) {
     console.log(e);
   }
 });
 
-schema.pre("insertMany", async function (next, docs) {
+schema.pre("insertMany", async function (next, users: IUser[]) {
   try {
     const salt = await genSalt(10);
-    const hashPromises = docs.map((user: { passwd: string }) => {
-      promisify(hash)(user.passwd, salt);
-    });
-    const hashedPasswords = await Promise.all(hashPromises);
+    const hashedPwds = await Promise.all(users.map((user) => 
+       promisify(hash)(user.password, salt)
+    ));
 
-    docs.forEach((user: { passwd: string }, index: number) => {
-      user.passwd = hashedPasswords[index];
+    users.forEach((user, idx) => {
+      user.password = hashedPwds[idx];
     });
     next();
   } catch (e) {

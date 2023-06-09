@@ -2,8 +2,8 @@ import { Schema, Types, model } from "mongoose";
 
 interface IPerm {
   code: string;
-  desc: string;
-  perm_grp: Types.ObjectId;
+  info: string;
+  perm_set: Types.ObjectId;
 }
 
 const schema = new Schema<IPerm>(
@@ -13,13 +13,13 @@ const schema = new Schema<IPerm>(
       required: true,
       unique: true,
     },
-    desc: {
+    info: {
       type: String,
       required: true,
     },
-    perm_grp: {
+    perm_set: {
       type: Schema.Types.ObjectId,
-      ref: "perm-grp",
+      ref: "perm_set",
       required: true,
     },
   },

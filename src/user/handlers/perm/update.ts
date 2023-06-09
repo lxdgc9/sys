@@ -4,7 +4,7 @@ import { RequestHandler } from "express";
 import { Types } from "mongoose";
 import { LogPublisher } from "../../events/publisher/log";
 import { Perm } from "../../models/perm";
-import { PermGrp } from "../../models/perm-gr";
+import { PermSet } from "../../models/perm-set";
 import { nats } from "../../nats";
 
 export const updateItem: RequestHandler = async (req, res, next) => {
@@ -27,7 +27,7 @@ export const updateItem: RequestHandler = async (req, res, next) => {
         },
         code: data.code,
       }),
-      PermGrp.exists({ _id: data.grp_id }),
+      PermSet.exists({ _id: data.grp_id }),
     ]);
     if (!item) {
       throw new BadReqErr("item not found");
@@ -42,8 +42,8 @@ export const updateItem: RequestHandler = async (req, res, next) => {
     await item.updateOne({
       $set: {
         code: data.code,
-        desc: data.desc,
-        perm_grp: data.grp_id,
+        info: data.desc,
+        perm_set: data.grp_id,
       },
     });
 
@@ -56,16 +56,16 @@ export const updateItem: RequestHandler = async (req, res, next) => {
 
     await Promise.all([
       data.grp_id &&
-        !item.perm_grp.equals(data.grp_id) &&
+        !item.perm_set.equals(data.grp_id) &&
         (await Promise.all([
-          PermGrp.findByIdAndUpdate(data.grp_id, {
+          PermSet.findByIdAndUpdate(data.grp_id, {
             $addToSet: {
-              perms: item._id,
+              items: item._id,
             },
           }),
-          PermGrp.findByIdAndUpdate(item.perm_grp, {
+          PermSet.findByIdAndUpdate(item.perm_set, {
             $pull: {
-              perms: item._id,
+              items: item._id,
             },
           }),
         ])),

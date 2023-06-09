@@ -1,18 +1,18 @@
 import { NotFoundErr } from "@lxdgc9/pkg/dist/err";
 import { RequestHandler } from "express";
-import { PermGrp } from "../../models/perm-gr";
+import { PermSet as Group } from "../../models/perm-set";
 
-export const getPermGrp: RequestHandler = async (req, res, next) => {
+export const readGroup: RequestHandler = async (req, res, next) => {
   try {
-    const permGrp = await PermGrp.findById(req.params.id).populate({
+    const group = await Group.findById(req.params.id).populate({
       path: "perms",
       select: "-perm_grp",
     });
-    if (!permGrp) {
-      throw new NotFoundErr("perm group not found");
+    if (!group) {
+      throw new NotFoundErr("not found");
     }
 
-    res.json(permGrp);
+    res.json(group);
   } catch (e) {
     next(e);
   }

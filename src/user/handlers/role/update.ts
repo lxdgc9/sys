@@ -39,7 +39,7 @@ export const updateItem: RequestHandler = async (req, res, next) => {
         ? {
             name: data.name,
             level: data.level,
-            perms: pids,
+            permissions: pids,
           }
         : {
             name: data.name,

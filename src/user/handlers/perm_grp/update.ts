@@ -4,7 +4,7 @@ import { RequestHandler } from "express";
 import { Types } from "mongoose";
 import { LogPublisher } from "../../events/publisher/log";
 import { Perm } from "../../models/perm";
-import { PermGrp } from "../../models/perm-gr";
+import { PermSet } from "../../models/perm-set";
 import { nats } from "../../nats";
 
 export const updatePermGrp: RequestHandler = async (req, res, next) => {
@@ -21,7 +21,7 @@ export const updatePermGrp: RequestHandler = async (req, res, next) => {
     const permIds = Array.from(new Set(permGrp.perm_ids));
 
     const [_permGrp, permCount] = await Promise.all([
-      PermGrp.findById(req.params.id),
+      PermSet.findById(req.params.id),
       Perm.countDocuments({
         _id: { $in: permIds },
       }),
@@ -36,12 +36,12 @@ export const updatePermGrp: RequestHandler = async (req, res, next) => {
     await _permGrp.updateOne({
       $set: {
         name: permGrp.name,
-        perms: permIds,
+        items: permIds,
       },
     });
 
     res.json(
-      await PermGrp.findById(_permGrp._id).populate({
+      await PermSet.findById(_permGrp._id).populate({
         path: "perms",
         select: "-perm_grp",
       })
@@ -51,7 +51,7 @@ export const updatePermGrp: RequestHandler = async (req, res, next) => {
       permGrp.perm_ids &&
         (await Promise.all([
           Perm.deleteMany({
-            _id: _permGrp.perms.filter((p) => !permIds.includes(p)),
+            _id: _permGrp.items.filter((p) => !permIds.includes(p)),
           }),
           Perm.updateMany(
             {
@@ -59,16 +59,16 @@ export const updatePermGrp: RequestHandler = async (req, res, next) => {
             },
             {
               $set: {
-                perm_grp: _permGrp._id,
+                perm_set: _permGrp._id,
               },
             }
           ),
         ])),
       new LogPublisher(nats.cli).publish({
-        model: PermGrp.modelName,
+        model: PermSet.modelName,
         uid: req.user?.id,
         act: Actions.update,
-        doc: await PermGrp.populate(_permGrp, {
+        doc: await PermSet.populate(_permGrp, {
           path: "perms",
           select: "-perm_grp",
         }),

@@ -1,10 +1,10 @@
 import { RequestHandler } from "express";
-import { PermGrp } from "../../models/perm-gr";
+import { PermSet } from "../../models/perm-set";
 
 export const readItems: RequestHandler = async (_req, res, next) => {
   try {
     res.json({
-      items: await PermGrp.find().populate({
+      items: await PermSet.find().populate({
         path: "perms",
         select: "-perm_grp",
       }),

@@ -4,7 +4,7 @@ import { RequestHandler } from "express";
 import { Types } from "mongoose";
 import { LogPublisher } from "../../events/publisher/log";
 import { Perm } from "../../models/perm";
-import { PermGrp } from "../../models/perm-gr";
+import { PermSet } from "../../models/perm-set";
 import { nats } from "../../nats";
 
 export const writeItem: RequestHandler = async (req, res, next) => {
@@ -17,7 +17,7 @@ export const writeItem: RequestHandler = async (req, res, next) => {
   try {
     const [dupl, grp] = await Promise.all([
       Perm.exists({ code: data.code }),
-      PermGrp.findById(data.grp_id),
+      PermSet.findById(data.grp_id),
     ]);
     if (dupl) {
       throw new ConflictErr("duplicate code");
@@ -39,7 +39,7 @@ export const writeItem: RequestHandler = async (req, res, next) => {
     await Promise.all([
       grp.updateOne({
         $addToSet: {
-          perms: nItem._id,
+          items: nItem._id,
         },
       }),
       new LogPublisher(nats.cli).publish({

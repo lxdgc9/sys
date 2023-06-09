@@ -38,7 +38,7 @@ export const login: RequestHandler = async (req, res, next) => {
       throw new UnauthorizedErr("user not found");
     }
 
-    if (!(await compare(passwd, user.passwd))) {
+    if (!(await compare(passwd, user.password))) {
       throw new UnauthorizedErr("wrong password");
     }
 

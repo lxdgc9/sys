@@ -21,11 +21,11 @@ export const changePasswd: RequestHandler = async (req, res, next) => {
       throw new BadReqErr("user not found");
     }
 
-    if (!(await compare(oldPasswd, user.passwd))) {
+    if (!(await compare(oldPasswd, user.password))) {
       throw new BadReqErr("wrong password");
     }
 
-    user.passwd = newPasswd;
+    user.password = newPasswd;
     await user.save();
 
     res.json({ msg: "changed" });

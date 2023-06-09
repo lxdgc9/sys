@@ -4,7 +4,7 @@ import { RequestHandler } from "express";
 import { Types } from "mongoose";
 import { LogPublisher } from "../../events/publisher/log";
 import { Perm } from "../../models/perm";
-import { PermGrp } from "../../models/perm-gr";
+import { PermSet } from "../../models/perm-set";
 import { Role } from "../../models/role";
 import { nats } from "../../nats";
 
@@ -17,7 +17,7 @@ export const delItems: RequestHandler = async (req, res, next) => {
         _id: { $in: ids },
       }),
       Role.exists({
-        perms: { $in: ids },
+        permissions: { $in: ids },
       }),
     ]);
     if (items.length < ids.length) {
@@ -34,13 +34,13 @@ export const delItems: RequestHandler = async (req, res, next) => {
     res.json({ msg: "ok" });
 
     await Promise.all([
-      PermGrp.updateMany(
+      PermSet.updateMany(
         {
-          perms: { $in: ids },
+          items: { $in: ids },
         },
         {
           $pullAll: {
-            perms: ids,
+            items: ids,
           },
         }
       ),

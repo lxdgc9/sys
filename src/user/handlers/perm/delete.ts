@@ -3,7 +3,7 @@ import { Actions } from "@lxdgc9/pkg/dist/event/log";
 import { RequestHandler } from "express";
 import { LogPublisher } from "../../events/publisher/log";
 import { Perm } from "../../models/perm";
-import { PermGrp } from "../../models/perm-gr";
+import { PermSet } from "../../models/perm-set";
 import { Role } from "../../models/role";
 import { nats } from "../../nats";
 
@@ -12,7 +12,7 @@ export const delItem: RequestHandler = async (req, res, next) => {
     const [item, depend] = await Promise.all([
       Perm.findById(req.params.id),
       Role.exists({
-        perms: { $in: req.params.id },
+        permissions: { $in: req.params.id },
       }),
     ]);
     if (!item) {
@@ -27,9 +27,9 @@ export const delItem: RequestHandler = async (req, res, next) => {
     res.json({ msg: "ok" });
 
     await Promise.all([
-      PermGrp.findByIdAndUpdate(item.perm_grp, {
+      PermSet.findByIdAndUpdate(item.perm_set, {
         $pull: {
-          perms: item._id,
+          items: item._id,
         },
       }),
       new LogPublisher(nats.cli).publish({

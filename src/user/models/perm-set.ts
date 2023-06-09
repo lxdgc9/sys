@@ -1,17 +1,17 @@
 import { Schema, Types, model } from "mongoose";
 
-interface IPermGrp {
+interface IPermSet {
   name: string;
-  perms: Types.ObjectId[];
+  items: Types.ObjectId[];
 }
 
-const schema = new Schema<IPermGrp>(
+const schema = new Schema<IPermSet>(
   {
     name: {
       type: String,
       required: true,
     },
-    perms: [
+    items: [
       {
         type: Schema.Types.ObjectId,
         ref: "perm",
@@ -29,4 +29,4 @@ const schema = new Schema<IPermGrp>(
   }
 );
 
-export const PermGrp = model<IPermGrp>("perm-grp", schema);
+export const PermSet = model<IPermSet>("perm_set", schema);
