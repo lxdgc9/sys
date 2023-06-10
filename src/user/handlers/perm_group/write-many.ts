@@ -4,18 +4,18 @@ import { PermGroup } from "../../models/perm-group";
 import { nats } from "../../nats";
 
 export const writePermGroups: RequestHandler = async (req, res, next) => {
-  const items: { name: string }[] = req.body;
+  const groups: { name: string }[] = req.body;
 
   try {
-    const groups = await PermGroup.insertMany(items);
+    const nGroups = await PermGroup.insertMany(groups);
 
-    res.status(201).json(groups);
+    res.status(201).json(nGroups);
 
     await new LogPublisher(nats.cli).publish({
       user_id: req.user?.id,
       model: PermGroup.modelName,
       action: "insert",
-      doc: groups,
+      doc: nGroups,
     });
   } catch (e) {
     next(e);

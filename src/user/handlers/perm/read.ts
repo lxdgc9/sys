@@ -11,6 +11,7 @@ export const readPerm: RequestHandler = async (req, res, next) => {
     if (!perm) {
       throw new NotFoundErr("permission not found");
     }
+
     res.json(perm);
   } catch (e) {
     next(e);

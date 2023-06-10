@@ -18,34 +18,34 @@ export const writePerm: RequestHandler = async (req, res, next) => {
   } = req.body;
 
   try {
-    const [dupl, permGroup] = await Promise.all([
-      Perm.exists({ code: code }),
+    const [dupl, group] = await Promise.all([
+      Perm.exists({ code }),
       PermGroup.findById(perm_group_id),
     ]);
 
     if (dupl) {
       throw new ConflictErr("code already exist");
     }
-    if (!permGroup) {
+    if (!group) {
       throw new BadReqErr("permission group not found");
     }
 
     const perm = new Perm({
       code,
       info,
-      perm_group: permGroup,
+      perm_group: group,
     });
     await perm.save();
 
     await Perm.populate(perm, {
-      path: "perm_set",
+      path: "perm_group",
       select: "-items",
     });
 
     res.status(201).json(perm);
 
     await Promise.allSettled([
-      permGroup.updateOne({
+      group.updateOne({
         $addToSet: {
           items: perm,
         },

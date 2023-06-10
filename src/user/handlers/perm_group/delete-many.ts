@@ -6,7 +6,7 @@ import { PermGroup } from "../../models/perm-group";
 import { nats } from "../../nats";
 
 export const delPermGroups: RequestHandler = async (req, res, next) => {
-  const ids: Types.ObjectId[] = Array.from(new Set(req.body));
+  const ids = [...new Set(req.body)] as Types.ObjectId[];
 
   try {
     const groups = await PermGroup.find({
@@ -16,7 +16,7 @@ export const delPermGroups: RequestHandler = async (req, res, next) => {
     if (groups.length < ids.length) {
       throw new BadReqErr("permission group mismatch");
     }
-    if (groups.some((el) => el.items.length)) {
+    if (groups.some((el) => el.items.length > 0)) {
       throw new BadReqErr("found dependent");
     }
 

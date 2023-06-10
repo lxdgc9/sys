@@ -14,54 +14,56 @@ export const writePerms: RequestHandler = async (req, res, next) => {
   }[] = req.body;
 
   try {
-    const [codes, permSetIds] = perms
+    const [codes, groupIds] = perms
       .reduce(
         (a, item) => {
           a[0].add(item.code);
           a[1].add(item.perm_group_id);
+
           return a;
         },
         [new Set(), new Set()]
       )
-      .map((set) => Array.from(set));
+      .map((set) => [...set]);
 
     if (codes.length < perms.length) {
       throw new BadReqErr("code already exist");
     }
 
-    const [dupl, numPermSets] = await Promise.all([
+    const [dupl, numGroups] = await Promise.all([
       Perm.exists({
         code: { $in: codes },
       }),
       PermGroup.countDocuments({
-        _id: { $in: permSetIds },
+        _id: { $in: groupIds },
       }),
     ]);
+
     if (dupl) {
       throw new BadReqErr("code already exist");
     }
-    if (numPermSets < permSetIds.length) {
-      throw new BadReqErr("perm_set_id mismatch");
+    if (numGroups < groupIds.length) {
+      throw new BadReqErr("groups mismatch");
     }
 
     const nPerms = await Perm.insertMany(
-      perms.map(({ code, info, perm_group_id: perm_set_id }) => ({
-        code,
-        info,
-        perm_set: perm_set_id,
+      perms.map((p) => ({
+        code: p.code,
+        info: p.info,
+        perm_group: p.perm_group_id,
       }))
     );
 
     await Perm.populate(nPerms, {
-      path: "perm_set",
+      path: "perm_group",
       select: "-items",
     });
 
     res.status(201).json(nPerms);
 
     await Promise.allSettled([
-      Array.from(
-        nPerms
+      [
+        ...nPerms
           .reduce((map, perm) => {
             const key = perm.perm_group._id.toString();
             if (!map.has(key)) {
@@ -71,8 +73,8 @@ export const writePerms: RequestHandler = async (req, res, next) => {
 
             return map;
           }, new Map())
-          .entries()
-      ).forEach(async ([k, v]) => {
+          .entries(),
+      ].forEach(async ([k, v]) => {
         await PermGroup.findByIdAndUpdate(k, {
           $addToSet: {
             items: v,
