@@ -7,7 +7,6 @@ import { nats } from "../../nats";
 export const delPermGroup: RequestHandler = async (req, res, next) => {
   try {
     const group = await PermGroup.findById(req.params.id);
-
     if (!group) {
       throw new BadReqErr("permission group not found");
     }

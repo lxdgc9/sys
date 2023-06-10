@@ -10,7 +10,7 @@ export const delPerm: RequestHandler = async (req, res, next) => {
   try {
     const [perm, depend] = await Promise.all([
       Perm.findById(req.params.id).populate({
-        path: "perm_set",
+        path: "perm_group",
         select: "-items",
       }),
       Role.exists({

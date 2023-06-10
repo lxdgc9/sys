@@ -9,16 +9,16 @@ import { Router } from "express";
 import { body, param } from "express-validator";
 import { delItem } from "../handlers/role/delete";
 import { delItems } from "../handlers/role/delete-many";
-import { readItem } from "../handlers/role/read";
-import { readItems } from "../handlers/role/read-many";
-import { updateItem } from "../handlers/role/update";
-import { writeItem } from "../handlers/role/write";
-import { writeItems } from "../handlers/role/write-many";
+import { readRole } from "../handlers/role/read";
+import { readRoles } from "../handlers/role/read-many";
+import { modifyRole } from "../handlers/role/modify";
+import { writeRole } from "../handlers/role/write";
+import { writePerms } from "../handlers/role/write-many";
 
 export const r = Router();
 
 r.route("/")
-  .get(guard(READ_ROLE), readItems)
+  .get(guard(READ_ROLE), readRoles)
   .post(
     guard(WRITE_ROLE),
     validate(
@@ -35,7 +35,7 @@ r.route("/")
         .withMessage("must be array"),
       body("perm_ids.*").isMongoId().withMessage("must be mongoId")
     ),
-    writeItem
+    writeRole
   );
 
 r.route("/many")
@@ -67,7 +67,7 @@ r.route("/many")
         .isMongoId()
         .withMessage("must be mongoId")
     ),
-    writeItems
+    writePerms
   )
   .delete(
     guard(DELETE_ROLE),
@@ -86,7 +86,7 @@ r.route("/:id")
   .get(
     guard(READ_ROLE),
     validate(param("id").isMongoId().withMessage("must be mongoId")),
-    readItem
+    readRole
   )
   .patch(
     guard(UPDATE_ROLE),
@@ -105,6 +105,6 @@ r.route("/:id")
       body("perm_ids").optional({ values: "undefined" }).isArray({ min: 1 }),
       body("perm_ids.*").isMongoId().withMessage("must be mongoId")
     ),
-    updateItem
+    modifyRole
   )
   .delete(guard(DELETE_ROLE), validate(param("id").isMongoId()), delItem);

@@ -4,12 +4,8 @@ import { LogPublisher } from "../../events/publisher/log";
 import { PermGroup } from "../../models/perm-group";
 import { nats } from "../../nats";
 
-export const modifyPermSet: RequestHandler = async (req, res, next) => {
-  const {
-    name,
-  }: {
-    name?: string;
-  } = req.body;
+export const modifyPermGroup: RequestHandler = async (req, res, next) => {
+  const { name }: { name: string } = req.body;
 
   try {
     if (!name) {

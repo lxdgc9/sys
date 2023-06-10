@@ -3,7 +3,7 @@ import { LogPublisher } from "../../events/publisher/log";
 import { PermGroup } from "../../models/perm-group";
 import { nats } from "../../nats";
 
-export const writePermSets: RequestHandler = async (req, res, next) => {
+export const writePermGroups: RequestHandler = async (req, res, next) => {
   const items: { name: string }[] = req.body;
 
   try {

@@ -54,7 +54,7 @@ export const delPerms: RequestHandler = async (req, res, next) => {
         model: Perm.modelName,
         action: "delete",
         doc: await Perm.populate(perms, {
-          path: "perm_set",
+          path: "perm_group",
           select: "-items",
         }),
       }),

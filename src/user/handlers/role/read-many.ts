@@ -1,14 +1,14 @@
 import { RequestHandler } from "express";
 import { Role } from "../../models/role";
 
-export const readItems: RequestHandler = async (_req, res, next) => {
+export const readRoles: RequestHandler = async (_req, res, next) => {
   try {
-    res.json({
-      items: await Role.find().populate({
-        path: "perms",
-        select: "-perm_grp",
-      }),
+    const roles = await Role.find().populate({
+      path: "perms",
+      select: "-perm_group",
     });
+
+    res.json(roles);
   } catch (e) {
     next(e);
   }

@@ -5,7 +5,7 @@ import { LogPublisher } from "../../events/publisher/log";
 import { PermGroup } from "../../models/perm-group";
 import { nats } from "../../nats";
 
-export const delPermSets: RequestHandler = async (req, res, next) => {
+export const delPermGroups: RequestHandler = async (req, res, next) => {
   const ids: Types.ObjectId[] = Array.from(new Set(req.body));
 
   try {

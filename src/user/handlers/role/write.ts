@@ -6,42 +6,46 @@ import { Perm } from "../../models/perm";
 import { Role } from "../../models/role";
 import { nats } from "../../nats";
 
-export const writeItem: RequestHandler = async (req, res, next) => {
-  const data: {
+export const writeRole: RequestHandler = async (req, res, next) => {
+  const {
+    name,
+    level,
+    perm_ids,
+  }: {
     name: string;
     level: number;
     perm_ids: Types.ObjectId[];
   } = req.body;
 
-  const pids = Array.from(new Set(data.perm_ids));
+  const permIds = Array.from(new Set(perm_ids));
 
   try {
-    const permCount = await Perm.countDocuments({
-      _id: { $in: pids },
+    const numPerms = await Perm.countDocuments({
+      _id: { $in: permIds },
     });
-    if (permCount < pids.length) {
+    if (numPerms < permIds.length) {
       throw new BadReqErr("perm_ids mismatch");
     }
 
-    const nItem = new Role({
-      name: data.name,
-      level: data.level,
-      perms: pids,
+    const nRole = new Role({
+      name: name,
+      level: level,
+      perms: permIds,
     });
-    await nItem.save();
+    await nRole.save();
 
-    res.json({
-      item: await Role.populate(nItem, {
-        path: "perms",
-        select: "-perm_grp",
-      }),
+    await Role.populate(nRole, {
+      path: "perms",
+      select: "-perm_group",
     });
+
+    res.json(nRole);
 
     await new LogPublisher(nats.cli).publish({
       user_id: req.user?.id,
       model: Role.modelName,
       action: "insert",
-      doc: nItem,
+      doc: nRole,
     });
   } catch (e) {
     next(e);

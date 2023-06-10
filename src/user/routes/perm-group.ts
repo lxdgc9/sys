@@ -8,17 +8,17 @@ import {
 import { Router } from "express";
 import { body, param } from "express-validator";
 import { delPermGroup } from "../handlers/perm_group/delete";
-import { delPermSets } from "../handlers/perm_group/delete-many";
+import { delPermGroups } from "../handlers/perm_group/delete-many";
 import { readPermGroup } from "../handlers/perm_group/read";
-import { readPermGroup } from "../handlers/perm_group/read-many";
-import { modifyPermSet } from "../handlers/perm_group/modify";
+import { readPermGroups } from "../handlers/perm_group/read-many";
+import { modifyPermGroup } from "../handlers/perm_group/modify";
 import { writePermGroup } from "../handlers/perm_group/write";
-import { writePermSets } from "../handlers/perm_group/write-many";
+import { writePermGroups } from "../handlers/perm_group/write-many";
 
 export const r = Router();
 
 r.route("/")
-  .get(guard(READ_PERM), readPermGroup)
+  .get(guard(READ_PERM), readPermGroups)
   .post(
     guard(WRITE_PERM),
     validate(
@@ -49,7 +49,7 @@ r.route("/many")
         .isLength({ min: 1, max: 255 })
         .withMessage("1 <= len <= 255")
     ),
-    writePermSets
+    writePermGroups
   )
   .delete(
     guard(DELETE_PERM),
@@ -61,7 +61,7 @@ r.route("/many")
         .withMessage("must be array, has aleast 1 element"),
       body("*").isMongoId().withMessage("must be mongoId")
     ),
-    delPermSets
+    delPermGroups
   );
 
 r.route("/:id")
@@ -86,7 +86,7 @@ r.route("/:id")
         .withMessage("must be array, has aleast 1 element"),
       body("perm_ids.*").isMongoId().withMessage("must be mongoId")
     ),
-    modifyPermSet
+    modifyPermGroup
   )
   .delete(
     guard(DELETE_PERM),

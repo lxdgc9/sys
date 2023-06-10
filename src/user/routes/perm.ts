@@ -13,7 +13,7 @@ import { readPerm } from "../handlers/perm/read";
 import { readPerms } from "../handlers/perm/read-many";
 import { modifyPerm } from "../handlers/perm/modify";
 import { writePerm } from "../handlers/perm/write";
-import { writeItems } from "../handlers/perm/write-many";
+import { writePerms } from "../handlers/perm/write-many";
 
 export const r = Router();
 
@@ -67,7 +67,7 @@ r.route("/many")
         .withMessage("1 <= len <= 255"),
       body("*.grp_id").isMongoId().withMessage("must be mongoId")
     ),
-    writeItems
+    writePerms
   )
   .delete(
     guard(DELETE_PERM),

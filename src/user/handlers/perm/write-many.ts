@@ -6,15 +6,15 @@ import { Perm } from "../../models/perm";
 import { PermGroup } from "../../models/perm-group";
 import { nats } from "../../nats";
 
-export const writeItems: RequestHandler = async (req, res, next) => {
-  const items: {
+export const writePerms: RequestHandler = async (req, res, next) => {
+  const perms: {
     code: string;
     info: string;
     perm_group_id: Types.ObjectId;
   }[] = req.body;
 
   try {
-    const [codes, permSetIds] = items
+    const [codes, permSetIds] = perms
       .reduce(
         (a, item) => {
           a[0].add(item.code);
@@ -25,7 +25,7 @@ export const writeItems: RequestHandler = async (req, res, next) => {
       )
       .map((set) => Array.from(set));
 
-    if (codes.length < items.length) {
+    if (codes.length < perms.length) {
       throw new BadReqErr("code already exist");
     }
 
@@ -44,24 +44,24 @@ export const writeItems: RequestHandler = async (req, res, next) => {
       throw new BadReqErr("perm_set_id mismatch");
     }
 
-    const perms = await Perm.insertMany(
-      items.map(({ code, info, perm_group_id: perm_set_id }) => ({
+    const nPerms = await Perm.insertMany(
+      perms.map(({ code, info, perm_group_id: perm_set_id }) => ({
         code,
         info,
         perm_set: perm_set_id,
       }))
     );
 
-    await Perm.populate(perms, {
+    await Perm.populate(nPerms, {
       path: "perm_set",
       select: "-items",
     });
 
-    res.status(201).json(perms);
+    res.status(201).json(nPerms);
 
     await Promise.allSettled([
       Array.from(
-        perms
+        nPerms
           .reduce((map, perm) => {
             const key = perm.perm_group._id.toString();
             if (!map.has(key)) {
@@ -83,7 +83,7 @@ export const writeItems: RequestHandler = async (req, res, next) => {
         user_id: req.user?.id,
         model: Perm.modelName,
         action: "insert",
-        doc: perms,
+        doc: nPerms,
       }),
     ]);
   } catch (e) {

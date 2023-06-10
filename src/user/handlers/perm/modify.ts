@@ -61,7 +61,7 @@ export const modifyPerm: RequestHandler = async (req, res, next) => {
         perm_group: perm_group_id,
       },
     }).populate({
-      path: "perm_set",
+      path: "perm_group",
       select: "-items",
     });
 

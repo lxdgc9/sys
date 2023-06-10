@@ -60,7 +60,8 @@ schema.index({
 
 schema.pre("save", async function (next) {
   try {
-    this.password = await promisify(hash)(this.password, await genSalt(10));
+    const salt = await genSalt(10);
+    this.password = await promisify(hash)(this.password, salt);
     next();
   } catch (e) {
     console.log(e);

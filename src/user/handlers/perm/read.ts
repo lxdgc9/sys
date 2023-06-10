@@ -5,7 +5,7 @@ import { Perm } from "../../models/perm";
 export const readPerm: RequestHandler = async (req, res, next) => {
   try {
     const perm = await Perm.findById(req.params.id).populate({
-      path: "perm_set",
+      path: "perm_group",
       select: "-items",
     });
     if (!perm) {

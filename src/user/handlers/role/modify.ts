@@ -6,58 +6,62 @@ import { Perm } from "../../models/perm";
 import { Role } from "../../models/role";
 import { nats } from "../../nats";
 
-export const updateItem: RequestHandler = async (req, res, next) => {
-  const data: {
+export const modifyRole: RequestHandler = async (req, res, next) => {
+  const {
+    name,
+    level,
+    perm_ids,
+  }: {
     name?: string;
     level?: number;
     perm_ids?: Types.ObjectId[];
   } = req.body;
 
   try {
-    if (!Object.keys(data).length) {
+    if (!name && !level && !perm_ids) {
       throw new BadReqErr("body not empty");
     }
 
-    const pids = Array.from(new Set(data.perm_ids));
+    const permIds = Array.from(new Set(perm_ids));
 
-    const [item, permCount] = await Promise.all([
+    const [role, numPerms] = await Promise.all([
       Role.findById(req.params.id),
       Perm.countDocuments({
-        _id: { $in: pids },
+        _id: { $in: permIds },
       }),
     ]);
-    if (!item) {
-      throw new BadReqErr("item not found");
+    if (!role) {
+      throw new BadReqErr("role not found");
     }
-    if (data.perm_ids && permCount < pids.length) {
+    if (perm_ids && numPerms < permIds.length) {
       throw new BadReqErr("permission mismatch");
     }
 
-    await item.updateOne({
-      $set: data.perm_ids
+    await role.updateOne({
+      $set: perm_ids
         ? {
-            name: data.name,
-            level: data.level,
-            perms: pids,
+            name: name,
+            level: level,
+            perms: permIds,
           }
         : {
-            name: data.name,
-            level: data.level,
+            name: name,
+            level: level,
           },
     });
 
-    res.json({
-      item: await Role.findById(req.params.id).populate({
-        path: "perms",
-        select: "-perm_grp",
-      }),
+    const updItem = await Role.findById(req.params.id).populate({
+      path: "perms",
+      select: "-perm_group",
     });
+
+    res.json(updItem);
 
     await new LogPublisher(nats.cli).publish({
       user_id: req.user?.id,
       model: Role.modelName,
       action: "update",
-      doc: await Role.populate(item, {
+      doc: await Role.populate(role, {
         path: "perms",
         select: "-perm_grp",
       }),
