@@ -22,13 +22,6 @@ const schema = new Schema<IRating>(
       createdAt: "created_at",
       updatedAt: "updated_at",
     },
-    toJSON: {
-      virtuals: true,
-      transform(_doc, ret, _opts) {
-        delete ret._id;
-        delete ret.__v;
-      },
-    },
   }
 );
 

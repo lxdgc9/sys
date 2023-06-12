@@ -7,17 +7,17 @@ import {
 } from "@lxdgc9/pkg/dist/rules/manage";
 import { Router } from "express";
 import { body, param } from "express-validator";
-import { changePasswd } from "../handlers/change-passwd";
-import { delItem } from "../handlers/delete";
-import { delItems } from "../handlers/delete-many";
+import { changePasswd } from "../handlers/user/change-passwd";
+import { delItem } from "../handlers/user/delete";
+import { delItems } from "../handlers/user/delete-many";
 import { login } from "../handlers/login";
 import { readUser } from "../handlers/read";
 import { readUsers } from "../handlers/read-many";
 import { refreshToken } from "../handlers/refresh-token";
-import { updateItem } from "../handlers/update";
-import { changeAccess } from "../handlers/update-access";
-import { writeItem } from "../handlers/write";
-import { writeItems } from "../handlers/write-many";
+import { updateItem } from "../handlers/user/update";
+import { changeAccess } from "../handlers/user/update-access";
+import { writeUser } from "../handlers/user/write";
+import { writeItems } from "../handlers/user/write-many";
 
 export const r = Router();
 
@@ -51,7 +51,7 @@ r.route("/")
         .isEmail()
         .withMessage("must be email")
         .trim(),
-      body("passwd")
+      body("password")
         .notEmpty()
         .withMessage("required")
         .isStrongPassword({
@@ -71,7 +71,7 @@ r.route("/")
         .withMessage("must be boolean")
         .optional({ values: "undefined" })
     ),
-    writeItem
+    writeUser
   );
 
 r.route("/many")

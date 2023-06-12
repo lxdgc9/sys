@@ -1,24 +1,24 @@
 import { Schema, Types, model } from "mongoose";
 
 interface IUser {
-  uid: Types.ObjectId;
-  payload: any;
+  user_id: Types.ObjectId;
+  data: any;
   classes: Types.ObjectId[];
   schools: Types.ObjectId[];
   courses: {
-    course_id: Types.ObjectId;
+    course: Types.ObjectId;
     process: number;
   }[];
 }
 
 const schema = new Schema<IUser>(
   {
-    uid: {
+    user_id: {
       type: Schema.Types.ObjectId,
       required: true,
       unique: true,
     },
-    payload: {
+    data: {
       type: Schema.Types.Mixed,
       required: true,
     },
@@ -36,7 +36,7 @@ const schema = new Schema<IUser>(
     ],
     courses: [
       {
-        course_id: {
+        course: {
           type: Schema.Types.ObjectId,
           ref: "course",
         },
@@ -51,13 +51,6 @@ const schema = new Schema<IUser>(
     timestamps: {
       createdAt: "created_at",
       updatedAt: "updated_at",
-    },
-    toJSON: {
-      virtuals: true,
-      transform(_doc, ret, _opts) {
-        delete ret._id;
-        delete ret.__v;
-      },
     },
   }
 );

@@ -1,4 +1,4 @@
-import { validate } from "@lxdgc9/pkg/dist/middleware";
+import { validate } from "@lxdgc9/pkg/dist/handlers";
 import { Router } from "express";
 import { param } from "express-validator";
 import { getUser } from "../handlers/user/read";

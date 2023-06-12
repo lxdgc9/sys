@@ -6,18 +6,18 @@ import { schema } from "../schemas";
 export const readLogs: RequestHandler = async (req, res, next) => {
   try {
     const parts = (await connection.db.listCollections().toArray()).map(
-      (c) => c.name
+      (part) => part.name
     );
     if (!parts.includes(req.params.part)) {
       throw new BadReqErr("part not found");
     }
 
-    res.json({
-      log: await model(req.params.part, schema).find().populate({
-        path: "actor",
-        select: "doc",
-      }),
+    const logs = await model(req.params.part, schema).find().populate({
+      path: "actor",
+      select: "doc",
     });
+
+    res.json(logs);
   } catch (e) {
     next(e);
   }

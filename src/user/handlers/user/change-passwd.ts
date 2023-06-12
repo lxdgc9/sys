@@ -1,9 +1,9 @@
 import { BadReqErr } from "@lxdgc9/pkg/dist/err";
 import { compare } from "bcryptjs";
 import { RequestHandler } from "express";
-import { LogPublisher } from "../events/publisher/log";
-import { User } from "../models/user";
-import { nats } from "../nats";
+import { LogPublisher } from "../../events/publisher/log";
+import { User } from "../../models/user";
+import { nats } from "../../nats";
 
 export const changePasswd: RequestHandler = async (req, res, next) => {
   const {

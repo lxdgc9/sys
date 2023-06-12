@@ -7,7 +7,8 @@ export const readUsers: RequestHandler = async (_req, res, next) => {
       path: "role",
       select: "-perms",
     });
-    res.json({ users });
+
+    res.json(users);
   } catch (e) {
     next(e);
   }

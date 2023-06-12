@@ -1,5 +1,5 @@
-import { Listener, Subject } from "@lxdgc9/pkg/dist/event";
-import { InsertManyUser } from "@lxdgc9/pkg/dist/event/user";
+import { Listener, Subject } from "@lxdgc9/pkg/dist/events";
+import { InsertManyUser } from "@lxdgc9/pkg/dist/events/user";
 import { Message } from "node-nats-streaming";
 import { Actor } from "../../../models/actor";
 import { qGroup } from "../qgroup";
@@ -10,9 +10,9 @@ export class InsertManyUserListener extends Listener<InsertManyUser> {
 
   async onMsg(data: InsertManyUser["data"], msg: Message) {
     await Actor.insertMany(
-      data.map((u) => ({
-        uid: u.id,
-        doc: u,
+      data.map((d) => ({
+        user_id: d._id,
+        data: d,
       }))
     );
 

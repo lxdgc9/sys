@@ -1,5 +1,5 @@
-import { guard, validate } from "@lxdgc9/pkg/dist/middleware";
-import { READ_USER } from "@lxdgc9/pkg/dist/rule/manage";
+import { guard, validate } from "@lxdgc9/pkg/dist/handlers";
+import { READ_USER } from "@lxdgc9/pkg/dist/rules/manage";
 import { Router } from "express";
 import { deleteLesson } from "../handlers/lesson/delete";
 import { delManyLesson } from "../handlers/lesson/delete-many";

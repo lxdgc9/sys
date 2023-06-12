@@ -1,9 +1,9 @@
 import { BadReqErr } from "@lxdgc9/pkg/dist/err";
 import { RequestHandler } from "express";
-import { LogPublisher } from "../events/publisher/log";
-import { UpdateUserPublisher } from "../events/publisher/user/mod";
-import { User } from "../models/user";
-import { nats } from "../nats";
+import { LogPublisher } from "../../events/publisher/log";
+import { UpdateUserPublisher } from "../../events/publisher/user/mod";
+import { User } from "../../models/user";
+import { nats } from "../../nats";
 
 export const changeAccess: RequestHandler = async (req, res, next) => {
   const { status } = req.body;

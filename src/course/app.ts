@@ -1,4 +1,4 @@
-import { errHandler } from "@lxdgc9/pkg/dist/middleware";
+import { errHandler } from "@lxdgc9/pkg/dist/handlers";
 import compress from "compression";
 import express from "express";
 import { r as _class } from "./routes/class";

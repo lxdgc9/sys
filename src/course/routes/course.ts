@@ -1,10 +1,10 @@
-import { guard, validate } from "@lxdgc9/pkg/dist/middleware";
+import { guard, validate } from "@lxdgc9/pkg/dist/handlers";
 import {
   DELETE_COURSE,
   READ_COURSE,
   UPDATE_COURSE,
-} from "@lxdgc9/pkg/dist/rule/course";
-import { READ_USER } from "@lxdgc9/pkg/dist/rule/manage";
+} from "@lxdgc9/pkg/dist/rules/course";
+import { READ_USER } from "@lxdgc9/pkg/dist/rules/manage";
 import { Router } from "express";
 import { delCourse } from "../handlers/course/delete";
 import { getCourse } from "../handlers/course/read";

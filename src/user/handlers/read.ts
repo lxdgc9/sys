@@ -15,7 +15,7 @@ export const readUser: RequestHandler = async (req, res, next) => {
       throw new NotFoundErr("user not found");
     }
 
-    res.json({ user });
+    res.json(user);
   } catch (e) {
     next(e);
   }

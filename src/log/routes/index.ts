@@ -1,7 +1,7 @@
-import { guard, validate } from "@lxdgc9/pkg/dist/middleware";
-import { LOG } from "@lxdgc9/pkg/dist/rule/log";
 import { Router } from "express";
 import { param } from "express-validator";
+import { guard, validate } from "@lxdgc9/pkg/dist/handlers";
+import { LOG } from "@lxdgc9/pkg/dist/rules/log";
 import { readLogs } from "../handlers/logs";
 import { readParts } from "../handlers/parts";
 

@@ -18,7 +18,7 @@ export const modifyRole: RequestHandler = async (req, res, next) => {
   } = req.body;
 
   try {
-    if (!name && !level && !perm_ids) {
+    if (name === undefined && level === undefined && perm_ids === undefined) {
       throw new BadReqErr("body not empty");
     }
 

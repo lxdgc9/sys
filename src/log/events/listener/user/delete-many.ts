@@ -1,5 +1,5 @@
-import { Listener, Subject } from "@lxdgc9/pkg/dist/event";
-import { DeleteManyUser } from "@lxdgc9/pkg/dist/event/user";
+import { Listener, Subject } from "@lxdgc9/pkg/dist/events";
+import { DeleteManyUser } from "@lxdgc9/pkg/dist/events/user";
 import { Message } from "node-nats-streaming";
 import { Actor } from "../../../models/actor";
 import { qGroup } from "../qgroup";
@@ -10,7 +10,7 @@ export class DeleteManyUserListener extends Listener<DeleteManyUser> {
 
   async onMsg(ids: DeleteManyUser["data"], msg: Message) {
     await Actor.deleteMany({
-      uid: { $in: ids },
+      user_id: { $in: ids },
     });
 
     msg.ack();

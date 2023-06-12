@@ -1,5 +1,5 @@
-import { Listener, Subject } from "@lxdgc9/pkg/dist/event";
-import { Log } from "@lxdgc9/pkg/dist/event/log";
+import { Listener, Subject } from "@lxdgc9/pkg/dist/events";
+import { Log } from "@lxdgc9/pkg/dist/events/log";
 import { model } from "mongoose";
 import { Message } from "node-nats-streaming";
 import { schema } from "../../schemas";
@@ -10,13 +10,13 @@ export class LogListener extends Listener<Log> {
   qGroup = qGroup;
 
   async onMsg(data: Log["data"], msg: Message) {
-    const { uid, model: _model, act, doc } = data;
+    const { user_id, model: _model, action, doc } = data;
 
     const Model = model(_model, schema);
     const newDoc = new Model({
-      actor: uid,
-      act,
-      doc,
+      actor: user_id,
+      action,
+      data: doc,
     });
     await newDoc.save();
 

@@ -19,7 +19,7 @@ export const createClass: RequestHandler = async (req, res, next) => {
   try {
     const memIds = [...new Set(member_ids)];
 
-    const [school, userCount] = await Promise.all([
+    const [school, numUsers] = await Promise.all([
       School.findById(school_id),
       User.countDocuments({
         _id: { $in: memIds },
@@ -28,8 +28,8 @@ export const createClass: RequestHandler = async (req, res, next) => {
     if (!school) {
       throw new BadReqErr("school not found");
     }
-    if (userCount < memIds.length) {
-      throw new BadReqErr("member_ids mismatch");
+    if (numUsers < memIds.length) {
+      throw new BadReqErr("members mismatch");
     }
 
     const newClass = new Class({
@@ -39,7 +39,20 @@ export const createClass: RequestHandler = async (req, res, next) => {
     });
     await newClass.save();
 
-    await Promise.all([
+    await Class.populate(newClass, [
+      {
+        path: "school",
+        select: "-classes",
+      },
+      {
+        path: "members",
+        select: "data",
+      },
+    ]);
+
+    res.status(201).json(newClass);
+
+    await Promise.allSettled([
       school.updateOne({
         $addToSet: {
           classes: newClass,
@@ -56,19 +69,6 @@ export const createClass: RequestHandler = async (req, res, next) => {
         }
       ),
     ]);
-
-    res.status(201).json(
-      await Class.populate(newClass, [
-        {
-          path: "school",
-          select: "-classes",
-        },
-        {
-          path: "members",
-          select: "obj",
-        },
-      ])
-    );
   } catch (e) {
     next(e);
   }

@@ -1,10 +1,9 @@
-import { Actions } from "@lxdgc9/pkg/dist/event/log";
 import { Schema, Types } from "mongoose";
 
 interface ILog {
   actor: Types.ObjectId;
-  act: Actions;
-  doc: any;
+  action: string;
+  data: any;
 }
 
 export const schema = new Schema<ILog>(
@@ -13,12 +12,11 @@ export const schema = new Schema<ILog>(
       type: Schema.Types.ObjectId,
       ref: "actor",
     },
-    act: {
+    action: {
       type: String,
-      enum: Actions,
       required: true,
     },
-    doc: {
+    data: {
       type: Schema.Types.Mixed,
     },
   },

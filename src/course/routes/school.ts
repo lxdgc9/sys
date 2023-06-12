@@ -1,10 +1,10 @@
-import { guard, validate } from "@lxdgc9/pkg/dist/middleware";
+import { guard, validate } from "@lxdgc9/pkg/dist/handlers";
 import {
   DELETE_SCHOOL,
   READ_SCHOOL,
   UPDATE_SCHOOL,
   WRITE_SCHOOL,
-} from "@lxdgc9/pkg/dist/rule/course";
+} from "@lxdgc9/pkg/dist/rules/course";
 import { Router } from "express";
 import { body, param } from "express-validator";
 import { allocUser } from "../handlers/school/alloc-user";

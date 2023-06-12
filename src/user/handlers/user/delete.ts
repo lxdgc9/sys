@@ -1,9 +1,9 @@
 import { BadReqErr } from "@lxdgc9/pkg/dist/err";
 import { RequestHandler } from "express";
-import { LogPublisher } from "../events/publisher/log";
-import { DeleteUserPublisher } from "../events/publisher/user/delete";
-import { User } from "../models/user";
-import { nats } from "../nats";
+import { LogPublisher } from "../../events/publisher/log";
+import { DeleteUserPublisher } from "../../events/publisher/user/delete";
+import { User } from "../../models/user";
+import { nats } from "../../nats";
 
 export const delItem: RequestHandler = async (req, res, next) => {
   try {

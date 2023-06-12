@@ -1,11 +1,11 @@
 import { BadReqErr, ConflictErr } from "@lxdgc9/pkg/dist/err";
 import { RequestHandler } from "express";
 import { Types } from "mongoose";
-import { LogPublisher } from "../events/publisher/log";
-import { InsertManyUserPublisher } from "../events/publisher/user/insert-many";
-import { Role } from "../models/role";
-import { User } from "../models/user";
-import { nats } from "../nats";
+import { LogPublisher } from "../../events/publisher/log";
+import { InsertManyUserPublisher } from "../../events/publisher/user/insert-many";
+import { Role } from "../../models/role";
+import { User } from "../../models/user";
+import { nats } from "../../nats";
 
 export const writeItems: RequestHandler = async (req, res, next) => {
   const items: {

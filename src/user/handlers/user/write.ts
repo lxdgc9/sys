@@ -1,25 +1,25 @@
 import { BadReqErr, ConflictErr } from "@lxdgc9/pkg/dist/err";
 import { RequestHandler } from "express";
 import { Types } from "mongoose";
-import { LogPublisher } from "../events/publisher/log";
-import { InsertUserPublisher } from "../events/publisher/user/insert";
-import { Role } from "../models/role";
-import { User } from "../models/user";
-import { nats } from "../nats";
+import { LogPublisher } from "../../events/publisher/log";
+import { InsertUserPublisher } from "../../events/publisher/user/insert";
+import { Role } from "../../models/role";
+import { User } from "../../models/user";
+import { nats } from "../../nats";
 
-export const writeItem: RequestHandler = async (req, res, next) => {
+export const writeUser: RequestHandler = async (req, res, next) => {
   const {
     prof,
-    passwd,
-    role_id: roleId,
-    is_active: isActive,
+    password,
+    role_id,
+    is_active,
   }: {
     prof: object & {
       username: string;
       phone: string;
       email: string;
     };
-    passwd: string;
+    password: string;
     role_id: Types.ObjectId;
     is_active?: boolean;
   } = req.body;
@@ -54,7 +54,7 @@ export const writeItem: RequestHandler = async (req, res, next) => {
           },
         ],
       }),
-      Role.exists({ _id: roleId }),
+      Role.exists({ _id: role_id }),
     ]);
     if (dupl) {
       throw new ConflictErr("duplicate username, phone or email");
@@ -63,34 +63,34 @@ export const writeItem: RequestHandler = async (req, res, next) => {
       throw new BadReqErr("role not found");
     }
 
-    const newItem = new User({
+    const newUser = new User({
       attrs: Object.entries(prof).map(([k, v]) => ({
         k,
         v,
       })),
-      passwd,
-      role: roleId,
-      active: isActive,
+      password,
+      role: role_id,
+      active: is_active,
     });
-    await newItem.save();
+    await newUser.save();
 
-    res.status(201).json({
-      user: await User.populate(newItem, {
-        path: "role",
-        populate: {
-          path: "perms",
-          select: "-perm_grp",
-        },
-      }),
+    await User.populate(newUser, {
+      path: "role",
+      populate: {
+        path: "perms",
+        select: "-perm_grp",
+      },
     });
 
-    await Promise.all([
-      new InsertUserPublisher(nats.cli).publish(newItem),
+    res.status(201).json(newUser);
+
+    await Promise.allSettled([
+      new InsertUserPublisher(nats.cli).publish(newUser),
       new LogPublisher(nats.cli).publish({
         user_id: req.user?.id,
         model: User.modelName,
         action: "insert",
-        doc: newItem,
+        doc: newUser,
       }),
     ]);
   } catch (e) {

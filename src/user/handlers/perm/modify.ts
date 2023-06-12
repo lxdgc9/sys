@@ -18,7 +18,11 @@ export const modifyPerm: RequestHandler = async (req, res, next) => {
   } = req.body;
 
   try {
-    if (!code && !info && !perm_group_id) {
+    if (
+      code === undefined &&
+      info === undefined &&
+      perm_group_id === undefined
+    ) {
       throw new BadReqErr("missing fields");
     }
 
@@ -27,7 +31,7 @@ export const modifyPerm: RequestHandler = async (req, res, next) => {
       throw new BadReqErr("permission not found");
     }
 
-    const [dupl, existPermSet] = await Promise.all([
+    const [dupl, existPermGroup] = await Promise.all([
       code &&
         Perm.exists({
           $and: [
@@ -47,20 +51,24 @@ export const modifyPerm: RequestHandler = async (req, res, next) => {
         }),
     ]);
 
-    if (dupl) {
+    if (code && dupl) {
       throw new ConflictErr("code already exist");
     }
-    if (existPermSet) {
+    if (perm_group_id && !existPermGroup) {
       throw new BadReqErr("permission group not found");
     }
 
-    const modPerm = await Perm.findByIdAndUpdate(perm._id, {
-      $set: {
-        code,
-        info,
-        perm_group: perm_group_id,
+    const modPerm = await Perm.findByIdAndUpdate(
+      perm._id,
+      {
+        $set: {
+          code,
+          info,
+          perm_group: perm_group_id,
+        },
       },
-    }).populate({
+      { new: true }
+    ).populate({
       path: "perm_group",
       select: "-items",
     });
