@@ -1,19 +1,26 @@
 import { RequestHandler } from "express";
+import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { UnauthorizedErr } from "@lxdgc9/pkg/dist/err";
-import { JwtPayload } from "@lxdgc9/pkg/dist/handlers";
 import { User } from "../models/user";
 
-const refreshToken: RequestHandler = async (req, res, next) => {
-  const { token }: { token: string } = req.body;
+const login: RequestHandler = async (req, res, next) => {
+  const {
+    k,
+    v,
+    password,
+  }: {
+    k: string;
+    v: string;
+    password: string;
+  } = req.body;
 
   try {
-    const { id } = jwt.verify(
-      token,
-      process.env.REFRESH_TOKEN_SECRET!
-    ) as JwtPayload;
-
-    const user = await User.findById(id).populate<{
+    const user = await User.findOne({
+      attrs: {
+        $elemMatch: { k, v },
+      },
+    }).populate<{
       role: {
         perms: {
           code: string;
@@ -27,10 +34,15 @@ const refreshToken: RequestHandler = async (req, res, next) => {
       },
     });
     if (!user) {
-      throw new UnauthorizedErr("Invalid token");
+      throw new UnauthorizedErr("User not found");
     }
 
-    const accessToken = jwt.sign(
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      throw new UnauthorizedErr("Wrong password");
+    }
+
+    const access_token = jwt.sign(
       {
         id: user._id,
         perms: user.role.perms.map((p) => p.code),
@@ -41,21 +53,22 @@ const refreshToken: RequestHandler = async (req, res, next) => {
         expiresIn: 900, // 15*60s
       }
     );
-    const refreshToken = jwt.sign(
+    const refresh_token = jwt.sign(
       { id: user._id },
       process.env.REFRESH_TOKEN_SECRET!,
       {
-        expiresIn: 36288000, // 3600*24*60*7s
+        expiresIn: 2592000, // 3600*24*30s
       }
     );
 
     res.json({
-      accessToken,
-      refreshToken,
+      user,
+      access_token,
+      refresh_token,
     });
   } catch (e) {
     next(e);
   }
 };
 
-export default refreshToken;
+export default login;

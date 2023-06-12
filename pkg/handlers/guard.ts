@@ -1,6 +1,6 @@
 import { RequestHandler } from "express";
-import jwt, { Secret } from "jsonwebtoken";
 import { Types } from "mongoose";
+import jwt, { Secret } from "jsonwebtoken";
 import { ForbiddenErr, UnauthorizedErr } from "../err";
 
 export interface JwtPayload {

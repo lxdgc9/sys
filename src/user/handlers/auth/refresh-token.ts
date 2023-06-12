@@ -1,26 +1,19 @@
 import { RequestHandler } from "express";
-import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { UnauthorizedErr } from "@lxdgc9/pkg/dist/err";
-import { User } from "../models/user";
+import { JwtPayload } from "@lxdgc9/pkg/dist/handlers";
+import { User } from "../../models/user";
 
-const login: RequestHandler = async (req, res, next) => {
-  const {
-    k,
-    v,
-    password,
-  }: {
-    k: string;
-    v: string;
-    password: string;
-  } = req.body;
+const refreshToken: RequestHandler = async (req, res, next) => {
+  const { token }: { token: string } = req.body;
 
   try {
-    const user = await User.findOne({
-      attrs: {
-        $elemMatch: { k, v },
-      },
-    }).populate<{
+    const { id } = jwt.verify(
+      token,
+      process.env.REFRESH_TOKEN_SECRET!
+    ) as JwtPayload;
+
+    const user = await User.findById(id).populate<{
       role: {
         perms: {
           code: string;
@@ -34,12 +27,7 @@ const login: RequestHandler = async (req, res, next) => {
       },
     });
     if (!user) {
-      throw new UnauthorizedErr("User not found");
-    }
-
-    const match = await bcrypt.compare(password, user.password);
-    if (!match) {
-      throw new UnauthorizedErr("Wrong password");
+      throw new UnauthorizedErr("Invalid token");
     }
 
     const accessToken = jwt.sign(
@@ -57,12 +45,11 @@ const login: RequestHandler = async (req, res, next) => {
       { id: user._id },
       process.env.REFRESH_TOKEN_SECRET!,
       {
-        expiresIn: 2592000, // 3600*24*30s
+        expiresIn: 36288000, // 3600*24*60*7s
       }
     );
 
     res.json({
-      user,
       accessToken,
       refreshToken,
     });
@@ -71,4 +58,4 @@ const login: RequestHandler = async (req, res, next) => {
   }
 };
 
-export default login;
+export default refreshToken;
