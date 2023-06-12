@@ -16,26 +16,26 @@ export const createClass: RequestHandler = async (req, res, next) => {
     member_ids: Types.ObjectId[];
   } = req.body;
 
-  try {
-    const memIds = [...new Set(member_ids)];
+  const memberIds = [...new Set(member_ids)];
 
+  try {
     const [school, numUsers] = await Promise.all([
       School.findById(school_id),
       User.countDocuments({
-        _id: { $in: memIds },
+        user_id: { $in: memberIds },
       }),
     ]);
     if (!school) {
-      throw new BadReqErr("school not found");
+      throw new BadReqErr("School not found");
     }
-    if (numUsers < memIds.length) {
-      throw new BadReqErr("members mismatch");
+    if (numUsers < memberIds.length) {
+      throw new BadReqErr("Member mismatch");
     }
 
     const newClass = new Class({
       name,
       school: school_id,
-      members: memIds,
+      members: memberIds,
     });
     await newClass.save();
 
@@ -60,7 +60,7 @@ export const createClass: RequestHandler = async (req, res, next) => {
       }),
       User.updateMany(
         {
-          _id: { $in: memIds },
+          _id: { $in: memberIds },
         },
         {
           $addToSet: {

@@ -5,58 +5,56 @@ import { Class } from "../../models/class";
 import { School } from "../../models/school";
 import { User } from "../../models/user";
 
-export const writeItems: RequestHandler = async (req, res, next) => {
-  const items: {
+export const writeClasses: RequestHandler = async (req, res, next) => {
+  const classes: {
     name: string;
     school_id: Types.ObjectId;
     member_ids: Types.ObjectId[];
   }[] = req.body;
 
   try {
-    const [uSchIds, uMemIds] = items
+    const [schoolIds, memberIds] = classes
       .reduce(
-        (a, { school_id, member_ids }) => {
-          a[0].add(school_id);
-
-          member_ids.forEach(a[1].add, a[1]);
-
+        (a, _class) => {
+          a[0].add(_class.school_id);
+          _class.member_ids.forEach(a[1].add, a[1]);
           return a;
         },
         [new Set(), new Set()]
       )
       .map((set) => Array.from(set));
 
-    const [schCount, userCount] = await Promise.all([
+    const [numSchools, numUsers] = await Promise.all([
       School.countDocuments({
-        _id: { $in: uSchIds },
+        _id: { $in: schoolIds },
       }),
       User.countDocuments({
-        _id: { $in: uMemIds },
+        _id: { $in: memberIds },
       }),
     ]);
-    if (schCount < uSchIds.length) {
-      throw new BadReqErr("schools mismatch");
+    if (numSchools < schoolIds.length) {
+      throw new BadReqErr("School mismatch");
     }
-    if (userCount < uMemIds.length) {
-      throw new BadReqErr("members mismatch");
+    if (numUsers < memberIds.length) {
+      throw new BadReqErr("Member mismatch");
     }
 
-    const nItems = await Class.insertMany(
-      items.map(({ name, school_id, member_ids }) => ({
-        name,
-        school: school_id,
-        members: Array.from(new Set(member_ids)),
+    const newClasses = await Class.insertMany(
+      classes.map((_class) => ({
+        name: _class.name,
+        school: _class.school_id,
+        members: Array.from(new Set(_class.member_ids)),
       }))
     );
 
-    res.status(201).json(
-      await Class.populate(nItems, {
-        path: "school",
-        select: "-classes",
-      })
-    );
+    await Class.populate(newClasses, {
+      path: "school",
+      select: "-classes",
+    });
 
-    const [arr2dSchool, arr2dMember] = nItems
+    res.status(201).json(newClasses);
+
+    const [arr2dSchool, arr2dMember] = newClasses
       .reduce(
         (a, { _id, school, members }) => {
           const key = school._id.toString();

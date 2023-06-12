@@ -1,12 +1,12 @@
-import { BadReqErr } from "@lxdgc9/pkg/dist/err";
 import { RequestHandler } from "express";
 import { Types } from "mongoose";
+import { BadReqErr } from "@lxdgc9/pkg/dist/err";
+import nats from "../../nats";
 import { LogPublisher } from "../../events/publisher/log";
 import { Perm } from "../../models/perm";
 import { PermGroup } from "../../models/perm-group";
-import { nats } from "../../nats";
 
-export const writePerms: RequestHandler = async (req, res, next) => {
+const writePerms: RequestHandler = async (req, res, next) => {
   const perms: {
     code: string;
     info: string;
@@ -27,7 +27,7 @@ export const writePerms: RequestHandler = async (req, res, next) => {
       .map((set) => [...set]);
 
     if (codes.length < perms.length) {
-      throw new BadReqErr("code already exist");
+      throw new BadReqErr("Code already exist");
     }
 
     const [dupl, numGroups] = await Promise.all([
@@ -38,12 +38,11 @@ export const writePerms: RequestHandler = async (req, res, next) => {
         _id: { $in: groupIds },
       }),
     ]);
-
     if (dupl) {
-      throw new BadReqErr("code already exist");
+      throw new BadReqErr("Code already exist");
     }
     if (numGroups < groupIds.length) {
-      throw new BadReqErr("groups mismatch");
+      throw new BadReqErr("Group mismatch");
     }
 
     const nPerms = await Perm.insertMany(
@@ -53,23 +52,21 @@ export const writePerms: RequestHandler = async (req, res, next) => {
         perm_group: p.perm_group_id,
       }))
     );
-
     await Perm.populate(nPerms, {
       path: "perm_group",
       select: "-items",
     });
-
     res.status(201).json(nPerms);
 
     await Promise.allSettled([
       [
         ...nPerms
           .reduce((map, perm) => {
-            const key = perm.perm_group._id.toString();
-            if (!map.has(key)) {
-              map.set(key, []);
+            const k = perm.perm_group._id.toString();
+            if (!map.has(k)) {
+              map.set(k, []);
             }
-            map.get(key).push(perm._id);
+            map.get(k).push(perm._id);
 
             return map;
           }, new Map())
@@ -92,3 +89,5 @@ export const writePerms: RequestHandler = async (req, res, next) => {
     next(e);
   }
 };
+
+export default writePerms;

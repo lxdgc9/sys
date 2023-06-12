@@ -7,12 +7,12 @@ import {
 } from "@lxdgc9/pkg/dist/rules/course";
 import { Router } from "express";
 import { body, param } from "express-validator";
-import { delItem } from "../handlers/class/delete";
-import { delItems } from "../handlers/class/delete-many";
+import { delClass } from "../handlers/class/delete";
+import { delClasses } from "../handlers/class/delete-many";
 import { getClasses } from "../handlers/class/read-many";
-import { updateItem } from "../handlers/class/update";
+import { updateClass } from "../handlers/class/update";
 import { createClass } from "../handlers/class/write";
-import { writeItems } from "../handlers/class/write-many";
+import { writeClasses } from "../handlers/class/write-many";
 import { getUser } from "../handlers/user/read";
 
 export const r = Router();
@@ -24,9 +24,9 @@ r.route("/")
     validate(
       body("name")
         .notEmpty()
-        .withMessage("required")
+        .withMessage("Required")
         .isString()
-        .withMessage("must be string")
+        .withMessage("Must be string")
         .isLength({ min: 1, max: 255 })
         .withMessage("1 <= len <= 255"),
       body("school_id")
@@ -39,11 +39,11 @@ r.route("/")
     ),
     createClass
   )
-  .patch(guard(UPDATE_CLASS), updateItem)
+  .patch(guard(UPDATE_CLASS), updateClass)
   .delete(
     guard(DELETE_CLASS),
     validate(param("id").isMongoId().withMessage("must be mongoId")),
-    delItem
+    delClass
   );
 
 r.route("/many")
@@ -69,7 +69,7 @@ r.route("/many")
       body("*.member_ids").isArray().withMessage("must be array"),
       body("*.member_ids.*").isMongoId().withMessage("must be mongoId")
     ),
-    writeItems
+    writeClasses
   )
   .delete(
     guard(DELETE_CLASS),
@@ -79,7 +79,7 @@ r.route("/many")
         .withMessage("must be array, has aleast 1 element"),
       body("*").isMongoId().withMessage("must be mongoId")
     ),
-    delItems
+    delClasses
   );
 
 r.route("/:id")
@@ -92,5 +92,5 @@ r.route("/:id")
   .delete(
     guard(DELETE_CLASS),
     validate(param("id").isMongoId().withMessage("must be mongoId")),
-    delItem
+    delClass
   );

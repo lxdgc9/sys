@@ -1,7 +1,7 @@
 import { existsSync, mkdir } from "fs";
 import multer, { diskStorage } from "multer";
 
-export const uploader = (path: string = "/") => {
+export function uploader(path: string = "/") {
   const dest = `uploads/${path}`;
 
   if (!existsSync(dest)) {
@@ -35,4 +35,4 @@ export const uploader = (path: string = "/") => {
       fileSize: 1258291200, // ~1.2G
     },
   });
-};
+}

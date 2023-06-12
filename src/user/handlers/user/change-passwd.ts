@@ -1,35 +1,36 @@
-import { BadReqErr } from "@lxdgc9/pkg/dist/err";
-import { compare } from "bcryptjs";
 import { RequestHandler } from "express";
+import bcrypt from "bcryptjs";
+import { BadReqErr } from "@lxdgc9/pkg/dist/err";
+import nats from "../../nats";
 import { LogPublisher } from "../../events/publisher/log";
 import { User } from "../../models/user";
-import { nats } from "../../nats";
 
-export const changePasswd: RequestHandler = async (req, res, next) => {
+const changePassword: RequestHandler = async (req, res, next) => {
   const {
-    old_passwd: oldPasswd,
-    new_passwd: newPasswd,
+    old_password,
+    new_password,
   }: {
-    old_passwd: string;
-    new_passwd: string;
+    old_password: string;
+    new_password: string;
   } = req.body;
 
   try {
     const user = await User.findById(req.params.id);
     if (!user) {
-      throw new BadReqErr("user not found");
+      throw new BadReqErr("User not found");
     }
 
-    if (!(await compare(oldPasswd, user.password))) {
-      throw new BadReqErr("wrong password");
+    const match = await bcrypt.compare(old_password, user.password);
+    if (!match) {
+      throw new BadReqErr("Wrong password");
     }
 
-    user.password = newPasswd;
+    user.password = new_password;
     await user.save();
+    res.sendStatus(200);
 
-    res.json({ msg: "changed" });
-
-    await new LogPublisher(nats.cli).publish({
+    const logPublisher = new LogPublisher(nats.cli);
+    await logPublisher.publish({
       user_id: req.user?.id,
       model: User.modelName,
       action: "update",
@@ -39,3 +40,5 @@ export const changePasswd: RequestHandler = async (req, res, next) => {
     next(e);
   }
 };
+
+export default changePassword;

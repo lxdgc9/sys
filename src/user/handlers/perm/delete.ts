@@ -1,12 +1,12 @@
-import { BadReqErr } from "@lxdgc9/pkg/dist/err";
 import { RequestHandler } from "express";
+import { BadReqErr } from "@lxdgc9/pkg/dist/err";
+import nats from "../../nats";
 import { LogPublisher } from "../../events/publisher/log";
 import { Perm } from "../../models/perm";
 import { PermGroup } from "../../models/perm-group";
 import { Role } from "../../models/role";
-import { nats } from "../../nats";
 
-export const delPerm: RequestHandler = async (req, res, next) => {
+const delPerm: RequestHandler = async (req, res, next) => {
   try {
     const [perm, depend] = await Promise.all([
       Perm.findById(req.params.id).populate({
@@ -18,10 +18,10 @@ export const delPerm: RequestHandler = async (req, res, next) => {
       }),
     ]);
     if (!perm) {
-      throw new BadReqErr("permission not found");
+      throw new BadReqErr("Permission not found");
     }
     if (depend) {
-      throw new BadReqErr("found dependent");
+      throw new BadReqErr("Found dependent");
     }
 
     await perm.deleteOne();
@@ -45,3 +45,5 @@ export const delPerm: RequestHandler = async (req, res, next) => {
     next(e);
   }
 };
+
+export default delPerm;

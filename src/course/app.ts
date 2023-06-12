@@ -21,7 +21,7 @@ app.use("/api/courses/lessons", lesson);
 app.use("/api/courses/users", user);
 
 app.all("*", (_req, res) => {
-  res.status(404).json({ msg: "request not found" });
+  res.status(404).json({ msg: "Yêu cầu không tồn tại" });
 });
 
 app.use(errHandler);

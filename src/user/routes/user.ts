@@ -1,59 +1,60 @@
+import { Router } from "express";
 import { guard, validate } from "@lxdgc9/pkg/dist/handlers";
 import {
-  DELETE_USER,
   READ_USER,
-  UPDATE_USER,
   WRITE_USER,
+  UPDATE_USER,
+  DELETE_USER,
 } from "@lxdgc9/pkg/dist/rules/manage";
-import { Router } from "express";
 import { body, param } from "express-validator";
-import { changePasswd } from "../handlers/user/change-passwd";
-import { delItem } from "../handlers/user/delete";
-import { delItems } from "../handlers/user/delete-many";
-import { login } from "../handlers/login";
-import { readUser } from "../handlers/read";
-import { readUsers } from "../handlers/read-many";
-import { refreshToken } from "../handlers/refresh-token";
-import { updateItem } from "../handlers/user/update";
-import { changeAccess } from "../handlers/user/update-access";
-import { writeUser } from "../handlers/user/write";
-import { writeItems } from "../handlers/user/write-many";
+import changePassword from "../handlers/user/change-passwd";
+import changeAccess from "../handlers/user/update-access";
+import readUsers from "../handlers/read-many";
+import writeUser from "../handlers/user/write";
+import login from "../handlers/login";
+import updateUser from "../handlers/user/update";
+import refreshToken from "../handlers/refresh-token";
+import readUser from "../handlers/read";
+import writeUsers from "../handlers/user/write-many";
+import delUsers from "../handlers/user/delete-many";
+import delUser from "../handlers/user/delete";
 
-export const r = Router();
+const userRouter = Router();
 
-r.route("/")
+userRouter
+  .route("/")
   .get(guard(READ_USER), readUsers)
   .post(
     guard(WRITE_USER),
     validate(
       body("prof")
         .notEmpty()
-        .withMessage("required")
+        .withMessage("Required")
         .isObject()
-        .withMessage("must be object"),
+        .withMessage("Must be object"),
       body("prof.username")
         .notEmpty()
-        .withMessage("required")
+        .withMessage("Required")
         .isString()
-        .withMessage("must be string")
+        .withMessage("Must be string")
         .isLength({ min: 1, max: 255 })
         .withMessage("1 <= len <= 255")
         .trim()
         .toLowerCase(),
       body("prof.phone")
         .notEmpty()
-        .withMessage("required")
+        .withMessage("Required")
         .isMobilePhone("vi-VN")
         .withMessage("invalid phone number"),
       body("prof.email")
         .notEmpty()
-        .withMessage("required")
+        .withMessage("Required")
         .isEmail()
-        .withMessage("must be email")
+        .withMessage("Must be email")
         .trim(),
       body("password")
         .notEmpty()
-        .withMessage("required")
+        .withMessage("Required")
         .isStrongPassword({
           minLength: 6,
           minSymbols: 0,
@@ -63,55 +64,57 @@ r.route("/")
         .withMessage("password not strong enough"),
       body("role_id")
         .notEmpty()
-        .withMessage("required")
+        .withMessage("Required")
         .isMongoId()
-        .withMessage("must be mongoId"),
+        .withMessage("Must be mongoId"),
       body("is_active")
         .isBoolean()
-        .withMessage("must be boolean")
+        .withMessage("Must be boolean")
         .optional({ values: "undefined" })
     ),
     writeUser
   );
 
-r.route("/many")
+userRouter
+  .route("/many")
+  .get(guard(READ_USER), readUsers)
   .post(
     guard(WRITE_USER),
     validate(
       body()
         .notEmpty()
-        .withMessage("required")
+        .withMessage("Required")
         .isArray({ min: 1 })
-        .withMessage("must be array, has aleast 1 element"),
-      body("*").isObject().withMessage("must be object"),
+        .withMessage("Must be array, has aleast 1 element"),
+      body("*").isObject().withMessage("Must be object"),
       body("*.prof")
         .notEmpty()
-        .withMessage("required")
+        .withMessage("Required")
         .isObject()
-        .withMessage("must be object"),
+        .withMessage("Must be object"),
       body("*.prof.username")
         .notEmpty()
-        .withMessage("required")
+        .withMessage("Required")
         .isString()
-        .withMessage("must be string")
+        .withMessage("Must be string")
         .isLength({ min: 1, max: 255 })
         .withMessage("1 <= len <= 255")
         .trim()
         .toLowerCase(),
       body("*.prof.phone")
         .notEmpty()
-        .withMessage("required")
+        .withMessage("Required")
         .isMobilePhone("vi-VN")
         .withMessage("invalid phone number"),
       body("*.prof.email")
         .notEmpty()
-        .withMessage("required")
+        .withMessage("Required")
         .isEmail()
-        .withMessage("must be email")
+        .withMessage("Must be email")
         .trim(),
       body("*.passwd")
         .notEmpty()
-        .withMessage("required")
+        .withMessage("Required")
         .isStrongPassword({
           minLength: 6,
           minSymbols: 0,
@@ -121,53 +124,54 @@ r.route("/many")
         .withMessage("password not strong enough"),
       body("*.role_id")
         .notEmpty()
-        .withMessage("required")
+        .withMessage("Required")
         .isMongoId()
-        .withMessage("must be mongoId"),
+        .withMessage("Must be mongoId"),
       body("users.*.is_active")
         .isBoolean()
-        .withMessage("must be boolean")
+        .withMessage("Must be boolean")
         .optional({ values: "undefined" })
     ),
-    writeItems
+    writeUsers
   )
   .delete(
     guard(DELETE_USER),
     validate(
       body()
         .notEmpty()
-        .withMessage("required")
+        .withMessage("Required")
         .isArray({ min: 1 })
-        .withMessage("must be array, has aleast 1 element"),
-      body("*").isMongoId().withMessage("must be mongoId")
+        .withMessage("Must be array, has aleast 1 element"),
+      body("*").isMongoId().withMessage("Must be mongoId")
     ),
-    delItems
+    delUsers
   );
 
-r.route("/:id")
+userRouter
+  .route("/:id")
   .get(
     guard(READ_USER),
-    validate(param("id").isMongoId().withMessage("must be mongoId")),
+    validate(param("id").isMongoId().withMessage("Must be mongoId")),
     readUser
   )
   .patch(
     guard(UPDATE_USER),
     validate(
-      param("id").isMongoId().withMessage("must be mongoId"),
+      param("id").isMongoId().withMessage("Must be mongoId"),
       body("prof")
         .optional({ values: "undefined" })
         .isObject()
-        .withMessage("must be object")
+        .withMessage("Must be object")
         .custom((v) => {
           if (!Object.keys(v).length) {
-            throw new Error("Object must not be empty");
+            throw new Error("Object Must not be empty");
           }
           return true;
         }),
       body("prof.username")
         .optional({ values: "undefined" })
         .isString()
-        .withMessage("must be string")
+        .withMessage("Must be string")
         .isLength({ min: 1, max: 255 })
         .withMessage("1 <= len <= 255")
         .trim()
@@ -180,77 +184,79 @@ r.route("/:id")
         .optional({ values: "undefined" })
         .isMobilePhone("vi-VN")
         .isEmail()
-        .withMessage("must be email")
+        .withMessage("Must be email")
         .trim(),
       body("role_id")
         .optional({ values: "undefined" })
         .isMongoId()
-        .withMessage("must be mongoId")
+        .withMessage("Must be mongoId")
     ),
-    updateItem
+    updateUser
   )
   .delete(
     guard(DELETE_USER),
-    validate(param("id").isMongoId().withMessage("must be mongoId")),
-    delItem
+    validate(param("id").isMongoId().withMessage("Must be mongoId")),
+    delUser
   );
 
-r.post(
+userRouter.post(
   "/auth",
   validate(
     body("k")
       .notEmpty()
-      .withMessage("required")
+      .withMessage("Required")
       .isIn(["username", "phone", "email"])
-      .withMessage("invalid field, must be username, phone or email"),
-    body("v").notEmpty().withMessage("required"),
-    body("passwd").notEmpty().withMessage("required")
+      .withMessage("Invalid field, Must be username, phone or email"),
+    body("v").notEmpty().withMessage("Required"),
+    body("password").notEmpty().withMessage("Required")
   ),
   login
 );
 
-r.post(
+userRouter.post(
   "/auth/refresh-token",
   validate(
     body("token")
       .notEmpty()
-      .withMessage("required")
+      .withMessage("Required")
       .isString()
-      .withMessage("must be string")
+      .withMessage("Must be string")
   ),
   refreshToken
 );
 
-r.patch(
+userRouter.patch(
   "/:id/passwd",
   guard(UPDATE_USER),
   validate(
-    param("id").isMongoId().withMessage("must be mongoId"),
-    body("oldPasswd").notEmpty().withMessage("required"),
-    body("newPasswd")
+    param("id").isMongoId().withMessage("Must be mongoId"),
+    body("old_password").notEmpty().withMessage("Required"),
+    body("new_password")
       .notEmpty()
-      .withMessage("required")
+      .withMessage("Required")
       .isStrongPassword({
         minLength: 6,
         minSymbols: 0,
         minLowercase: 0,
         minUppercase: 0,
       })
-      .withMessage("password not strong enough")
+      .withMessage("Password not strong enough")
   ),
-  changePasswd
+  changePassword
 );
 
-r.patch(
+userRouter.patch(
   "/:id/active",
   guard(UPDATE_USER),
   validate(
-    param("id").isMongoId().withMessage("must be mongoId"),
+    param("id").isMongoId().withMessage("Must be mongoId"),
     body("status")
       .notEmpty()
-      .withMessage("required")
+      .withMessage("Required")
       .isBoolean()
-      .withMessage("must be boolean")
+      .withMessage("Must be boolean")
   ),
   changeAccess
 );
+
+export default userRouter;

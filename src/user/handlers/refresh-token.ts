@@ -1,23 +1,17 @@
+import { RequestHandler } from "express";
+import jwt from "jsonwebtoken";
 import { UnauthorizedErr } from "@lxdgc9/pkg/dist/err";
 import { JwtPayload } from "@lxdgc9/pkg/dist/handlers";
-import { RequestHandler } from "express";
-import { sign, verify } from "jsonwebtoken";
 import { User } from "../models/user";
-import { redis } from "../redis";
 
-export const refreshToken: RequestHandler = async (req, res, next) => {
+const refreshToken: RequestHandler = async (req, res, next) => {
   const { token }: { token: string } = req.body;
 
   try {
-    const { id } = verify(
+    const { id } = jwt.verify(
       token,
       process.env.REFRESH_TOKEN_SECRET!
     ) as JwtPayload;
-
-    const storedTk = await redis.get(`rf-tkn.${id}`);
-    if (storedTk !== token) {
-      throw new UnauthorizedErr("require login, can't refresh token");
-    }
 
     const user = await User.findById(id).populate<{
       role: {
@@ -29,14 +23,14 @@ export const refreshToken: RequestHandler = async (req, res, next) => {
       path: "role",
       populate: {
         path: "perms",
-        select: "-perm_grp",
+        select: "-perm_group",
       },
     });
     if (!user) {
-      throw new UnauthorizedErr("invalid token");
+      throw new UnauthorizedErr("Invalid token");
     }
 
-    const accessToken = sign(
+    const accessToken = jwt.sign(
       {
         id: user._id,
         perms: user.role.perms.map((p) => p.code),
@@ -47,7 +41,7 @@ export const refreshToken: RequestHandler = async (req, res, next) => {
         expiresIn: 900, // 15*60s
       }
     );
-    const refreshToken = sign(
+    const refreshToken = jwt.sign(
       { id: user._id },
       process.env.REFRESH_TOKEN_SECRET!,
       {
@@ -59,11 +53,9 @@ export const refreshToken: RequestHandler = async (req, res, next) => {
       accessToken,
       refreshToken,
     });
-
-    await redis.set(`rf-tkn.${id}`, refreshToken, {
-      EX: 36288001, // 1 + 3600*24*60*7s
-    });
   } catch (e) {
     next(e);
   }
 };
+
+export default refreshToken;

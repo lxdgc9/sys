@@ -1,12 +1,12 @@
-import { BadReqErr } from "@lxdgc9/pkg/dist/err";
 import { RequestHandler } from "express";
 import { Types } from "mongoose";
+import { BadReqErr } from "@lxdgc9/pkg/dist/err";
+import nats from "../../nats";
 import { LogPublisher } from "../../events/publisher/log";
 import { Perm } from "../../models/perm";
 import { Role } from "../../models/role";
-import { nats } from "../../nats";
 
-export const modifyRole: RequestHandler = async (req, res, next) => {
+const modifyRole: RequestHandler = async (req, res, next) => {
   const {
     name,
     level,
@@ -19,10 +19,10 @@ export const modifyRole: RequestHandler = async (req, res, next) => {
 
   try {
     if (name === undefined && level === undefined && perm_ids === undefined) {
-      throw new BadReqErr("body not empty");
+      throw new BadReqErr("Missing fields");
     }
 
-    const permIds = Array.from(new Set(perm_ids));
+    const permIds = [...new Set(perm_ids)];
 
     const [role, numPerms] = await Promise.all([
       Role.findById(req.params.id),
@@ -31,10 +31,10 @@ export const modifyRole: RequestHandler = async (req, res, next) => {
       }),
     ]);
     if (!role) {
-      throw new BadReqErr("role not found");
+      throw new BadReqErr("Role not found");
     }
     if (perm_ids && numPerms < permIds.length) {
-      throw new BadReqErr("permission mismatch");
+      throw new BadReqErr("Permission mismatch");
     }
 
     await role.updateOne({
@@ -50,23 +50,22 @@ export const modifyRole: RequestHandler = async (req, res, next) => {
           },
     });
 
-    const updItem = await Role.findById(req.params.id).populate({
+    const updRole = await Role.findById(req.params.id).populate({
       path: "perms",
       select: "-perm_group",
     });
 
-    res.json(updItem);
+    res.json(updRole);
 
     await new LogPublisher(nats.cli).publish({
       user_id: req.user?.id,
       model: Role.modelName,
       action: "update",
-      doc: await Role.populate(role, {
-        path: "perms",
-        select: "-perm_grp",
-      }),
+      doc: updRole,
     });
   } catch (e) {
     next(e);
   }
 };
+
+export default modifyRole;

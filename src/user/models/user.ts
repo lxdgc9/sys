@@ -1,6 +1,5 @@
-import { genSalt, hash } from "bcryptjs";
-import { Schema, Types, model } from "mongoose";
-import { promisify } from "util";
+import mongoose, { Schema, Types } from "mongoose";
+import bcrypt from "bcryptjs";
 
 interface IUser {
   attrs: {
@@ -58,21 +57,21 @@ schema.index({
   "attrs.v": 1,
 });
 
-schema.pre("save", async function (next) {
+schema.pre("save", async function(next) {
   try {
-    const salt = await genSalt(10);
-    this.password = await promisify(hash)(this.password, salt);
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
     next();
   } catch (e) {
     console.log(e);
   }
 });
 
-schema.pre("insertMany", async function (next, users: IUser[]) {
+schema.pre("insertMany", async function(next, users: IUser[]) {
   try {
-    const salt = await genSalt(10);
+    const salt = await bcrypt.genSalt(10);
     const hashedPwds = await Promise.all(
-      users.map((user) => promisify(hash)(user.password, salt))
+      users.map((user) => bcrypt.hash(user.password, salt))
     );
 
     users.forEach((user, idx) => {
@@ -84,4 +83,4 @@ schema.pre("insertMany", async function (next, users: IUser[]) {
   }
 });
 
-export const User = model<IUser>("user", schema);
+export const User = mongoose.model<IUser>("user", schema);

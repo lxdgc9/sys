@@ -1,12 +1,12 @@
-import { BadReqErr, ConflictErr } from "@lxdgc9/pkg/dist/err";
 import { RequestHandler } from "express";
 import { Types } from "mongoose";
+import { BadReqErr, ConflictErr } from "@lxdgc9/pkg/dist/err";
+import nats from "../../nats";
 import { LogPublisher } from "../../events/publisher/log";
 import { Perm } from "../../models/perm";
 import { PermGroup } from "../../models/perm-group";
-import { nats } from "../../nats";
 
-export const writePerm: RequestHandler = async (req, res, next) => {
+const writePerm: RequestHandler = async (req, res, next) => {
   const {
     code,
     info,
@@ -24,10 +24,10 @@ export const writePerm: RequestHandler = async (req, res, next) => {
     ]);
 
     if (dupl) {
-      throw new ConflictErr("code already exist");
+      throw new ConflictErr("Code already exist");
     }
     if (!group) {
-      throw new BadReqErr("permission group not found");
+      throw new BadReqErr("Permission Group not found");
     }
 
     const perm = new Perm({
@@ -36,12 +36,10 @@ export const writePerm: RequestHandler = async (req, res, next) => {
       perm_group: group,
     });
     await perm.save();
-
     await Perm.populate(perm, {
       path: "perm_group",
       select: "-items",
     });
-
     res.status(201).json(perm);
 
     await Promise.allSettled([
@@ -61,3 +59,5 @@ export const writePerm: RequestHandler = async (req, res, next) => {
     next(e);
   }
 };
+
+export default writePerm;

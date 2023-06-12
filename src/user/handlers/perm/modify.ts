@@ -1,12 +1,12 @@
 import { RequestHandler } from "express";
 import { Types } from "mongoose";
 import { BadReqErr, ConflictErr } from "@lxdgc9/pkg/dist/err";
+import nats from "../../nats";
 import { LogPublisher } from "../../events/publisher/log";
 import { Perm } from "../../models/perm";
 import { PermGroup } from "../../models/perm-group";
-import { nats } from "../../nats";
 
-export const modifyPerm: RequestHandler = async (req, res, next) => {
+const modifyPerm: RequestHandler = async (req, res, next) => {
   const {
     code,
     info,
@@ -23,39 +23,36 @@ export const modifyPerm: RequestHandler = async (req, res, next) => {
       info === undefined &&
       perm_group_id === undefined
     ) {
-      throw new BadReqErr("missing fields");
+      throw new BadReqErr("Missing fields");
     }
 
     const perm = await Perm.findById(req.params.id);
     if (!perm) {
-      throw new BadReqErr("permission not found");
+      throw new BadReqErr("Permission not found");
     }
 
-    const [dupl, existPermGroup] = await Promise.all([
+    const [dupl, existGroup] = await Promise.all([
       code &&
-        Perm.exists({
-          $and: [
-            {
-              _id: {
-                $ne: perm._id,
-              },
-            },
-            { code },
-          ],
-        }),
-      perm_group_id &&
-        PermGroup.exists({
-          _id: {
-            $in: perm_group_id,
+      Perm.exists({
+        $and: [
+          {
+            _id: { $ne: perm._id },
           },
-        }),
+          { code },
+        ],
+      }),
+      perm_group_id &&
+      PermGroup.exists({
+        _id: {
+          $in: perm_group_id,
+        },
+      }),
     ]);
-
     if (code && dupl) {
-      throw new ConflictErr("code already exist");
+      throw new ConflictErr("Code already exist");
     }
-    if (perm_group_id && !existPermGroup) {
-      throw new BadReqErr("permission group not found");
+    if (perm_group_id && !existGroup) {
+      throw new BadReqErr("Permission Group not found");
     }
 
     const modPerm = await Perm.findByIdAndUpdate(
@@ -97,3 +94,5 @@ export const modifyPerm: RequestHandler = async (req, res, next) => {
     next(e);
   }
 };
+
+export default modifyPerm;

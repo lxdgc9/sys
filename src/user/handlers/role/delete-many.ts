@@ -1,12 +1,12 @@
-import { BadReqErr } from "@lxdgc9/pkg/dist/err";
 import { RequestHandler } from "express";
 import { Types } from "mongoose";
+import { BadReqErr } from "@lxdgc9/pkg/dist/err";
+import nats from "../../nats";
 import { LogPublisher } from "../../events/publisher/log";
 import { Role } from "../../models/role";
 import { User } from "../../models/user";
-import { nats } from "../../nats";
 
-export const delItems: RequestHandler = async (req, res, next) => {
+const delRoles: RequestHandler = async (req, res, next) => {
   const ids: Types.ObjectId[] = Array.from(new Set(req.body));
 
   try {
@@ -19,17 +19,17 @@ export const delItems: RequestHandler = async (req, res, next) => {
       }),
     ]);
     if (items.length < ids.length) {
-      throw new BadReqErr("item mismatch");
+      throw new BadReqErr("Roles mismatch");
     }
     if (depend) {
-      throw new BadReqErr("found dependent");
+      throw new BadReqErr("Found dependent");
     }
 
     await Role.deleteMany({
       _id: { $in: ids },
     });
 
-    res.json({ msg: "ok" });
+    res.sendStatus(204);
 
     await new LogPublisher(nats.cli).publish({
       user_id: req.user?.id,
@@ -44,3 +44,5 @@ export const delItems: RequestHandler = async (req, res, next) => {
     next(e);
   }
 };
+
+export default delRoles;

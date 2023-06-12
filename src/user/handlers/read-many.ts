@@ -1,7 +1,7 @@
 import { RequestHandler } from "express";
 import { User } from "../models/user";
 
-export const readUsers: RequestHandler = async (_req, res, next) => {
+const readUsers: RequestHandler = async (_req, res, next) => {
   try {
     const users = await User.find().populate({
       path: "role",
@@ -13,3 +13,5 @@ export const readUsers: RequestHandler = async (_req, res, next) => {
     next(e);
   }
 };
+
+export default readUsers;

@@ -1,13 +1,13 @@
-import { BadReqErr, ConflictErr } from "@lxdgc9/pkg/dist/err";
 import { RequestHandler } from "express";
 import { Types } from "mongoose";
+import { BadReqErr, ConflictErr } from "@lxdgc9/pkg/dist/err";
+import nats from "../../nats";
 import { LogPublisher } from "../../events/publisher/log";
 import { InsertUserPublisher } from "../../events/publisher/user/insert";
 import { Role } from "../../models/role";
 import { User } from "../../models/user";
-import { nats } from "../../nats";
 
-export const writeUser: RequestHandler = async (req, res, next) => {
+const writeUser: RequestHandler = async (req, res, next) => {
   const {
     prof,
     password,
@@ -57,10 +57,10 @@ export const writeUser: RequestHandler = async (req, res, next) => {
       Role.exists({ _id: role_id }),
     ]);
     if (dupl) {
-      throw new ConflictErr("duplicate username, phone or email");
+      throw new ConflictErr("Duplicate username, phone or email");
     }
     if (!exstRole) {
-      throw new BadReqErr("role not found");
+      throw new BadReqErr("Role not found");
     }
 
     const newUser = new User({
@@ -97,3 +97,5 @@ export const writeUser: RequestHandler = async (req, res, next) => {
     next(e);
   }
 };
+
+export default writeUser;

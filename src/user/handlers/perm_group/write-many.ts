@@ -1,14 +1,13 @@
 import { RequestHandler } from "express";
+import nats from "../../nats";
 import { LogPublisher } from "../../events/publisher/log";
 import { PermGroup } from "../../models/perm-group";
-import { nats } from "../../nats";
 
-export const writePermGroups: RequestHandler = async (req, res, next) => {
+const writePermGroups: RequestHandler = async (req, res, next) => {
   const groups: { name: string }[] = req.body;
 
   try {
     const nGroups = await PermGroup.insertMany(groups);
-
     res.status(201).json(nGroups);
 
     await new LogPublisher(nats.cli).publish({
@@ -21,3 +20,5 @@ export const writePermGroups: RequestHandler = async (req, res, next) => {
     next(e);
   }
 };
+
+export default writePermGroups;

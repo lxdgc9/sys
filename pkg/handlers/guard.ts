@@ -1,5 +1,5 @@
 import { RequestHandler } from "express";
-import { verify } from "jsonwebtoken";
+import jwt, { Secret } from "jsonwebtoken";
 import { Types } from "mongoose";
 import { ForbiddenErr, UnauthorizedErr } from "../err";
 
@@ -18,31 +18,35 @@ declare global {
 }
 
 export function guard(...rules: string[]) {
-  const hfunc: RequestHandler = (req, _res, next) => {
+  const handler: RequestHandler = (req, _res, next) => {
     const token = req.headers.authorization?.split(" ")[1];
     if (!token) {
       if (process.env.NODE_ENV === "dev") {
         return next();
       }
-      throw new UnauthorizedErr("require token");
+
+      throw new UnauthorizedErr("Require token");
     }
 
     try {
-      req.user = verify(token, process.env.ACCESS_TOKEN_SECRET!) as JwtPayload;
+      req.user = jwt.verify(
+        token,
+        process.env.ACCESS_TOKEN_SECRET as Secret
+      ) as JwtPayload;
 
       if (!req.user.is_active) {
-        throw new ForbiddenErr("access denied");
+        throw new ForbiddenErr("Access denied");
       }
 
-      if (rules.length && !req.user.rules.some((p) => rules.includes(p))) {
-        throw new ForbiddenErr("permission denied");
+      if (rules.length > 0 && !req.user.rules.some((r) => rules.includes(r))) {
+        throw new ForbiddenErr("Permission denied");
       }
 
       next();
-    } catch (e) {
-      next(e);
+    } catch (err) {
+      next(err);
     }
   };
 
-  return hfunc;
+  return handler;
 }

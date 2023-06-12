@@ -1,4 +1,4 @@
-import { Schema, Types, model } from "mongoose";
+import mongoose, { Schema, Types } from "mongoose";
 
 interface IRole {
   name: string;
@@ -23,4 +23,4 @@ const schema = new Schema<IRole>({
   ],
 });
 
-export const Role = model<IRole>("role", schema);
+export const Role = mongoose.model<IRole>("role", schema);

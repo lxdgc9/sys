@@ -1,19 +1,18 @@
-import { UnauthorizedErr } from "@lxdgc9/pkg/dist/err";
-import { compare } from "bcryptjs";
 import { RequestHandler } from "express";
-import { sign } from "jsonwebtoken";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import { UnauthorizedErr } from "@lxdgc9/pkg/dist/err";
 import { User } from "../models/user";
-import { redis } from "../redis";
 
-export const login: RequestHandler = async (req, res, next) => {
+const login: RequestHandler = async (req, res, next) => {
   const {
     k,
     v,
-    passwd,
+    password,
   }: {
     k: string;
     v: string;
-    passwd: string;
+    password: string;
   } = req.body;
 
   try {
@@ -31,18 +30,19 @@ export const login: RequestHandler = async (req, res, next) => {
       path: "role",
       populate: {
         path: "perms",
-        select: "-perm_grp",
+        select: "-perm_group",
       },
     });
     if (!user) {
-      throw new UnauthorizedErr("user not found");
+      throw new UnauthorizedErr("User not found");
     }
 
-    if (!(await compare(passwd, user.password))) {
-      throw new UnauthorizedErr("wrong password");
+    const match = await bcrypt.compare(password, user.password);
+    if (!match) {
+      throw new UnauthorizedErr("Wrong password");
     }
 
-    const accessToken = sign(
+    const accessToken = jwt.sign(
       {
         id: user._id,
         perms: user.role.perms.map((p) => p.code),
@@ -53,7 +53,7 @@ export const login: RequestHandler = async (req, res, next) => {
         expiresIn: 900, // 15*60s
       }
     );
-    const refreshToken = sign(
+    const refreshToken = jwt.sign(
       { id: user._id },
       process.env.REFRESH_TOKEN_SECRET!,
       {
@@ -66,11 +66,9 @@ export const login: RequestHandler = async (req, res, next) => {
       accessToken,
       refreshToken,
     });
-
-    await redis.set(`rf-tkn.${user._id}`, refreshToken, {
-      EX: 2592001, // 1 + 3600*24*30s
-    });
   } catch (e) {
     next(e);
   }
 };
+
+export default login;

@@ -1,11 +1,11 @@
-import { BadReqErr } from "@lxdgc9/pkg/dist/err";
 import { RequestHandler } from "express";
+import { BadReqErr } from "@lxdgc9/pkg/dist/err";
+import nats from "../../nats";
 import { LogPublisher } from "../../events/publisher/log";
-import { UpdateUserPublisher } from "../../events/publisher/user/mod";
+import { UpdateUserPublisher } from "../../events/publisher/user/update";
 import { User } from "../../models/user";
-import { nats } from "../../nats";
 
-export const changeAccess: RequestHandler = async (req, res, next) => {
+const changeAccess: RequestHandler = async (req, res, next) => {
   const { status } = req.body;
 
   try {
@@ -28,7 +28,7 @@ export const changeAccess: RequestHandler = async (req, res, next) => {
       }
     );
     if (!user) {
-      throw new BadReqErr("user not found");
+      throw new BadReqErr("User not found");
     }
 
     res.json(user);
@@ -49,3 +49,5 @@ export const changeAccess: RequestHandler = async (req, res, next) => {
     next(e);
   }
 };
+
+export default changeAccess;

@@ -1,7 +1,7 @@
 import { RequestHandler } from "express";
 import { Role } from "../../models/role";
 
-export const readRoles: RequestHandler = async (_req, res, next) => {
+const readRoles: RequestHandler = async (_req, res, next) => {
   try {
     const roles = await Role.find().populate({
       path: "perms",
@@ -13,3 +13,5 @@ export const readRoles: RequestHandler = async (_req, res, next) => {
     next(e);
   }
 };
+
+export default readRoles;

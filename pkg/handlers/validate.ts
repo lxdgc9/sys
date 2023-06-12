@@ -1,11 +1,9 @@
 import { RequestHandler } from "express";
 import { ValidationChain, validationResult } from "express-validator";
 
-export function validate(...chains: ValidationChain[]) {
-  const hfunc: RequestHandler = async (req, res, next) => {
-    for (const ch of chains) {
-      await ch.run(req);
-    }
+export function validator(...chains: ValidationChain[]) {
+  const handler: RequestHandler = async (req, res, next) => {
+    await Promise.all(chains.map((ch) => ch.run(req)));
 
     const errs = validationResult(req);
     if (!errs.isEmpty()) {
@@ -15,5 +13,5 @@ export function validate(...chains: ValidationChain[]) {
     next();
   };
 
-  return hfunc;
+  return handler;
 }

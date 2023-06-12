@@ -1,4 +1,4 @@
-import { Schema, Types, model } from "mongoose";
+import mongoose, { Schema, Types } from "mongoose";
 
 interface IPerm {
   code: string;
@@ -23,4 +23,4 @@ const schema = new Schema<IPerm>({
   },
 });
 
-export const Perm = model<IPerm>("perm", schema);
+export const Perm = mongoose.model<IPerm>("perm", schema);

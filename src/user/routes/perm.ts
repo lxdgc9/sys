@@ -1,71 +1,74 @@
-import { guard, validate } from "@lxdgc9/pkg/dist/handlers";
-import {
-  DELETE_PERM,
-  READ_PERM,
-  UPDATE_PERM,
-  WRITE_PERM,
-} from "@lxdgc9/pkg/dist/rules/manage";
 import { Router } from "express";
 import { body, param } from "express-validator";
-import { delPerm } from "../handlers/perm/delete";
-import { delPerms } from "../handlers/perm/delete-many";
-import { readPerm } from "../handlers/perm/read";
-import { readPerms } from "../handlers/perm/read-many";
-import { modifyPerm } from "../handlers/perm/modify";
-import { writePerm } from "../handlers/perm/write";
-import { writePerms } from "../handlers/perm/write-many";
+import { guard, validate } from "@lxdgc9/pkg/dist/handlers";
+import {
+  READ_PERM,
+  WRITE_PERM,
+  UPDATE_PERM,
+  DELETE_PERM,
+} from "@lxdgc9/pkg/dist/rules/manage";
+import readPerm from "../handlers/perm/read";
+import readPerms from "../handlers/perm/read-many";
+import writePerm from "../handlers/perm/write";
+import writePerms from "../handlers/perm/write-many";
+import modifyPerm from "../handlers/perm/modify";
+import delPerm from "../handlers/perm/delete";
+import delPerms from "../handlers/perm/delete-many";
 
-export const r = Router();
+const permRouter = Router();
 
-r.route("/")
+permRouter
+  .route("/")
   .get(guard(READ_PERM), readPerms)
   .post(
     guard(WRITE_PERM),
     validate(
       body("code")
         .notEmpty()
-        .withMessage("required")
+        .withMessage("Required")
         .isString()
-        .withMessage("must be string")
+        .withMessage("Must be string")
         .isLength({ min: 1, max: 255 })
         .withMessage("1 <= len <= 255"),
       body("info")
         .notEmpty()
-        .withMessage("required")
+        .withMessage("Required")
         .isString()
-        .withMessage("must be string")
+        .withMessage("Must be string")
         .isLength({ min: 1, max: 255 })
         .withMessage("1 <= len <= 255"),
       body("perm_group_id")
         .notEmpty()
-        .withMessage("required")
+        .withMessage("Required")
         .isMongoId()
-        .withMessage("must be mongoId")
+        .withMessage("Must be string")
     ),
     writePerm
   );
 
-r.route("/many")
+permRouter
+  .route("/many")
+  .get(guard(READ_PERM), readPerms)
   .post(
     guard(WRITE_PERM),
     validate(
       body()
         .notEmpty()
-        .withMessage("required")
+        .withMessage("Required")
         .isArray({ min: 1 })
-        .withMessage("must be array, has aleast 1 element"),
-      body("*").isObject().withMessage("must be object"),
+        .withMessage("Should be at least 1 element"),
+      body("*").isObject().withMessage("Must be object"),
       body("*.code")
         .isString()
-        .withMessage("must be string")
+        .withMessage("Must be string")
         .isLength({ min: 1, max: 255 })
         .withMessage("1 <= len <= 255"),
       body("*.info")
         .isString()
-        .withMessage("must be string")
+        .withMessage("Must be string")
         .isLength({ min: 1, max: 255 })
         .withMessage("1 <= len <= 255"),
-      body("*.perm_group_id").isMongoId().withMessage("must be mongoId")
+      body("*.perm_group_id").isMongoId().withMessage("Must be mongoId")
     ),
     writePerms
   )
@@ -74,44 +77,47 @@ r.route("/many")
     validate(
       body()
         .notEmpty()
-        .withMessage("required")
+        .withMessage("Required")
         .isArray({ min: 1 })
-        .withMessage("must be array, has aleast 1 element"),
-      body("*").isMongoId().withMessage("must be mongoId")
+        .withMessage("Should be at least 1 element"),
+      body("*").isMongoId().withMessage("Must be mongoId")
     ),
     delPerms
   );
 
-r.route("/:id")
+permRouter
+  .route("/:id")
   .get(
     guard(READ_PERM),
-    validate(param("id").isMongoId().withMessage("must be mongoId")),
+    validate(param("id").isMongoId().withMessage("Must be mongoId")),
     readPerm
   )
   .patch(
     guard(UPDATE_PERM),
     validate(
-      param("id").isMongoId().withMessage("must be mongoId"),
+      param("id").isMongoId().withMessage("Must be mongoId"),
       body("code")
         .optional({ values: "undefined" })
         .isString()
-        .withMessage("must be string")
+        .withMessage("Must be string")
         .isLength({ min: 1, max: 255 })
         .withMessage("1 <= len <= 255"),
       body("info")
         .optional({ values: "undefined" })
         .isString()
-        .withMessage("must be string")
+        .withMessage("Must be string")
         .isLength({ min: 1, max: 255 }),
       body("perm_group_id")
         .optional({ values: "undefined" })
         .isMongoId()
-        .withMessage("must be mongoId")
+        .withMessage("Must be mongoId")
     ),
     modifyPerm
   )
   .delete(
     guard(DELETE_PERM),
-    validate(param("id").isMongoId().withMessage("must be mongoId")),
+    validate(param("id").isMongoId().withMessage("Must be mongoId")),
     delPerm
   );
+
+export default permRouter;

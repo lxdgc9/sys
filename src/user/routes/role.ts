@@ -1,71 +1,74 @@
-import { guard, validate } from "@lxdgc9/pkg/dist/handlers";
-import {
-  DELETE_ROLE,
-  READ_ROLE,
-  UPDATE_ROLE,
-  WRITE_ROLE,
-} from "@lxdgc9/pkg/dist/rules/manage";
 import { Router } from "express";
 import { body, param } from "express-validator";
-import { delItem } from "../handlers/role/delete";
-import { delItems } from "../handlers/role/delete-many";
-import { readRole } from "../handlers/role/read";
-import { readRoles } from "../handlers/role/read-many";
-import { modifyRole } from "../handlers/role/modify";
-import { writeRole } from "../handlers/role/write";
-import { writePerms } from "../handlers/role/write-many";
+import { guard, validate } from "@lxdgc9/pkg/dist/handlers";
+import {
+  READ_ROLE,
+  WRITE_ROLE,
+  UPDATE_ROLE,
+  DELETE_ROLE,
+} from "@lxdgc9/pkg/dist/rules/manage";
+import readRole from "../handlers/role/read";
+import readRoles from "../handlers/role/read-many";
+import writeRole from "../handlers/role/write";
+import writePerms from "../handlers/perm/write-many";
+import modifyRole from "../handlers/role/modify";
+import delRole from "../handlers/role/delete";
+import delRoles from "../handlers/role/delete-many";
 
-export const r = Router();
+export const roleRouter = Router();
 
-r.route("/")
+roleRouter
+  .route("/")
   .get(guard(READ_ROLE), readRoles)
   .post(
     guard(WRITE_ROLE),
     validate(
       body("name")
         .notEmpty()
-        .withMessage("required")
+        .withMessage("Required")
         .withMessage({ min: 1, max: 255 })
         .withMessage("1 <= len <= 255"),
-      body("level").isInt({ min: 0 }).withMessage("must be number, >= 0"),
+      body("level").isInt({ min: 0 }).withMessage("Must be number, >= 0"),
       body("perm_ids")
         .notEmpty()
-        .withMessage("required")
+        .withMessage("Required")
         .isArray()
-        .withMessage("must be array"),
-      body("perm_ids.*").isMongoId().withMessage("must be mongoId")
+        .withMessage("Must be array"),
+      body("perm_ids.*").isMongoId().withMessage("Must be mongoId")
     ),
     writeRole
   );
 
-r.route("/many")
+roleRouter
+  .route("/many")
+  .get(guard(READ_ROLE), readRoles)
   .post(
     guard(WRITE_ROLE),
     validate(
       body()
         .notEmpty()
-        .withMessage("required")
+        .withMessage("Required")
         .isArray({ min: 1 })
-        .withMessage("must be array, has aleast 1 element"),
-      body("*").isObject().withMessage("must be object"),
+        .withMessage("Should be at least 1 element"),
+      body("*").isObject().withMessage("Must be object"),
       body("*.name")
         .notEmpty()
-        .withMessage("required")
+        .withMessage("Required")
         .isString()
-        .withMessage("must be string")
+        .withMessage("Must be string")
         .isLength({ min: 1, max: 255 })
         .withMessage("1 <= len <= 255"),
       body("*.level")
         .notEmpty()
-        .withMessage("required")
+        .withMessage("Required")
         .isInt({ min: 0 })
-        .withMessage("must be number, >= 0"),
-      body("*.perm_ids").isArray().withMessage("must be array"),
+        .withMessage("Must be number, >= 0"),
+      body("*.perm_ids").isArray().withMessage("Must be array"),
       body("*.perm_ids.*")
         .notEmpty()
-        .withMessage("required")
+        .withMessage("Required")
         .isMongoId()
-        .withMessage("must be mongoId")
+        .withMessage("Must be mongoId")
     ),
     writePerms
   )
@@ -74,37 +77,44 @@ r.route("/many")
     validate(
       body()
         .notEmpty()
-        .withMessage("required")
+        .withMessage("Required")
         .isArray({ min: 1 })
-        .withMessage("must be array, has aleast 1 element"),
-      body("*").isMongoId().withMessage("must be mongoId")
+        .withMessage("Should be at least 1 element"),
+      body("*").isMongoId().withMessage("Must be mongoId")
     ),
-    delItems
+    delRoles
   );
 
-r.route("/:id")
+roleRouter
+  .route("/:id")
   .get(
     guard(READ_ROLE),
-    validate(param("id").isMongoId().withMessage("must be mongoId")),
+    validate(param("id").isMongoId().withMessage("Must be mongoId")),
     readRole
   )
   .patch(
     guard(UPDATE_ROLE),
     validate(
-      param("id").isMongoId().withMessage("must be mongoId"),
+      param("id").isMongoId().withMessage("Must be mongoId"),
       body("name")
         .optional({ values: "undefined" })
         .isString()
-        .withMessage("must be string")
+        .withMessage("Must be string")
         .isLength({ min: 1, max: 255 })
         .withMessage("1 <= len <= 255"),
       body("level")
         .optional({ values: "undefined" })
         .isInt({ min: 0 })
-        .withMessage("must be number, >= 0"),
+        .withMessage("Must be number, >= 0"),
       body("perm_ids").optional({ values: "undefined" }).isArray({ min: 1 }),
-      body("perm_ids.*").isMongoId().withMessage("must be mongoId")
+      body("perm_ids.*").isMongoId().withMessage("Must be mongoId")
     ),
     modifyRole
   )
-  .delete(guard(DELETE_ROLE), validate(param("id").isMongoId()), delItem);
+  .delete(
+    guard(DELETE_ROLE),
+    validate(param("id").isMongoId().withMessage("Must be mongoId")),
+    delRole
+  );
+
+export default roleRouter;

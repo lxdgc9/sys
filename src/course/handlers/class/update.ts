@@ -5,7 +5,7 @@ import { Class } from "../../models/class";
 import { School } from "../../models/school";
 import { User } from "../../models/user";
 
-export const updateItem: RequestHandler = async (req, res, next) => {
+export const updateClass: RequestHandler = async (req, res, next) => {
   const {
     name,
     schoolId,
@@ -33,7 +33,7 @@ export const updateItem: RequestHandler = async (req, res, next) => {
       throw new BadReqErr("school not found");
     }
     if (memberIds?.length && numMembers < memberIds.length) {
-      throw new BadReqErr("memberIds mismatch");
+      throw new BadReqErr("members mismatch");
     }
 
     await Promise.all([

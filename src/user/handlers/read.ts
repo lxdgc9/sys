@@ -2,17 +2,17 @@ import { NotFoundErr } from "@lxdgc9/pkg/dist/err";
 import { RequestHandler } from "express";
 import { User } from "../models/user";
 
-export const readUser: RequestHandler = async (req, res, next) => {
+const readUser: RequestHandler = async (req, res, next) => {
   try {
     const user = await User.findById(req.params.id).populate({
       path: "role",
       populate: {
         path: "perms",
-        select: "-perm_grp",
+        select: "-perm_group",
       },
     });
     if (!user) {
-      throw new NotFoundErr("user not found");
+      throw new NotFoundErr("User not found");
     }
 
     res.json(user);
@@ -20,3 +20,5 @@ export const readUser: RequestHandler = async (req, res, next) => {
     next(e);
   }
 };
+
+export default readUser;

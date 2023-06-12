@@ -1,4 +1,4 @@
-import { Schema, Types, model } from "mongoose";
+import mongoose, { Schema, Types } from "mongoose";
 
 interface IPermGroup {
   name: string;
@@ -18,4 +18,4 @@ const schema = new Schema<IPermGroup>({
   ],
 });
 
-export const PermGroup = model<IPermGroup>("perm_group", schema);
+export const PermGroup = mongoose.model<IPermGroup>("perm_group", schema);

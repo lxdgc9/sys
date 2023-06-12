@@ -1,14 +1,14 @@
-import { BadReqErr, ConflictErr } from "@lxdgc9/pkg/dist/err";
 import { RequestHandler } from "express";
 import { Types } from "mongoose";
+import { BadReqErr, ConflictErr } from "@lxdgc9/pkg/dist/err";
+import nats from "../../nats";
 import { LogPublisher } from "../../events/publisher/log";
 import { InsertManyUserPublisher } from "../../events/publisher/user/insert-many";
 import { Role } from "../../models/role";
 import { User } from "../../models/user";
-import { nats } from "../../nats";
 
-export const writeItems: RequestHandler = async (req, res, next) => {
-  const items: {
+const writeUsers: RequestHandler = async (req, res, next) => {
+  const users: {
     prof: object & {
       username: string;
       phone: string;
@@ -20,35 +20,35 @@ export const writeItems: RequestHandler = async (req, res, next) => {
   }[] = req.body;
 
   try {
-    const [usrnames, phones, emails, rolesIds] = items
+    const [usernames, phones, emails, roleIds] = users
       .reduce(
-        (a, { prof: { username, phone, email }, role_id: roleId }) => {
+        (a, { prof: { username, phone, email }, role_id }) => {
           a[0].add(username);
           a[1].add(phone);
           a[2].add(email);
-          a[3].add(roleId);
+          a[3].add(role_id);
 
           return a;
         },
         [new Set(), new Set(), new Set(), new Set()]
       )
-      .map((set) => Array.from(set));
+      .map((set) => [...set]);
     if (
-      usrnames.length < items.length ||
-      phones.length < items.length ||
-      emails.length < items.length
+      usernames.length < users.length ||
+      phones.length < users.length ||
+      emails.length < users.length
     ) {
-      throw new ConflictErr("duplicate fields");
+      throw new ConflictErr("Duplicate fields");
     }
 
-    const [dupl, roleCount] = await Promise.all([
+    const [dupl, numRoles] = await Promise.all([
       User.exists({
         $or: [
           {
             attrs: {
               $elemMatch: {
                 k: "username",
-                v: usrnames,
+                v: usernames,
               },
             },
           },
@@ -71,18 +71,18 @@ export const writeItems: RequestHandler = async (req, res, next) => {
         ],
       }),
       Role.countDocuments({
-        _id: { $in: rolesIds },
+        _id: { $in: roleIds },
       }),
     ]);
     if (dupl) {
-      throw new ConflictErr("duplicate fields");
+      throw new ConflictErr("Duplicate fields");
     }
-    if (roleCount < rolesIds.length) {
-      throw new BadReqErr("role mismatch");
+    if (numRoles < roleIds.length) {
+      throw new BadReqErr("Role mismatch");
     }
 
-    const newItems = await User.insertMany(
-      items.map(({ prof, passwd, role_id: roleId, is_active: isActive }) => ({
+    const newUsers = await User.insertMany(
+      users.map(({ prof, passwd, role_id: roleId, is_active: isActive }) => ({
         attrs: Object.entries(prof).map(([k, v]) => ({
           k,
           v,
@@ -93,23 +93,25 @@ export const writeItems: RequestHandler = async (req, res, next) => {
       }))
     );
 
-    res.status(201).json({
-      users: await User.populate(newItems, {
-        path: "role",
-        select: "-perms",
-      }),
+    await User.populate(newUsers, {
+      path: "role",
+      select: "-perms",
     });
 
+    res.status(201).json(newUsers);
+
     await Promise.all([
-      new InsertManyUserPublisher(nats.cli).publish(newItems),
+      new InsertManyUserPublisher(nats.cli).publish(newUsers),
       new LogPublisher(nats.cli).publish({
         model: User.modelName,
         user_id: req.user?.id,
         action: "insert",
-        doc: newItems,
+        doc: newUsers,
       }),
     ]);
   } catch (e) {
     next(e);
   }
 };
+
+export default writeUsers;

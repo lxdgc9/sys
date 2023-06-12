@@ -9,12 +9,12 @@ export const errHandler: ErrorRequestHandler = (err, _req, res, _next) => {
   }
 
   if (err.name === "JsonWebTokenError") {
-    return res.status(401).json({ msg: "invalid token" });
+    return res.status(401).json({ msg: "Invalid token" });
   }
 
   if (err.name === "TokenExpiredError") {
-    return res.status(401).json({ msg: "token has expired" });
+    return res.status(401).json({ msg: "Token expired" });
   }
 
-  res.status(500).json({ msg: "something went wrong" });
+  res.status(500).json({ msg: "Something went wrong" });
 };

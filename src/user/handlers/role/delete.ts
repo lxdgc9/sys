@@ -1,32 +1,31 @@
-import { BadReqErr } from "@lxdgc9/pkg/dist/err";
 import { RequestHandler } from "express";
+import { BadReqErr } from "@lxdgc9/pkg/dist/err";
+import nats from "../../nats";
 import { LogPublisher } from "../../events/publisher/log";
 import { Role } from "../../models/role";
 import { User } from "../../models/user";
-import { nats } from "../../nats";
 
-export const delItem: RequestHandler = async (req, res, next) => {
+const delRole: RequestHandler = async (req, res, next) => {
   try {
-    const [item, depend] = await Promise.all([
+    const [role, depend] = await Promise.all([
       Role.findById(req.params.id),
       User.exists({ role: req.params.id }),
     ]);
-    if (!item) {
-      throw new BadReqErr("item not found");
+    if (!role) {
+      throw new BadReqErr("Role not found");
     }
     if (depend) {
-      throw new BadReqErr("found dependent");
+      throw new BadReqErr("Found dependent");
     }
 
-    await item.deleteOne();
-
-    res.json({ msg: "ok" });
+    await role.deleteOne();
+    res.sendStatus(204);
 
     await new LogPublisher(nats.cli).publish({
       user_id: req.user?.id,
       model: Role.modelName,
       action: "delete",
-      doc: await Role.populate(item, {
+      doc: await Role.populate(role, {
         path: "perms",
         select: "-perm_grp",
       }),
@@ -35,3 +34,5 @@ export const delItem: RequestHandler = async (req, res, next) => {
     next(e);
   }
 };
+
+export default delRole;

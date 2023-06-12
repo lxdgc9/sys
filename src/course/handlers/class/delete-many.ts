@@ -4,17 +4,17 @@ import { Types } from "mongoose";
 import { Class } from "../../models/class";
 import { School } from "../../models/school";
 
-export const delItems: RequestHandler = async (req, res, next) => {
+export const delClasses: RequestHandler = async (req, res, next) => {
   const ids: Types.ObjectId[] = Array.from(new Set(req.body));
 
   try {
-    const items = await Class.find({
+    const classes = await Class.find({
       _id: { $in: ids },
     });
-    if (items.length < ids.length) {
+    if (classes.length < ids.length) {
       throw new BadReqErr("ids mismatch");
     }
-    if (items.some((el) => el.members.length)) {
+    if (classes.some((el) => el.members.length)) {
       throw new BadReqErr("found dependent");
     }
 

@@ -1,16 +1,16 @@
-import { BadReqErr, ConflictErr } from "@lxdgc9/pkg/dist/err";
 import { RequestHandler } from "express";
 import { Types } from "mongoose";
+import { BadReqErr, ConflictErr } from "@lxdgc9/pkg/dist/err";
+import nats from "../../nats";
 import { LogPublisher } from "../../events/publisher/log";
-import { UpdateUserPublisher } from "../../events/publisher/user/mod";
+import { UpdateUserPublisher } from "../../events/publisher/user/update";
 import { Role } from "../../models/role";
 import { User } from "../../models/user";
-import { nats } from "../../nats";
 
-export const updateItem: RequestHandler = async (req, res, next) => {
+const updateUser: RequestHandler = async (req, res, next) => {
   const {
     prof,
-    role_id: roleId,
+    role_id,
   }: {
     prof?: object & {
       username: string;
@@ -21,20 +21,20 @@ export const updateItem: RequestHandler = async (req, res, next) => {
   } = req.body;
 
   try {
-    if (!Object.keys(req.body).length) {
-      throw new BadReqErr("body not empty");
+    if (prof === undefined && role_id === undefined) {
+      throw new BadReqErr("Missing fields");
     }
 
-    const item = await User.findById(req.params.id);
-    if (!item) {
-      throw new BadReqErr("item not found");
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      throw new BadReqErr("User not found");
     }
 
     const [dupl, exstRole] = await Promise.all([
       User.exists({
         $or: [
           {
-            _id: { $ne: item._id },
+            _id: { $ne: user._id },
             attrs: {
               $elemMatch: {
                 k: "username",
@@ -43,7 +43,7 @@ export const updateItem: RequestHandler = async (req, res, next) => {
             },
           },
           {
-            _id: { $ne: item._id },
+            _id: { $ne: user._id },
             attrs: {
               $elemMatch: {
                 k: "phone",
@@ -52,7 +52,7 @@ export const updateItem: RequestHandler = async (req, res, next) => {
             },
           },
           {
-            _id: { $ne: item._id },
+            _id: { $ne: user._id },
             attrs: {
               $elemMatch: {
                 k: "email",
@@ -62,24 +62,24 @@ export const updateItem: RequestHandler = async (req, res, next) => {
           },
         ],
       }),
-      Role.exists({ _id: roleId }),
+      Role.exists({ _id: role_id }),
     ]);
     if (prof && dupl) {
-      throw new ConflictErr("duplicate username, phone or email");
+      throw new ConflictErr("Duplicate username, phone or email");
     }
-    if (roleId && !exstRole) {
-      throw new BadReqErr("role not found");
+    if (role_id && !exstRole) {
+      throw new BadReqErr("Role not found");
     }
 
-    const updItem = await User.findByIdAndUpdate(
-      item._id,
+    const updUser = await User.findByIdAndUpdate(
+      user._id,
       {
         $set: {
           attrs: Object.entries(prof || {}).map(([k, v]) => ({
             k,
             v,
           })),
-          role: roleId,
+          role: role_id,
         },
       },
       { new: true }
@@ -91,24 +91,30 @@ export const updateItem: RequestHandler = async (req, res, next) => {
       },
     });
 
-    res.json({ user: updItem });
+    res.json({ user: updUser });
 
-    await Promise.all([
-      new UpdateUserPublisher(nats.cli).publish(updItem!),
-      new LogPublisher(nats.cli).publish({
+    await User.populate(user, {
+      path: "role",
+      populate: {
+        path: "perms",
+        select: "-perm_grp",
+      },
+    });
+
+    const updateUserPublisher = new UpdateUserPublisher(nats.cli);
+    const logPublisher = new LogPublisher(nats.cli);
+    await Promise.allSettled([
+      updateUserPublisher.publish(updUser!),
+      logPublisher.publish({
         user_id: req.user?.id,
         model: User.modelName,
         action: "update",
-        doc: await User.populate(item, {
-          path: "role",
-          populate: {
-            path: "perms",
-            select: "-perm_grp",
-          },
-        }),
+        doc: user,
       }),
     ]);
   } catch (e) {
     next(e);
   }
 };
+
+export default updateUser;

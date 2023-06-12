@@ -1,15 +1,15 @@
-import { NotFoundErr } from "@lxdgc9/pkg/dist/err";
 import { RequestHandler } from "express";
+import { NotFoundErr } from "@lxdgc9/pkg/dist/err";
 import { Role } from "../../models/role";
 
-export const readRole: RequestHandler = async (req, res, next) => {
+const readRole: RequestHandler = async (req, res, next) => {
   try {
     const role = await Role.findById(req.params.id).populate({
       path: "perms",
       select: "-perm_group",
     });
     if (!role) {
-      throw new NotFoundErr("role not found");
+      throw new NotFoundErr("Role not found");
     }
 
     res.json(role);
@@ -17,3 +17,5 @@ export const readRole: RequestHandler = async (req, res, next) => {
     next(e);
   }
 };
+
+export default readRole;

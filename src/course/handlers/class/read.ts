@@ -4,7 +4,7 @@ import { Class } from "../../models/class";
 
 export const getClass: RequestHandler = async (req, res, next) => {
   try {
-    const item = await Class.findById(req.params.id).populate([
+    const _class = await Class.findById(req.params.id).populate([
       {
         path: "school",
         select: "-classes",
@@ -14,11 +14,11 @@ export const getClass: RequestHandler = async (req, res, next) => {
         select: "-classes",
       },
     ]);
-    if (!item) {
-      throw new NotFoundErr("item not found");
+    if (!_class) {
+      throw new NotFoundErr("Class not found");
     }
 
-    res.json(item);
+    res.json(_class);
   } catch (e) {
     next(e);
   }

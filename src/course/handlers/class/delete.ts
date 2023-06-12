@@ -3,23 +3,23 @@ import { RequestHandler } from "express";
 import { Class } from "../../models/class";
 import { School } from "../../models/school";
 
-export const delItem: RequestHandler = async (req, res, next) => {
+export const delClass: RequestHandler = async (req, res, next) => {
   try {
-    const item = await Class.findById(req.params.id);
-    if (!item) {
-      throw new BadReqErr("item not found");
+    const _class = await Class.findById(req.params.id);
+    if (!_class) {
+      throw new BadReqErr("class not found");
     }
-    if (item.members.length) {
+    if (_class.members.length) {
       throw new BadReqErr("found dependent");
     }
 
-    await item.deleteOne();
+    await _class.deleteOne();
 
     res.sendStatus(204);
 
-    await School.findByIdAndUpdate(item.school, {
+    await School.findByIdAndUpdate(_class.school, {
       $pull: {
-        classes: item._id,
+        classes: _class._id,
       },
     });
   } catch (e) {

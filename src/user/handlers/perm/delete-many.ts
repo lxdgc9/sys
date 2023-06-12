@@ -1,47 +1,45 @@
-import { BadReqErr } from "@lxdgc9/pkg/dist/err";
 import { RequestHandler } from "express";
 import { Types } from "mongoose";
+import { BadReqErr } from "@lxdgc9/pkg/dist/err";
+import nats from "../../nats";
 import { LogPublisher } from "../../events/publisher/log";
 import { Perm } from "../../models/perm";
 import { PermGroup } from "../../models/perm-group";
 import { Role } from "../../models/role";
-import { nats } from "../../nats";
 
-export const delPerms: RequestHandler = async (req, res, next) => {
-  const ids: Types.ObjectId[] = Array.from(new Set(req.body));
+const delPerms: RequestHandler = async (req, res, next) => {
+  const ids = [...new Set(req.body)] as Types.ObjectId[];
 
   try {
     const [perms, depend] = await Promise.all([
       Perm.find({
-        _id: {
-          $in: ids,
-        },
+        _id: { $in: ids },
       }),
       Role.exists({
-        perms: {
-          $in: ids,
-        },
+        perms: { $in: ids },
       }),
     ]);
     if (perms.length < ids.length) {
-      throw new BadReqErr("permissions mismatch");
+      throw new BadReqErr("Permission mismatch");
     }
     if (depend) {
-      throw new BadReqErr("found depedent");
+      throw new BadReqErr("Found depedent");
     }
 
     await Perm.deleteMany({
       _id: { $in: ids },
     });
-
     res.sendStatus(204);
+
+    await Perm.populate(perms, {
+      path: "perm_group",
+      select: "-items",
+    });
 
     await Promise.allSettled([
       PermGroup.updateMany(
         {
-          items: {
-            $in: ids,
-          },
+          items: { $in: ids },
         },
         {
           $pullAll: {
@@ -53,13 +51,12 @@ export const delPerms: RequestHandler = async (req, res, next) => {
         user_id: req.user?.id,
         model: Perm.modelName,
         action: "delete",
-        doc: await Perm.populate(perms, {
-          path: "perm_group",
-          select: "-items",
-        }),
+        doc: perms,
       }),
     ]);
   } catch (e) {
     next(e);
   }
 };
+
+export default delPerms;

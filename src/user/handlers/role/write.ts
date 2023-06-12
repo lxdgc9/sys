@@ -1,12 +1,12 @@
-import { BadReqErr } from "@lxdgc9/pkg/dist/err";
 import { RequestHandler } from "express";
 import { Types } from "mongoose";
+import { BadReqErr } from "@lxdgc9/pkg/dist/err";
+import nats from "../../nats";
 import { LogPublisher } from "../../events/publisher/log";
 import { Perm } from "../../models/perm";
 import { Role } from "../../models/role";
-import { nats } from "../../nats";
 
-export const writeRole: RequestHandler = async (req, res, next) => {
+const writeRole: RequestHandler = async (req, res, next) => {
   const {
     name,
     level,
@@ -17,14 +17,14 @@ export const writeRole: RequestHandler = async (req, res, next) => {
     perm_ids: Types.ObjectId[];
   } = req.body;
 
-  const permIds = Array.from(new Set(perm_ids));
+  const permIds = [...new Set(perm_ids)];
 
   try {
     const numPerms = await Perm.countDocuments({
       _id: { $in: permIds },
     });
     if (numPerms < permIds.length) {
-      throw new BadReqErr("perm_ids mismatch");
+      throw new BadReqErr("Permission mismatch");
     }
 
     const nRole = new Role({
@@ -51,3 +51,5 @@ export const writeRole: RequestHandler = async (req, res, next) => {
     next(e);
   }
 };
+
+export default writeRole;
