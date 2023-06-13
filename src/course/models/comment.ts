@@ -1,4 +1,4 @@
-import { Schema, Types, model } from "mongoose";
+import mongoose, { Schema, Types } from "mongoose";
 
 interface ICmt {
   user: Types.ObjectId;
@@ -34,4 +34,4 @@ const schema = new Schema<ICmt>(
   }
 );
 
-export const Comment = model<ICmt>("comment", schema);
+export const Comment = mongoose.model<ICmt>("comment", schema);

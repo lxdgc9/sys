@@ -1,24 +1,34 @@
+import { Router } from "express";
+import { body, param, query } from "express-validator";
 import { guard, validator } from "@lxdgc9/pkg/dist/handlers";
 import {
-  DELETE_CLASS,
   READ_CLASS,
-  UPDATE_CLASS,
   WRITE_CLASS,
+  UPDATE_CLASS,
+  DELETE_CLASS,
 } from "@lxdgc9/pkg/dist/rules/course";
-import { Router } from "express";
-import { body, param } from "express-validator";
-import { delClass } from "../handlers/class/delete";
-import { delClasses } from "../handlers/class/delete-many";
-import { getClasses } from "../handlers/class/read-many";
-import { updateClass } from "../handlers/class/update";
-import { createClass } from "../handlers/class/write";
-import { writeClasses } from "../handlers/class/write-many";
-import { getUser } from "../handlers/user/read";
+import readUser from "../handlers/user/read";
+import readClasses from "../handlers/class/read-many";
+import delClass from "../handlers/class/delete";
+import delClasses from "../handlers/class/delete-many";
+import modifyClass from "../handlers/class/update";
+import writeClasses from "../handlers/class/write-many";
+import writeClass from "../handlers/class/write";
 
-export const r = Router();
+const classRouter = Router();
 
-r.route("/")
-  .get(guard(READ_CLASS), getClasses)
+classRouter
+  .route("/")
+  .get(
+    guard(READ_CLASS),
+    validator(
+      query("school_id")
+        .optional({ values: "undefined" })
+        .isMongoId()
+        .withMessage("Must be MongoId")
+    ),
+    readClasses
+  )
   .post(
     guard(WRITE_CLASS),
     validator(
@@ -31,66 +41,64 @@ r.route("/")
         .withMessage("1 <= len <= 255"),
       body("school_id")
         .notEmpty()
-        .withMessage("required")
+        .withMessage("Required")
         .isMongoId()
-        .withMessage("must be mongoId"),
-      body("member_ids").isArray().withMessage("must be array"),
-      body("member_ids.*").isMongoId().withMessage("must be mongoId")
+        .withMessage("Must be MongoId")
     ),
-    createClass
+    writeClass
   )
-  .patch(guard(UPDATE_CLASS), updateClass)
+  .patch(guard(UPDATE_CLASS), modifyClass)
   .delete(
     guard(DELETE_CLASS),
-    validator(param("id").isMongoId().withMessage("must be mongoId")),
+    validator(param("id").isMongoId().withMessage("Must be MongoId")),
     delClass
   );
 
-r.route("/many")
+classRouter
+  .route("/many")
   .post(
     guard(WRITE_CLASS),
     validator(
       body()
         .notEmpty()
-        .withMessage("required")
+        .withMessage("Required")
         .isArray({ min: 1 })
-        .withMessage("must be array, has aleast 1 element"),
-      body("*").isObject().withMessage("must be object"),
+        .withMessage("Should be at least 1 element"),
+      body("*").isObject().withMessage("Must be object"),
       body("*.name")
         .isString()
-        .withMessage("must be string")
+        .withMessage("Must be string")
         .isLength({ min: 1, max: 255 })
         .withMessage("1 <= len <= 255"),
       body("*.school_id")
         .notEmpty()
-        .withMessage("required")
+        .withMessage("Required")
         .isMongoId()
-        .withMessage("must be mongoId"),
-      body("*.member_ids").isArray().withMessage("must be array"),
-      body("*.member_ids.*").isMongoId().withMessage("must be mongoId")
+        .withMessage("Must be MongoId")
     ),
     writeClasses
   )
   .delete(
     guard(DELETE_CLASS),
     validator(
-      body()
-        .isArray({ min: 1 })
-        .withMessage("must be array, has aleast 1 element"),
-      body("*").isMongoId().withMessage("must be mongoId")
+      body().isArray({ min: 1 }).withMessage("Should be at least 1 element"),
+      body("*").isMongoId().withMessage("Must be MongoId")
     ),
     delClasses
   );
 
-r.route("/:id")
+classRouter
+  .route("/:id")
   .get(
     guard(READ_CLASS),
-    validator(param("id").isMongoId().withMessage("must be mongoId")),
-    getUser
+    validator(param("id").isMongoId().withMessage("Must be MongoId")),
+    readUser
   )
   .patch()
   .delete(
     guard(DELETE_CLASS),
-    validator(param("id").isMongoId().withMessage("must be mongoId")),
+    validator(param("id").isMongoId().withMessage("Must be MongoId")),
     delClass
   );
+
+export default classRouter;

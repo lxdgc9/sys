@@ -1,40 +1,43 @@
-import { ConflictErr } from "@lxdgc9/pkg/dist/err";
+import fs from "fs";
 import { RequestHandler } from "express";
-import { rmSync } from "fs";
+import { ConflictErr } from "@lxdgc9/pkg/dist/err";
 import { School } from "../../models/school";
 
-export const createSchool: RequestHandler = async (req, res, next) => {
+const writeSchool: RequestHandler = async (req, res, next) => {
   const {
     code,
     name,
-    addr,
-    desc,
+    address,
+    description,
   }: {
     code: string;
     name: string;
-    addr?: string;
-    desc?: string;
+    address: string | undefined;
+    description: string | undefined;
   } = req.body;
 
   try {
-    if (await School.exists({ code })) {
-      throw new ConflictErr("duplicate code");
+    const hasCode = await School.exists({ code });
+    if (hasCode) {
+      throw new ConflictErr("Duplicate code");
     }
 
-    const newSchool = new School({
+    const nSchool = new School({
       code,
       name,
-      addr,
-      desc,
-      logo: req.file && `/api/courses/${req.file.path}`,
+      address,
+      description,
+      logo_url: req.file && `/api/courses/${req.file.path}`,
     });
-    await newSchool.save();
+    await nSchool.save();
 
-    res.status(201).json(newSchool);
+    res.status(201).json(nSchool);
   } catch (e) {
     next(e);
     if (req.file) {
-      rmSync(req.file.path);
+      fs.rmSync(req.file.path);
     }
   }
 };
+
+export default writeSchool;

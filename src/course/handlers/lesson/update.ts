@@ -1,10 +1,10 @@
-import { BadReqErr } from "@lxdgc9/pkg/dist/err";
 import { RequestHandler } from "express";
 import { Types } from "mongoose";
+import { BadReqErr } from "@lxdgc9/pkg/dist/err";
 import { Course } from "../../models/course";
 import { Lesson } from "../../models/lesson";
 
-export const updateItem: RequestHandler = async (req, res, next) => {
+const modifyLesson: RequestHandler = async (req, res, next) => {
   const {
     course_id,
     title,
@@ -57,8 +57,11 @@ export const updateItem: RequestHandler = async (req, res, next) => {
       }),
     ]);
 
-    res.json(await Lesson.findById(lesson._id));
+    await Lesson.findById(lesson._id);
+    res.json(lesson);
   } catch (e) {
     next(e);
   }
 };
+
+export default modifyLesson;

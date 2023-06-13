@@ -1,11 +1,11 @@
-import { BadReqErr } from "@lxdgc9/pkg/dist/err";
 import { RequestHandler } from "express";
 import { Types } from "mongoose";
+import { BadReqErr } from "@lxdgc9/pkg/dist/err";
 import { Class } from "../../models/class";
 import { School } from "../../models/school";
 import { User } from "../../models/user";
 
-export const updateClass: RequestHandler = async (req, res, next) => {
+const modifyClass: RequestHandler = async (req, res, next) => {
   const {
     name,
     schoolId,
@@ -70,3 +70,5 @@ export const updateClass: RequestHandler = async (req, res, next) => {
     next(e);
   }
 };
+
+export default modifyClass;

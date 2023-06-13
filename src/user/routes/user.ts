@@ -8,16 +8,16 @@ import {
 } from "@lxdgc9/pkg/dist/rules/manage";
 import { body, param } from "express-validator";
 import changePassword from "../handlers/user/change-passwd";
-import changeAccess from "../handlers/user/update-access";
+import modifyAccess from "../handlers/user/modify-access";
 import writeUser from "../handlers/user/write";
-import modifyUser from "../handlers/user/update";
+import modifyUser from "../handlers/user/modify";
 import writeUsers from "../handlers/user/write-many";
 import delUsers from "../handlers/user/delete-many";
 import delUser from "../handlers/user/delete";
-import readUsers from "../handlers/auth/read-many";
+import readUsers from "../handlers/user/read-many";
 import login from "../handlers/auth/login";
 import refreshToken from "../handlers/auth/refresh-token";
-import readUser from "../handlers/auth/read";
+import readUser from "../handlers/user/read";
 
 const userRouter = Router();
 
@@ -256,7 +256,7 @@ userRouter.patch(
       .isBoolean()
       .withMessage("Must be boolean")
   ),
-  changeAccess
+  modifyAccess
 );
 
 export default userRouter;

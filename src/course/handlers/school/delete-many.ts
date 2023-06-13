@@ -1,35 +1,36 @@
-import { BadReqErr } from "@lxdgc9/pkg/dist/err";
+import fs from "fs";
 import { RequestHandler } from "express";
-import { rmSync } from "fs";
 import { Types } from "mongoose";
+import { BadReqErr } from "@lxdgc9/pkg/dist/err";
 import { School } from "../../models/school";
 
-export const delSchools: RequestHandler = async (req, res, next) => {
-  const ids: Types.ObjectId[] = Array.from(new Set(req.body));
+const delSchools: RequestHandler = async (req, res, next) => {
+  const ids = [...new Set(req.body)] as Types.ObjectId[];
 
   try {
     const schools = await School.find({
       _id: { $in: ids },
-    });
+    }).lean();
     if (schools.length < ids.length) {
-      throw new BadReqErr("schools mismatch");
+      throw new BadReqErr("School mismatch");
     }
-    if (schools.some((el) => el.classes.length)) {
-      throw new BadReqErr("found dependent");
+    if (schools.some((el) => el.classes.length > 0)) {
+      throw new BadReqErr("Found dependent");
     }
 
     await School.deleteMany({
       _id: { $in: ids },
     });
+    res.sendStatus(204);
 
     schools.forEach((el) => {
-      if (el.logo) {
-        rmSync(el.logo.replace("/api/courses/", ""));
+      if (el.logo_url) {
+        fs.rmSync(el.logo_url.replace("/api/courses/", ""));
       }
     });
-
-    res.sendStatus(204);
   } catch (e) {
     next(e);
   }
 };
+
+export default delSchools;

@@ -1,24 +1,26 @@
+import { RequestHandler } from "express";
 import { BadReqErr } from "@lxdgc9/pkg/dist/err";
 import { Course } from "../../models/course";
-import { RequestHandler } from "express";
+import { Types } from "mongoose";
 
-export const delCourses: RequestHandler = async (req, res, next) => {
-  const ids = Array.from(new Set(req.body));
+const delCourses: RequestHandler = async (req, res, next) => {
+  const ids = [...new Set(req.body)] as Types.ObjectId[];
 
   try {
-    const courseCount = await Course.countDocuments({
+    const numCourses = await Course.countDocuments({
       _id: { $in: ids },
     });
-    if (courseCount < ids.length) {
-      throw new BadReqErr("ids mismatch");
+    if (numCourses < ids.length) {
+      throw new BadReqErr("Courses mismatch");
     }
 
     await Course.deleteMany({
       _id: { $in: ids },
     });
-
     res.sendStatus(204);
   } catch (e) {
     next(e);
   }
 };
+
+export default delCourses;

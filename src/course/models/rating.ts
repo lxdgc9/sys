@@ -1,4 +1,4 @@
-import { Schema, Types, model } from "mongoose";
+import mongoose, { Schema, Types } from "mongoose";
 
 interface IRating {
   user: Types.ObjectId;
@@ -25,4 +25,4 @@ const schema = new Schema<IRating>(
   }
 );
 
-export const Rating = model<IRating>("rating", schema);
+export const Rating = mongoose.model<IRating>("rating", schema);

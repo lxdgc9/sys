@@ -1,10 +1,10 @@
-import { BadReqErr } from "@lxdgc9/pkg/dist/err";
 import { RequestHandler } from "express";
-import { Course } from "../../models/course";
 import { Types } from "mongoose";
+import { BadReqErr } from "@lxdgc9/pkg/dist/err";
+import { Course } from "../../models/course";
 import { Class } from "../../models/class";
 
-export const updateCourse: RequestHandler = async (req, res, next) => {
+const modifyCourse: RequestHandler = async (req, res, next) => {
   const {
     title,
     content,
@@ -17,20 +17,20 @@ export const updateCourse: RequestHandler = async (req, res, next) => {
     class_ids: Types.ObjectId[];
   } = req.body;
 
-  const cids = Array.from(new Set(class_ids));
+  const classIds = [...new Set(class_ids)];
 
   try {
     const [course, classCount] = await Promise.all([
       Course.findById(req.params.id),
       Class.countDocuments({
-        _id: { $in: cids },
+        _id: { $in: classIds },
       }),
     ]);
     if (!course) {
-      throw new BadReqErr("course not found");
+      throw new BadReqErr("Course not found");
     }
-    if (class_ids && classCount < cids.length) {
-      throw new BadReqErr("class_ids mismatch");
+    if (class_ids && classCount < classIds.length) {
+      throw new BadReqErr("Classes mismatch");
     }
 
     await course.updateOne({
@@ -38,12 +38,13 @@ export const updateCourse: RequestHandler = async (req, res, next) => {
         title,
         content,
         is_publish,
-        class_ids: cids,
+        class_ids: classIds,
       },
     });
-
     res.json(await Course.findById(course._id));
   } catch (e) {
     next(e);
   }
 };
+
+export default modifyCourse;

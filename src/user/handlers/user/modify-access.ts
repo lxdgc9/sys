@@ -5,7 +5,7 @@ import { LogPublisher } from "../../events/publisher/log";
 import { UpdateUserPublisher } from "../../events/publisher/user/update";
 import { User } from "../../models/user";
 
-const changeAccess: RequestHandler = async (req, res, next) => {
+const modifyAccess: RequestHandler = async (req, res, next) => {
   const { status } = req.body;
 
   try {
@@ -43,4 +43,4 @@ const changeAccess: RequestHandler = async (req, res, next) => {
   }
 };
 
-export default changeAccess;
+export default modifyAccess;

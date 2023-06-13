@@ -1,20 +1,19 @@
-import { BadReqErr } from "@lxdgc9/pkg/dist/err";
 import { RequestHandler } from "express";
+import { BadReqErr } from "@lxdgc9/pkg/dist/err";
 import { Class } from "../../models/class";
 import { School } from "../../models/school";
 
-export const delClass: RequestHandler = async (req, res, next) => {
+const delClass: RequestHandler = async (req, res, next) => {
   try {
     const _class = await Class.findById(req.params.id);
     if (!_class) {
-      throw new BadReqErr("class not found");
+      throw new BadReqErr("Class not found");
     }
-    if (_class.members.length) {
-      throw new BadReqErr("found dependent");
+    if (_class.members.length > 0) {
+      throw new BadReqErr("Found dependent");
     }
 
     await _class.deleteOne();
-
     res.sendStatus(204);
 
     await School.findByIdAndUpdate(_class.school, {
@@ -26,3 +25,5 @@ export const delClass: RequestHandler = async (req, res, next) => {
     next(e);
   }
 };
+
+export default delClass;

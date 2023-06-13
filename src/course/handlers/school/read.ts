@@ -1,25 +1,29 @@
-import { NotFoundErr } from "@lxdgc9/pkg/dist/err";
 import { RequestHandler } from "express";
+import { NotFoundErr } from "@lxdgc9/pkg/dist/err";
 import { School } from "../../models/school";
 
-export const getSchool: RequestHandler = async (req, res, next) => {
+const readSchool: RequestHandler = async (req, res, next) => {
   try {
-    const item = await School.findById(req.params.id).populate({
-      path: "classes",
-      select: "-members",
-      populate: [
-        {
-          path: "school",
-          select: "-classes",
-        },
-      ],
-    });
-    if (!item) {
-      throw new NotFoundErr("item not found");
+    const school = await School.findById(req.params.id)
+      .lean()
+      .populate({
+        path: "classes",
+        select: "-members",
+        populate: [
+          {
+            path: "school",
+            select: "-classes",
+          },
+        ],
+      });
+    if (!school) {
+      throw new NotFoundErr("School not found");
     }
 
-    res.json(item);
+    res.json(school);
   } catch (e) {
     next(e);
   }
 };
+
+export default readSchool;

@@ -1,24 +1,27 @@
+import { Router } from "express";
 import { guard, validator } from "@lxdgc9/pkg/dist/handlers";
 import { READ_USER } from "@lxdgc9/pkg/dist/rules/manage";
-import { Router } from "express";
-import { deleteLesson } from "../handlers/lesson/delete";
-import { delManyLesson } from "../handlers/lesson/delete-many";
-import { createLesson } from "../handlers/lesson/write";
-import { uploader } from "../helpers/upload";
+import uploader from "../helpers/upload";
+import writeLesson from "../handlers/lesson/write";
+import delLessons from "../handlers/lesson/delete-many";
 
-export const r = Router();
+const lessonRouter = Router();
 
-r.route("/")
+lessonRouter
+  .route("/")
   .post(
     guard(READ_USER),
     uploader("lessons").array("files"),
     validator(),
-    createLesson
+    writeLesson
   )
   .get(guard(READ_USER), validator());
 
-r.route("/many").delete(guard(), validator(), delManyLesson);
+lessonRouter.route("/many").delete(guard(), validator(), delLessons);
 
-r.route("/:id")
+lessonRouter
+  .route("/:id")
   .get(guard(), validator())
-  .delete(guard(), validator(), deleteLesson);
+  .delete(guard(), validator(), delLessons);
+
+export default lessonRouter;

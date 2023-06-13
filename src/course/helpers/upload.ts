@@ -1,11 +1,11 @@
-import { existsSync, mkdir } from "fs";
+import fs from "fs";
 import multer, { diskStorage } from "multer";
 
-export function uploader(path: string = "/") {
+function uploader(path: string = "/") {
   const dest = `uploads/${path}`;
 
-  if (!existsSync(dest)) {
-    mkdir(dest, { recursive: true }, (err) => {
+  if (!fs.existsSync(dest)) {
+    fs.mkdir(dest, { recursive: true }, (err) => {
       if (err) {
         console.log(err);
         throw err;
@@ -36,3 +36,5 @@ export function uploader(path: string = "/") {
     },
   });
 }
+
+export default uploader;

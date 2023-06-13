@@ -1,18 +1,18 @@
-import { BadReqErr } from "@lxdgc9/pkg/dist/err";
 import { RequestHandler } from "express";
 import { Types } from "mongoose";
+import { BadReqErr } from "@lxdgc9/pkg/dist/err";
 import { Course } from "../../models/course";
 import { Lesson } from "../../models/lesson";
 
-declare global {
-  namespace Express {
-    interface Request {
-      files?: File[];
-    }
-  }
-}
+// declare global {
+//   namespace Express {
+//     interface Request {
+//       files?: File[];
+//     }
+//   }
+// }
 
-export const createLesson: RequestHandler = async (req, res, next) => {
+const writeLesson: RequestHandler = async (req, res, next) => {
   const {
     course_id,
     title,
@@ -23,35 +23,39 @@ export const createLesson: RequestHandler = async (req, res, next) => {
     content: string;
   } = req.body;
 
+  console.log("debug:", req.files);
+
   try {
     if (!req.files) {
-      throw new BadReqErr("require files");
+      throw new BadReqErr("Require files");
     }
 
     const course = await Course.findById(course_id);
     if (!course) {
-      throw new BadReqErr("course not found");
+      throw new BadReqErr("Course not found");
     }
 
-    const newLesson = new Lesson({
+    const nLesson = new Lesson({
       course_id,
       title,
       content,
-      files: req.files.map((f: any) => ({
-        path: f.path,
-        mime_type: f.mimetype,
-      })),
+      // files: req.files.map((f: any) => ({
+      //   path: f.path,
+      //   mime_type: f.mimetype,
+      // })),
     });
-    await newLesson.save();
+    await nLesson.save();
 
-    res.status(201).json(newLesson);
+    res.status(201).json(nLesson);
 
     await course.updateOne({
       $addToSet: {
-        lessons: newLesson._id,
+        lessons: nLesson._id,
       },
     });
   } catch (e) {
     next(e);
   }
 };
+
+export default writeLesson;

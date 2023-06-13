@@ -1,14 +1,16 @@
 import { Router } from "express";
 import { param } from "express-validator";
 import { validator } from "@lxdgc9/pkg/dist/handlers";
-import { getUser } from "../handlers/user/read";
-import { getUsers } from "../handlers/user/read-many";
+import getUsers from "../handlers/user/read-many";
+import readUser from "../handlers/user/read";
 
-export const r = Router();
+const userRouter = Router();
 
-r.get("/", getUsers);
-r.get(
+userRouter.get("/", getUsers);
+userRouter.get(
   "/:id",
-  validator(param("id").isMongoId().withMessage("Must be mongoId")),
-  getUser
+  validator(param("id").isMongoId().withMessage("Must be MongoId")),
+  readUser
 );
+
+export default userRouter;

@@ -1,75 +1,42 @@
-import { BadReqErr } from "@lxdgc9/pkg/dist/err";
 import { RequestHandler } from "express";
 import { Types } from "mongoose";
+import { BadReqErr } from "@lxdgc9/pkg/dist/err";
 import { Class } from "../../models/class";
 import { School } from "../../models/school";
-import { User } from "../../models/user";
 
-export const createClass: RequestHandler = async (req, res, next) => {
+const writeClass: RequestHandler = async (req, res, next) => {
   const {
     name,
     school_id,
-    member_ids,
   }: {
     name: string;
     school_id: Types.ObjectId;
-    member_ids: Types.ObjectId[];
   } = req.body;
 
-  const memberIds = [...new Set(member_ids)];
-
   try {
-    const [school, numUsers] = await Promise.all([
-      School.findById(school_id),
-      User.countDocuments({
-        user_id: { $in: memberIds },
-      }),
-    ]);
-    if (!school) {
+    const hasSchool = await School.exists({ _id: school_id });
+    if (!hasSchool) {
       throw new BadReqErr("School not found");
     }
-    if (numUsers < memberIds.length) {
-      throw new BadReqErr("Member mismatch");
-    }
 
-    const newClass = new Class({
+    const nClass = new Class({
       name,
       school: school_id,
-      members: memberIds,
     });
-    await newClass.save();
+    await nClass.save();
+    res.status(201).json(nClass);
 
-    await Class.populate(newClass, [
+    await School.updateOne(
+      { _id: school_id },
       {
-        path: "school",
-        select: "-classes",
-      },
-      {
-        path: "members",
-        select: "data",
-      },
-    ]);
-
-    res.status(201).json(newClass);
-
-    await Promise.allSettled([
-      school.updateOne({
         $addToSet: {
-          classes: newClass,
+          classes: nClass,
         },
-      }),
-      User.updateMany(
-        {
-          _id: { $in: memberIds },
-        },
-        {
-          $addToSet: {
-            classes: newClass,
-          },
-        }
-      ),
-    ]);
+      }
+    );
   } catch (e) {
     next(e);
   }
 };
+
+export default writeClass;

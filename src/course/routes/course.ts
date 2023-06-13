@@ -1,3 +1,4 @@
+import { Router } from "express";
 import { guard, validator } from "@lxdgc9/pkg/dist/handlers";
 import {
   DELETE_COURSE,
@@ -5,18 +6,21 @@ import {
   UPDATE_COURSE,
 } from "@lxdgc9/pkg/dist/rules/course";
 import { READ_USER } from "@lxdgc9/pkg/dist/rules/manage";
-import { Router } from "express";
-import { delCourse } from "../handlers/course/delete";
-import { getCourse } from "../handlers/course/read";
-import { getCourses } from "../handlers/course/read-many";
-import { createCourse } from "../handlers/course/write";
+import readCourses from "../handlers/course/read-many";
+import writeCourse from "../handlers/course/write";
+import delCourse from "../handlers/course/delete";
+import readCourse from "../handlers/course/read";
 
-export const r = Router();
+const courseRouter = Router();
 
-r.route("/")
-  .get(guard(READ_COURSE), getCourses)
-  .post(guard(READ_USER), validator(), createCourse);
-r.route("/:id")
-  .get(guard(READ_COURSE), getCourse)
+courseRouter
+  .route("/")
+  .get(guard(READ_COURSE), readCourses)
+  .post(guard(READ_USER), validator(), writeCourse);
+courseRouter
+  .route("/:id")
+  .get(guard(READ_COURSE), readCourse)
   .patch(guard(UPDATE_COURSE))
   .delete(guard(DELETE_COURSE), delCourse);
+
+export default courseRouter;

@@ -13,20 +13,20 @@ export const allocUser: RequestHandler = async (req, res, next) => {
     school_ids: Types.ObjectId[];
   } = req.body;
 
-  const schoolIds = Array.from(new Set(school_ids));
+  const schoolIds = [...new Set(school_ids)];
 
   try {
-    const [user, schoolCount] = await Promise.all([
+    const [user, numSchools] = await Promise.all([
       User.findById(user_id),
       School.countDocuments({
         _id: { $in: schoolIds },
       }),
     ]);
     if (!user) {
-      throw new BadReqErr("user_id not found");
+      throw new BadReqErr("User not found");
     }
-    if (schoolCount < schoolIds.length) {
-      throw new BadReqErr("school_ids mismatch");
+    if (numSchools < schoolIds.length) {
+      throw new BadReqErr("School mismatch");
     }
 
     await user.updateOne({
@@ -35,12 +35,7 @@ export const allocUser: RequestHandler = async (req, res, next) => {
       },
     });
 
-    res.json(
-      await User.findById(user_id).populate({
-        path: "schools",
-        select: "-classes",
-      })
-    );
+    res.sendStatus(200);
   } catch (e) {
     next(e);
   }

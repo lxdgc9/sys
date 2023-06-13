@@ -1,145 +1,148 @@
+import { Router } from "express";
 import { guard, validator } from "@lxdgc9/pkg/dist/handlers";
 import {
-  DELETE_SCHOOL,
   READ_SCHOOL,
-  UPDATE_SCHOOL,
   WRITE_SCHOOL,
+  UPDATE_SCHOOL,
+  DELETE_SCHOOL,
 } from "@lxdgc9/pkg/dist/rules/course";
-import { Router } from "express";
 import { body, param } from "express-validator";
-import { allocUser } from "../handlers/school/alloc-user";
-import { delSchool } from "../handlers/school/delete";
-import { delSchools } from "../handlers/school/delete-many";
-import { getSchool } from "../handlers/school/read";
-import { getSchools } from "../handlers/school/read-many";
-import { updateSchool } from "../handlers/school/update";
-import { createSchool } from "../handlers/school/write";
-import { createSchools } from "../handlers/school/write-many";
-import { uploader } from "../helpers/upload";
+import uploader from "../helpers/upload";
+import readSchool from "../handlers/school/read";
+import readSchools from "../handlers/school/read-many";
+import writeSchool from "../handlers/school/write";
+import writeSchools from "../handlers/school/write-many";
+import modifySchool from "../handlers/school/modify";
+import delSchools from "../handlers/school/delete-many";
+import delSchool from "../handlers/school/delete";
 
-export const r = Router();
+const schoolRouter = Router();
 
-r.patch("/users", guard(), allocUser);
-
-r.route("/")
-  .get(guard(READ_SCHOOL), getSchools)
+schoolRouter
+  .route("/")
+  .get(guard(READ_SCHOOL), readSchools)
   .post(
     guard(WRITE_SCHOOL),
     uploader("school/logo").single("logo"),
     validator(
       body("code")
         .notEmpty()
-        .withMessage("required")
+        .withMessage("Required")
         .isString()
-        .withMessage("must be string")
+        .withMessage("Must be string")
         .isLength({ min: 1, max: 255 })
         .withMessage("1 <= len <= 255"),
       body("name")
         .notEmpty()
-        .withMessage("required")
+        .withMessage("Required")
         .isString()
-        .withMessage("must be string")
+        .withMessage("Must be string")
         .isLength({ min: 1, max: 255 })
         .withMessage("1 <= len <= 255"),
-      body("addr")
+      body("address")
         .optional({ values: "undefined" })
         .isString()
-        .withMessage("must be string")
+        .withMessage("Must be string")
         .isLength({ min: 1, max: 255 })
         .withMessage("1 <= len <= 255"),
-      body("desc")
+      body("description")
         .optional({ values: "undefined" })
         .isString()
-        .withMessage("must be string")
+        .withMessage("Must be string")
         .isLength({ min: 1, max: 255 })
         .withMessage("1 <= len <= 255")
     ),
-    createSchool
+    writeSchool
   );
 
-r.route("/many")
+schoolRouter
+  .route("/many")
   .post(
     guard(WRITE_SCHOOL),
     validator(
-      body()
-        .isArray({ min: 1 })
-        .withMessage("must be array, has aleast 1 element"),
-      body("*").isObject().withMessage("must be object"),
+      body().isArray({ min: 1 }).withMessage("Should be at least 1 element"),
+      body("*").isObject().withMessage("Must be object"),
       body("*.code")
         .notEmpty()
-        .withMessage("required")
+        .withMessage("Required")
         .isString()
-        .withMessage("must be string")
+        .withMessage("Must be string")
         .isLength({ min: 1, max: 255 })
         .withMessage("1 <= len <= 255"),
       body("*.name")
         .notEmpty()
-        .withMessage("required")
+        .withMessage("Required")
         .isString()
-        .withMessage("must be string")
+        .withMessage("Must be string")
         .isLength({ min: 1, max: 255 })
         .withMessage("1 <= len <= 255"),
-      body("*.addr")
-        .notEmpty()
-        .withMessage("required")
+      body("*.address")
+        .optional({ values: "undefined" })
         .isString()
-        .withMessage("must be string")
+        .withMessage("Must be string")
+        .isLength({ min: 1, max: 255 })
+        .withMessage("1 <= len <= 255"),
+      body("*.description")
+        .optional({ values: "undefined" })
+        .isString()
+        .withMessage("Must be string")
         .isLength({ min: 1, max: 255 })
         .withMessage("1 <= len <= 255")
     ),
-    createSchools
+    writeSchools
   )
   .delete(
     guard(DELETE_SCHOOL),
     validator(
-      body()
-        .isArray({ min: 1 })
-        .withMessage("must be array, has aleast 1 element"),
-      body("*").isMongoId().withMessage("must be mongoId")
+      body().isArray({ min: 1 }).withMessage("Should be at least 1 element"),
+      body("*").isMongoId().withMessage("Must be MongoId")
     ),
     delSchools
   );
 
-r.route("/:id")
+schoolRouter
+  .route("/:id")
   .get(
     guard(READ_SCHOOL),
-    validator(param("id").isMongoId().withMessage("must be mongoId")),
-    getSchool
+    validator(param("id").isMongoId().withMessage("Must be MongoId")),
+    readSchool
   )
   .patch(
     guard(UPDATE_SCHOOL),
     uploader("unit/logo").single("logo"),
     validator(
-      param("id").isMongoId().withMessage("must be mongoId"),
+      param("id").isMongoId().withMessage("Must be MongoId"),
       body("code")
         .optional({ values: "undefined" })
         .isString()
-        .withMessage("must be string")
+        .withMessage("Must be string")
         .isLength({ min: 1, max: 255 })
         .withMessage("1 <= len <= 255"),
       body("name")
         .optional({ values: "undefined" })
         .isString()
-        .withMessage("must be string")
+        .withMessage("Must be string")
         .isLength({ min: 1, max: 255 })
         .withMessage("1 <= len <= 255"),
       body("addr")
         .optional({ values: "undefined" })
         .isString()
-        .withMessage("must be string")
+        .withMessage("Must be string")
         .isLength({ min: 1, max: 255 })
         .withMessage("1 <= len <= 255"),
       body("desc")
         .optional({ values: "undefined" })
         .isString()
-        .withMessage("must be string")
+        .withMessage("Must be string")
         .isLength({ min: 1, max: 255 })
         .withMessage("1 <= len <= 255")
     ),
-    updateSchool
+    modifySchool
   )
   .delete(
     guard(DELETE_SCHOOL),
-    validator(param("id").isMongoId().withMessage("must be mongoId")),
+    validator(param("id").isMongoId().withMessage("Must be MongoId")),
     delSchool
   );
+
+export default schoolRouter;

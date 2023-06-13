@@ -1,9 +1,9 @@
 import { RequestHandler } from "express";
 import { School } from "../../models/school";
 
-export const getSchools: RequestHandler = async (_req, res, next) => {
+const readSchools: RequestHandler = async (_req, res, next) => {
   try {
-    const schools = await School.find().populate({
+    const schools = await School.find().lean().populate({
       path: "classes",
       select: "-school -members",
     });
@@ -13,3 +13,5 @@ export const getSchools: RequestHandler = async (_req, res, next) => {
     next(e);
   }
 };
+
+export default readSchools;

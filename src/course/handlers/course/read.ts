@@ -1,15 +1,17 @@
-import { BadReqErr } from "@lxdgc9/pkg/dist/err";
 import { RequestHandler } from "express";
+import { BadReqErr } from "@lxdgc9/pkg/dist/err";
 import { Course } from "../../models/course";
 
-export const getCourse: RequestHandler = async (req, res, next) => {
+const readCourse: RequestHandler = async (req, res, next) => {
   try {
-    const course = await Course.findById(req.params.id);
+    const course = await Course.findById(req.params.id).lean();
     if (!course) {
-      throw new BadReqErr("course not found");
+      throw new BadReqErr("Course not found");
     }
     res.json(course);
   } catch (e) {
     next(e);
   }
 };
+
+export default readCourse;

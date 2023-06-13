@@ -1,10 +1,10 @@
-import { BadReqErr } from "@lxdgc9/pkg/dist/err";
 import { RequestHandler } from "express";
 import { Types } from "mongoose";
+import { BadReqErr } from "@lxdgc9/pkg/dist/err";
 import { Class } from "../../models/class";
 import { Course } from "../../models/course";
 
-export const createCourse: RequestHandler = async (req, res, next) => {
+const writeCourse: RequestHandler = async (req, res, next) => {
   const {
     title,
     content,
@@ -17,27 +17,28 @@ export const createCourse: RequestHandler = async (req, res, next) => {
     class_ids: Types.ObjectId[];
   } = req.body;
 
-  const cids = Array.from(new Set(class_ids));
+  const classIds = [...new Set(class_ids)];
 
   try {
-    const classCount = await Class.countDocuments({
-      _id: { $in: cids },
+    const numClasses = await Class.countDocuments({
+      _id: { $in: classIds },
     });
-    if (classCount < cids.length) {
-      throw new BadReqErr("class_ids mismatch");
+    if (numClasses < classIds.length) {
+      throw new BadReqErr("Classes mismatch");
     }
 
-    const newCourse = new Course({
+    const nCourse = new Course({
       title,
       content,
-      author: req.user?.id,
+      author: req.user!.id,
       is_publish,
-      classes: cids,
+      classes: classIds,
     });
-    await newCourse.save();
-
-    res.status(201).json(newCourse);
+    await nCourse.save();
+    res.status(201).json(nCourse);
   } catch (e) {
     next(e);
   }
 };
+
+export default writeCourse;

@@ -1,8 +1,8 @@
-import { NotFoundErr } from "@lxdgc9/pkg/dist/err";
 import { RequestHandler } from "express";
+import { NotFoundErr } from "@lxdgc9/pkg/dist/err";
 import { Class } from "../../models/class";
 
-export const getClass: RequestHandler = async (req, res, next) => {
+const readClass: RequestHandler = async (req, res, next) => {
   try {
     const _class = await Class.findById(req.params.id).populate([
       {
@@ -23,3 +23,5 @@ export const getClass: RequestHandler = async (req, res, next) => {
     next(e);
   }
 };
+
+export default readClass;

@@ -1,10 +1,13 @@
 import { RequestHandler } from "express";
 import { Course } from "../../models/course";
 
-export const getCourses: RequestHandler = async (_req, res, next) => {
+const readCourses: RequestHandler = async (_req, res, next) => {
   try {
-    res.json(await Course.find().populate("classes"));
+    const courses = await Course.find().lean().populate("classes");
+    res.json(courses);
   } catch (e) {
     next(e);
   }
 };
+
+export default readCourses;

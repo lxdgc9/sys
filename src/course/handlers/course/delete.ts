@@ -1,15 +1,19 @@
-import { BadReqErr } from "@lxdgc9/pkg/dist/err";
 import { RequestHandler } from "express";
+import { BadReqErr } from "@lxdgc9/pkg/dist/err";
 import { Course } from "../../models/course";
 
-export const delCourse: RequestHandler = async (req, res, next) => {
+const delCourse: RequestHandler = async (req, res, next) => {
   try {
-    const course = await Course.findByIdAndDelete(req.params.id);
-    if (!course) {
-      throw new BadReqErr("course not found");
+    const result = await Course.deleteOne({
+      _id: req.params.id,
+    });
+    if (!result) {
+      throw new BadReqErr("Course not found");
     }
     res.sendStatus(204);
   } catch (e) {
     next(e);
   }
 };
+
+export default delCourse;

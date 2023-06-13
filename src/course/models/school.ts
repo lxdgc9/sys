@@ -1,11 +1,11 @@
-import { Schema, Types, model } from "mongoose";
+import mongoose, { Schema, Types } from "mongoose";
 
 interface ISchool {
   code: string;
   name: string;
-  addr?: string;
-  desc?: string;
-  logo?: string;
+  address: string | undefined;
+  description: string | undefined;
+  logo_url: string | undefined;
   classes: Types.ObjectId[];
 }
 
@@ -20,13 +20,13 @@ const schema = new Schema<ISchool>(
       type: String,
       required: true,
     },
-    addr: {
+    address: {
       type: String,
     },
-    desc: {
+    description: {
       type: String,
     },
-    logo: {
+    logo_url: {
       type: String,
     },
     classes: [
@@ -44,4 +44,4 @@ const schema = new Schema<ISchool>(
   }
 );
 
-export const School = model<ISchool>("school", schema);
+export const School = mongoose.model<ISchool>("school", schema);

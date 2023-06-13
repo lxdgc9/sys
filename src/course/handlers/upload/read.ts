@@ -1,18 +1,20 @@
+import fs from "fs";
+import path from "path";
 import { NotFoundErr } from "@lxdgc9/pkg/dist/err";
 import { RequestHandler } from "express";
-import { createReadStream, existsSync } from "fs";
-import { join } from "path";
 
-export const readFile: RequestHandler = (req, res, next) => {
-  const dest = join("uploads", req.params[0]);
+const readFile: RequestHandler = (req, res, next) => {
+  const dest = path.join("uploads", req.params[0]);
 
   try {
-    if (!existsSync(dest)) {
-      throw new NotFoundErr("file not found");
+    if (!fs.existsSync(dest)) {
+      throw new NotFoundErr("File not found");
     }
 
-    createReadStream(dest).pipe(res);
+    fs.createReadStream(dest).pipe(res);
   } catch (e) {
     next(e);
   }
 };
+
+export default readFile;

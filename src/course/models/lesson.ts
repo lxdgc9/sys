@@ -1,4 +1,4 @@
-import { Schema, Types, model } from "mongoose";
+import mongoose, { Schema, Types } from "mongoose";
 
 interface ILesson {
   course_id: Types.ObjectId;
@@ -15,6 +15,7 @@ const schema = new Schema<ILesson>(
     course_id: {
       type: Schema.Types.ObjectId,
       ref: "course",
+      index: true,
       required: true,
     },
     title: {
@@ -44,4 +45,4 @@ const schema = new Schema<ILesson>(
   }
 );
 
-export const Lesson = model<ILesson>("lesson", schema);
+export const Lesson = mongoose.model<ILesson>("lesson", schema);

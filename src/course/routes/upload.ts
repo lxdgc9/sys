@@ -1,7 +1,9 @@
-import { guard } from "@lxdgc9/pkg/dist/handlers";
 import { Router } from "express";
-import { readFile } from "../handlers/upload/read";
+import { guard } from "@lxdgc9/pkg/dist/handlers";
+import readFile from "../handlers/upload/read";
 
-export const r = Router();
+const uploadRouter = Router();
 
-r.get("/*", guard(), readFile);
+uploadRouter.get("/*", guard(), readFile);
+
+export default uploadRouter;

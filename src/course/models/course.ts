@@ -1,4 +1,4 @@
-import { Schema, Types, model } from "mongoose";
+import mongoose, { Schema, Types } from "mongoose";
 
 interface ICourse {
   title: string;
@@ -57,4 +57,4 @@ const schema = new Schema<ICourse>(
   }
 );
 
-export const Course = model<ICourse>("course", schema);
+export const Course = mongoose.model<ICourse>("course", schema);

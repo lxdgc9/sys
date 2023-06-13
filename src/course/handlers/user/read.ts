@@ -1,16 +1,18 @@
-import { NotFoundErr } from "@lxdgc9/pkg/dist/err";
 import { RequestHandler } from "express";
+import { NotFoundErr } from "@lxdgc9/pkg/dist/err";
 import { User } from "../../models/user";
 
-export const getUser: RequestHandler = async (req, res, next) => {
+const readUser: RequestHandler = async (req, res, next) => {
   try {
-    const item = await User.findById(req.params.id, "obj");
-    if (!item) {
-      throw new NotFoundErr("item not found");
+    const user = await User.findById(req.params.id, "obj");
+    if (!user) {
+      throw new NotFoundErr("User not found");
     }
 
-    res.json({ item });
+    res.json(user);
   } catch (e) {
     next(e);
   }
 };
+
+export default readUser;
