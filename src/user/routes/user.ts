@@ -10,7 +10,7 @@ import { body, param } from "express-validator";
 import changePassword from "../handlers/user/change-passwd";
 import changeAccess from "../handlers/user/update-access";
 import writeUser from "../handlers/user/write";
-import updateUser from "../handlers/user/update";
+import modifyUser from "../handlers/user/update";
 import writeUsers from "../handlers/user/write-many";
 import delUsers from "../handlers/user/delete-many";
 import delUser from "../handlers/user/delete";
@@ -191,7 +191,7 @@ userRouter
         .isMongoId()
         .withMessage("Must be mongoId")
     ),
-    updateUser
+    modifyUser
   )
   .delete(
     guard(DELETE_USER),

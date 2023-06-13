@@ -6,7 +6,7 @@ const readPermGroup: RequestHandler = async (req, res, next) => {
   try {
     const group = await PermGroup.findById(req.params.id)
       .lean()
-      .select("-perms");
+      .select("-items");
     if (!group) {
       throw new NotFoundErr("Permission Group not found");
     }

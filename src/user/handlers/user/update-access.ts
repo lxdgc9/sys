@@ -21,7 +21,7 @@ const changeAccess: RequestHandler = async (req, res, next) => {
       path: "role",
       populate: {
         path: "perms",
-        select: "-perm_grp",
+        select: "-perm_group",
       },
     });
     if (!user) {

@@ -7,7 +7,7 @@ import { UpdateUserPublisher } from "../../events/publisher/user/update";
 import { Role } from "../../models/role";
 import { User } from "../../models/user";
 
-const updateUser: RequestHandler = async (req, res, next) => {
+const modifyUser: RequestHandler = async (req, res, next) => {
   const {
     prof,
     role_id,
@@ -25,16 +25,18 @@ const updateUser: RequestHandler = async (req, res, next) => {
       throw new BadReqErr("Missing fields");
     }
 
-    const user = await User.findById(req.params.id);
-    if (!user) {
+    const existUser = await User.exists({
+      _id: req.params.id,
+    });
+    if (!existUser) {
       throw new BadReqErr("User not found");
     }
 
-    const [dupl, exstRole] = await Promise.all([
+    const [dupl, existRole] = await Promise.all([
       User.exists({
         $or: [
           {
-            _id: { $ne: user._id },
+            _id: { $ne: req.params._id },
             attrs: {
               $elemMatch: {
                 k: "username",
@@ -43,7 +45,7 @@ const updateUser: RequestHandler = async (req, res, next) => {
             },
           },
           {
-            _id: { $ne: user._id },
+            _id: { $ne: req.params._id },
             attrs: {
               $elemMatch: {
                 k: "phone",
@@ -52,7 +54,7 @@ const updateUser: RequestHandler = async (req, res, next) => {
             },
           },
           {
-            _id: { $ne: user._id },
+            _id: { $ne: req.params._id },
             attrs: {
               $elemMatch: {
                 k: "email",
@@ -67,12 +69,12 @@ const updateUser: RequestHandler = async (req, res, next) => {
     if (prof && dupl) {
       throw new ConflictErr("Duplicate username, phone or email");
     }
-    if (role_id && !exstRole) {
+    if (role_id && !existRole) {
       throw new BadReqErr("Role not found");
     }
 
     const updUser = await User.findByIdAndUpdate(
-      user._id,
+      req.params.id,
       {
         $set: {
           attrs: Object.entries(prof || {}).map(([k, v]) => ({
@@ -87,29 +89,19 @@ const updateUser: RequestHandler = async (req, res, next) => {
       path: "role",
       populate: {
         path: "perms",
-        select: "-perm_grp",
+        select: "-perm_group",
       },
     });
 
-    res.json({ user: updUser });
+    res.json(updUser);
 
-    await User.populate(user, {
-      path: "role",
-      populate: {
-        path: "perms",
-        select: "-perm_grp",
-      },
-    });
-
-    const updateUserPublisher = new UpdateUserPublisher(nats.cli);
-    const logPublisher = new LogPublisher(nats.cli);
     await Promise.allSettled([
-      updateUserPublisher.publish(updUser!),
-      logPublisher.publish({
+      new UpdateUserPublisher(nats.cli).publish(updUser!),
+      new LogPublisher(nats.cli).publish({
         user_id: req.user?.id,
         model: User.modelName,
         action: "update",
-        data: user,
+        data: updUser,
       }),
     ]);
   } catch (e) {
@@ -117,4 +109,4 @@ const updateUser: RequestHandler = async (req, res, next) => {
   }
 };
 
-export default updateUser;
+export default modifyUser;

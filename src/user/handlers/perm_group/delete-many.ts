@@ -9,9 +9,7 @@ const delPermGroups: RequestHandler = async (req, res, next) => {
   const ids = [...new Set(req.body)] as Types.ObjectId[];
 
   try {
-    const groups = await PermGroup.find({
-      _id: { $in: ids },
-    }).lean();
+    const groups = await PermGroup.find({ _id: { $in: ids } }).lean();
     if (groups.length < ids.length) {
       throw new BadReqErr("Permission Group mismatch");
     }

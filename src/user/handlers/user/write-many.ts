@@ -97,7 +97,6 @@ const writeUsers: RequestHandler = async (req, res, next) => {
       path: "role",
       select: "-perms",
     });
-
     res.status(201).json(newUsers);
 
     await Promise.all([

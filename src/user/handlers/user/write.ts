@@ -14,7 +14,7 @@ const writeUser: RequestHandler = async (req, res, next) => {
     role_id,
     is_active,
   }: {
-    prof: object & {
+    prof: Object & {
       username: string;
       phone: string;
       email: string;
@@ -78,10 +78,9 @@ const writeUser: RequestHandler = async (req, res, next) => {
       path: "role",
       populate: {
         path: "perms",
-        select: "-perm_grp",
+        select: "-perm_group",
       },
     });
-
     res.status(201).json(newUser);
 
     await Promise.allSettled([

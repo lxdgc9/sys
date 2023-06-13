@@ -10,7 +10,15 @@ export const delUsers: RequestHandler = async (req, res, next) => {
   const ids = [...new Set(req.body)] as Types.ObjectId[];
 
   try {
-    const users = await User.find({ _id: { $in: ids } });
+    const users = await User.find({ _id: { $in: ids } })
+      .lean()
+      .populate({
+        path: "role",
+        populate: {
+          path: "perms",
+          select: "-perm_group",
+        },
+      });
     if (users.length < ids.length) {
       throw new BadReqErr("User mismatch");
     }
@@ -19,14 +27,6 @@ export const delUsers: RequestHandler = async (req, res, next) => {
       _id: { $in: ids },
     });
     res.sendStatus(204);
-
-    await User.populate(users, {
-      path: "role",
-      populate: {
-        path: "perms",
-        select: "-perm_group",
-      },
-    });
 
     await Promise.all([
       new DeleteManyUserPublisher(nats.cli).publish(ids),

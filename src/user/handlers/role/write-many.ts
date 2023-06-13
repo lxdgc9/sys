@@ -35,7 +35,6 @@ const writePerms: RequestHandler = async (req, res, next) => {
       path: "perms",
       select: "-perm_group",
     });
-
     res.json(nRoles);
 
     await new LogPublisher(nats.cli).publish({

@@ -41,7 +41,6 @@ const writePerm: RequestHandler = async (req, res, next) => {
     });
     res.status(201).json(perm);
 
-    const logPublisher = new LogPublisher(nats.cli);
     await Promise.allSettled([
       PermGroup.updateOne(
         { _id: perm_group_id },
@@ -51,7 +50,7 @@ const writePerm: RequestHandler = async (req, res, next) => {
           },
         }
       ),
-      logPublisher.publish({
+      new LogPublisher(nats.cli).publish({
         user_id: req.user?.id,
         model: Perm.modelName,
         action: "insert",
