@@ -26,27 +26,27 @@ const modifyPerm: RequestHandler = async (req, res, next) => {
       throw new BadReqErr("Missing fields");
     }
 
-    const perm = await Perm.findById(req.params.id);
+    const perm = await Perm.findById(req.params.id).lean();
     if (!perm) {
       throw new BadReqErr("Permission not found");
     }
 
     const [dupl, existGroup] = await Promise.all([
       code &&
-      Perm.exists({
-        $and: [
-          {
-            _id: { $ne: perm._id },
-          },
-          { code },
-        ],
-      }),
+        Perm.exists({
+          $and: [
+            {
+              _id: { $ne: perm._id },
+            },
+            { code },
+          ],
+        }),
       perm_group_id &&
-      PermGroup.exists({
-        _id: {
-          $in: perm_group_id,
-        },
-      }),
+        PermGroup.exists({
+          _id: {
+            $in: perm_group_id,
+          },
+        }),
     ]);
     if (code && dupl) {
       throw new ConflictErr("Code already exist");
@@ -65,29 +65,36 @@ const modifyPerm: RequestHandler = async (req, res, next) => {
         },
       },
       { new: true }
-    ).populate({
-      path: "perm_group",
-      select: "-items",
-    });
-
+    )
+      .lean()
+      .populate({
+        path: "perm_group",
+        select: "-items",
+      });
     res.json(modPerm);
 
     await Promise.allSettled([
-      PermGroup.findByIdAndUpdate(perm.perm_group, {
-        $pull: {
-          items: perm._id,
-        },
-      }),
-      PermGroup.findByIdAndUpdate(modPerm!.perm_group._id, {
-        $addToSet: {
-          items: perm._id,
-        },
-      }),
+      PermGroup.updateOne(
+        { _id: perm.perm_group },
+        {
+          $pull: {
+            items: perm._id,
+          },
+        }
+      ),
+      PermGroup.updateOne(
+        { _id: modPerm!.perm_group._id },
+        {
+          $addToSet: {
+            items: perm._id,
+          },
+        }
+      ),
       new LogPublisher(nats.cli).publish({
         user_id: req.user?.id,
         model: Perm.modelName,
         action: "update",
-        doc: modPerm,
+        data: modPerm,
       }),
     ]);
   } catch (e) {

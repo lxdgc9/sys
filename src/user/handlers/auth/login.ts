@@ -2,7 +2,7 @@ import { RequestHandler } from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { UnauthorizedErr } from "@lxdgc9/pkg/dist/err";
-import { User } from "../models/user";
+import { User } from "../../models/user";
 
 const login: RequestHandler = async (req, res, next) => {
   const {

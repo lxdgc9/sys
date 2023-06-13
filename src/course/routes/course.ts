@@ -1,4 +1,4 @@
-import { guard, validate } from "@lxdgc9/pkg/dist/handlers";
+import { guard, validator } from "@lxdgc9/pkg/dist/handlers";
 import {
   DELETE_COURSE,
   READ_COURSE,
@@ -15,7 +15,7 @@ export const r = Router();
 
 r.route("/")
   .get(guard(READ_COURSE), getCourses)
-  .post(guard(READ_USER), validate(), createCourse);
+  .post(guard(READ_USER), validator(), createCourse);
 r.route("/:id")
   .get(guard(READ_COURSE), getCourse)
   .patch(guard(UPDATE_COURSE))

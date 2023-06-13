@@ -38,14 +38,13 @@ const writeRole: RequestHandler = async (req, res, next) => {
       path: "perms",
       select: "-perm_group",
     });
-
     res.json(nRole);
 
     await new LogPublisher(nats.cli).publish({
       user_id: req.user?.id,
       model: Role.modelName,
       action: "insert",
-      doc: nRole,
+      data: nRole,
     });
   } catch (e) {
     next(e);

@@ -3,7 +3,7 @@ import { RequestHandler } from "express";
 import { connection, model } from "mongoose";
 import { schema } from "../schemas";
 
-export const readLogs: RequestHandler = async (req, res, next) => {
+const readLogs: RequestHandler = async (req, res, next) => {
   try {
     const parts = (await connection.db.listCollections().toArray()).map(
       (part) => part.name
@@ -22,3 +22,5 @@ export const readLogs: RequestHandler = async (req, res, next) => {
     next(e);
   }
 };
+
+export default readLogs;

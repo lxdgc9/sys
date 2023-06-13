@@ -1,4 +1,4 @@
-import { guard, validate } from "@lxdgc9/pkg/dist/handlers";
+import { guard, validator } from "@lxdgc9/pkg/dist/handlers";
 import { READ_USER } from "@lxdgc9/pkg/dist/rules/manage";
 import { Router } from "express";
 import { deleteLesson } from "../handlers/lesson/delete";
@@ -12,13 +12,13 @@ r.route("/")
   .post(
     guard(READ_USER),
     uploader("lessons").array("files"),
-    validate(),
+    validator(),
     createLesson
   )
-  .get(guard(READ_USER), validate());
+  .get(guard(READ_USER), validator());
 
-r.route("/many").delete(guard(), validate(), delManyLesson);
+r.route("/many").delete(guard(), validator(), delManyLesson);
 
 r.route("/:id")
-  .get(guard(), validate())
-  .delete(guard(), validate(), deleteLesson);
+  .get(guard(), validator())
+  .delete(guard(), validator(), deleteLesson);

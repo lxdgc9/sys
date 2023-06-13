@@ -1,17 +1,19 @@
 import { Router } from "express";
 import { param } from "express-validator";
-import { guard, validate } from "@lxdgc9/pkg/dist/handlers";
+import { guard, validator } from "@lxdgc9/pkg/dist/handlers";
 import { LOG } from "@lxdgc9/pkg/dist/rules/log";
-import { readLogs } from "../handlers/logs";
-import { readParts } from "../handlers/parts";
+import readParts from "../handlers/parts";
+import readLogs from "../handlers/logs";
 
-export const r = Router();
+const logRouter = Router();
 
-r.get("/", guard(LOG), readParts);
+logRouter.get("/", guard(LOG), readParts);
 
-r.get(
+logRouter.get(
   "/:part",
   guard(LOG),
-  validate(param("part").isString().withMessage("must be string")),
+  validator(param("part").isString().withMessage("must be string")),
   readLogs
 );
+
+export default logRouter;

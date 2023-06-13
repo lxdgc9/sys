@@ -24,44 +24,47 @@ const modifyRole: RequestHandler = async (req, res, next) => {
 
     const permIds = [...new Set(perm_ids)];
 
-    const [role, numPerms] = await Promise.all([
-      Role.findById(req.params.id),
+    const [existRole, numPerms] = await Promise.all([
+      Role.exists({ _id: req.params.id }),
       Perm.countDocuments({
         _id: { $in: permIds },
       }),
     ]);
-    if (!role) {
+    if (!existRole) {
       throw new BadReqErr("Role not found");
     }
     if (perm_ids && numPerms < permIds.length) {
       throw new BadReqErr("Permission mismatch");
     }
 
-    await role.updateOne({
-      $set: perm_ids
-        ? {
-            name: name,
-            level: level,
-            perms: permIds,
-          }
-        : {
-            name: name,
-            level: level,
-          },
-    });
-
-    const updRole = await Role.findById(req.params.id).populate({
-      path: "perms",
-      select: "-perm_group",
-    });
-
+    const updRole = await Role.findByIdAndUpdate(
+      { _id: req.params.id },
+      {
+        $set: perm_ids
+          ? {
+              name: name,
+              level: level,
+              perms: permIds,
+            }
+          : {
+              name: name,
+              level: level,
+            },
+      },
+      { new: true }
+    )
+      .lean()
+      .populate({
+        path: "perms",
+        select: "-perm_group",
+      });
     res.json(updRole);
 
     await new LogPublisher(nats.cli).publish({
       user_id: req.user?.id,
       model: Role.modelName,
       action: "update",
-      doc: updRole,
+      data: updRole,
     });
   } catch (e) {
     next(e);

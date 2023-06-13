@@ -11,7 +11,7 @@ const delPermGroups: RequestHandler = async (req, res, next) => {
   try {
     const groups = await PermGroup.find({
       _id: { $in: ids },
-    });
+    }).lean();
     if (groups.length < ids.length) {
       throw new BadReqErr("Permission Group mismatch");
     }
@@ -28,7 +28,7 @@ const delPermGroups: RequestHandler = async (req, res, next) => {
       user_id: req.user?.id,
       model: PermGroup.modelName,
       action: "delete",
-      doc: groups,
+      data: groups,
     });
   } catch (e) {
     next(e);

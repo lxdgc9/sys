@@ -20,7 +20,7 @@ const modifyPermGroup: RequestHandler = async (req, res, next) => {
         },
       },
       { new: true }
-    );
+    ).lean();
     if (!group) {
       throw new BadReqErr("Permision Group not found");
     }
@@ -31,7 +31,7 @@ const modifyPermGroup: RequestHandler = async (req, res, next) => {
       user_id: req.user?.id,
       model: PermGroup.modelName,
       action: "update",
-      doc: group,
+      data: group,
     });
   } catch (e) {
     next(e);

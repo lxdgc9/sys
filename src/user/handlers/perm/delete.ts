@@ -13,9 +13,7 @@ const delPerm: RequestHandler = async (req, res, next) => {
         path: "perm_group",
         select: "-items",
       }),
-      Role.exists({
-        perms: { $in: req.params.id },
-      }),
+      Role.exists({ perms: { $in: req.params.id } }),
     ]);
     if (!perm) {
       throw new BadReqErr("Permission not found");
@@ -25,20 +23,22 @@ const delPerm: RequestHandler = async (req, res, next) => {
     }
 
     await perm.deleteOne();
-
     res.sendStatus(204);
 
     await Promise.allSettled([
-      PermGroup.findByIdAndUpdate(perm.perm_group._id, {
-        $pull: {
-          items: perm._id,
-        },
-      }),
+      PermGroup.updateOne(
+        { _id: perm.perm_group._id },
+        {
+          $pull: {
+            items: perm._id,
+          },
+        }
+      ),
       new LogPublisher(nats.cli).publish({
         user_id: req.user?.id,
         model: Perm.modelName,
         action: "delete",
-        doc: perm,
+        data: perm,
       }),
     ]);
   } catch (e) {

@@ -1,4 +1,4 @@
-import { guard, validate } from "@lxdgc9/pkg/dist/handlers";
+import { guard, validator } from "@lxdgc9/pkg/dist/handlers";
 import {
   DELETE_CLASS,
   READ_CLASS,
@@ -21,7 +21,7 @@ r.route("/")
   .get(guard(READ_CLASS), getClasses)
   .post(
     guard(WRITE_CLASS),
-    validate(
+    validator(
       body("name")
         .notEmpty()
         .withMessage("Required")
@@ -42,14 +42,14 @@ r.route("/")
   .patch(guard(UPDATE_CLASS), updateClass)
   .delete(
     guard(DELETE_CLASS),
-    validate(param("id").isMongoId().withMessage("must be mongoId")),
+    validator(param("id").isMongoId().withMessage("must be mongoId")),
     delClass
   );
 
 r.route("/many")
   .post(
     guard(WRITE_CLASS),
-    validate(
+    validator(
       body()
         .notEmpty()
         .withMessage("required")
@@ -73,7 +73,7 @@ r.route("/many")
   )
   .delete(
     guard(DELETE_CLASS),
-    validate(
+    validator(
       body()
         .isArray({ min: 1 })
         .withMessage("must be array, has aleast 1 element"),
@@ -85,12 +85,12 @@ r.route("/many")
 r.route("/:id")
   .get(
     guard(READ_CLASS),
-    validate(param("id").isMongoId().withMessage("must be mongoId")),
+    validator(param("id").isMongoId().withMessage("must be mongoId")),
     getUser
   )
   .patch()
   .delete(
     guard(DELETE_CLASS),
-    validate(param("id").isMongoId().withMessage("must be mongoId")),
+    validator(param("id").isMongoId().withMessage("must be mongoId")),
     delClass
   );

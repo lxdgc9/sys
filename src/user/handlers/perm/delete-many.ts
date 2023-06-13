@@ -12,12 +12,8 @@ const delPerms: RequestHandler = async (req, res, next) => {
 
   try {
     const [perms, depend] = await Promise.all([
-      Perm.find({
-        _id: { $in: ids },
-      }),
-      Role.exists({
-        perms: { $in: ids },
-      }),
+      Perm.find({ _id: { $in: ids } }).lean(),
+      Role.exists({ perms: { $in: ids } }),
     ]);
     if (perms.length < ids.length) {
       throw new BadReqErr("Permission mismatch");
@@ -51,7 +47,7 @@ const delPerms: RequestHandler = async (req, res, next) => {
         user_id: req.user?.id,
         model: Perm.modelName,
         action: "delete",
-        doc: perms,
+        data: perms,
       }),
     ]);
   } catch (e) {

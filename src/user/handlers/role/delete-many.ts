@@ -7,18 +7,14 @@ import { Role } from "../../models/role";
 import { User } from "../../models/user";
 
 const delRoles: RequestHandler = async (req, res, next) => {
-  const ids: Types.ObjectId[] = Array.from(new Set(req.body));
+  const ids = [...new Set(req.body)] as Types.ObjectId[];
 
   try {
-    const [items, depend] = await Promise.all([
-      Role.find({
-        _id: { $in: ids },
-      }),
-      User.exists({
-        role: { $in: ids },
-      }),
+    const [roles, depend] = await Promise.all([
+      Role.find({ _id: { $in: ids } }).lean(),
+      User.exists({ role: { $in: ids } }),
     ]);
-    if (items.length < ids.length) {
+    if (roles.length < ids.length) {
       throw new BadReqErr("Roles mismatch");
     }
     if (depend) {
@@ -28,17 +24,17 @@ const delRoles: RequestHandler = async (req, res, next) => {
     await Role.deleteMany({
       _id: { $in: ids },
     });
-
     res.sendStatus(204);
 
+    await Role.populate(roles, {
+      path: "perms",
+      select: "-perm_grp",
+    });
     await new LogPublisher(nats.cli).publish({
       user_id: req.user?.id,
       model: Role.modelName,
       action: "delete",
-      doc: await Role.populate(items, {
-        path: "perms",
-        select: "-perm_grp",
-      }),
+      data: roles,
     });
   } catch (e) {
     next(e);

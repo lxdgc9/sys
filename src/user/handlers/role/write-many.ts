@@ -13,7 +13,7 @@ const writePerms: RequestHandler = async (req, res, next) => {
     perm_ids: Types.ObjectId[];
   }[] = req.body;
 
-  const permIds = Array.from(new Set(perms.map((el) => el.perm_ids).flat()));
+  const permIds = [...new Set(perms.map((p) => p.perm_ids).flat())];
 
   try {
     const numPerms = await Perm.countDocuments({
@@ -24,10 +24,10 @@ const writePerms: RequestHandler = async (req, res, next) => {
     }
 
     const nRoles = await Role.insertMany(
-      perms.map(({ name, level, perm_ids }) => ({
-        name,
-        level,
-        perms: Array.from(new Set(perm_ids)),
+      perms.map((item) => ({
+        name: item.name,
+        level: item.level,
+        perms: [...new Set(item.perm_ids)],
       }))
     );
 
@@ -42,7 +42,7 @@ const writePerms: RequestHandler = async (req, res, next) => {
       user_id: req.user?.id,
       model: Role.modelName,
       action: "insert",
-      doc: nRoles,
+      data: nRoles,
     });
   } catch (e) {
     next(e);

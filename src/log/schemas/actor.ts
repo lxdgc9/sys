@@ -5,7 +5,7 @@ export interface IActor {
   data: any;
 }
 
-export const schema = new Schema<IActor>(
+const schema = new Schema<IActor>(
   {
     user_id: {
       type: Schema.Types.ObjectId,
@@ -31,3 +31,5 @@ export const schema = new Schema<IActor>(
     },
   }
 );
+
+export default schema;

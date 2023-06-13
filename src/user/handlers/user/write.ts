@@ -90,7 +90,7 @@ const writeUser: RequestHandler = async (req, res, next) => {
         user_id: req.user?.id,
         model: User.modelName,
         action: "insert",
-        doc: newUser,
+        data: newUser,
       }),
     ]);
   } catch (e) {

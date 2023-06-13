@@ -28,15 +28,13 @@ export const delUsers: RequestHandler = async (req, res, next) => {
       },
     });
 
-    const deleteManyUserPublisher = new DeleteManyUserPublisher(nats.cli);
-    const logPublisher = new LogPublisher(nats.cli);
     await Promise.all([
-      deleteManyUserPublisher.publish(ids),
-      logPublisher.publish({
+      new DeleteManyUserPublisher(nats.cli).publish(ids),
+      new LogPublisher(nats.cli).publish({
         user_id: req.user?.id,
         model: User.modelName,
         action: "delete",
-        doc: users,
+        data: users,
       }),
     ]);
   } catch (e) {

@@ -21,14 +21,15 @@ const delRole: RequestHandler = async (req, res, next) => {
     await role.deleteOne();
     res.sendStatus(204);
 
+    await Role.populate(role, {
+      path: "perms",
+      select: "-perm_group",
+    });
     await new LogPublisher(nats.cli).publish({
       user_id: req.user?.id,
       model: Role.modelName,
       action: "delete",
-      doc: await Role.populate(role, {
-        path: "perms",
-        select: "-perm_grp",
-      }),
+      data: role,
     });
   } catch (e) {
     next(e);

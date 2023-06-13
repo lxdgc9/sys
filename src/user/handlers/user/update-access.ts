@@ -16,33 +16,26 @@ const changeAccess: RequestHandler = async (req, res, next) => {
           is_active: status,
         },
       },
-      {
-        new: true,
-        populate: {
-          path: "role",
-          populate: {
-            path: "perms",
-            select: "-perm_grp",
-          },
-        },
-      }
-    );
+      { new: true }
+    ).populate({
+      path: "role",
+      populate: {
+        path: "perms",
+        select: "-perm_grp",
+      },
+    });
     if (!user) {
       throw new BadReqErr("User not found");
     }
-
     res.json(user);
 
-    const updateUserPublisher = new UpdateUserPublisher(nats.cli);
-    const logPublisher = new LogPublisher(nats.cli);
-
     await Promise.allSettled([
-      updateUserPublisher.publish(user),
-      logPublisher.publish({
+      new UpdateUserPublisher(nats.cli).publish(user),
+      new LogPublisher(nats.cli).publish({
         user_id: req.user?.id,
         model: User.modelName,
         action: "update",
-        doc: user,
+        data: user,
       }),
     ]);
   } catch (e) {

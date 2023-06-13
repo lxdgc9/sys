@@ -1,4 +1,4 @@
-import { guard, validate } from "@lxdgc9/pkg/dist/handlers";
+import { guard, validator } from "@lxdgc9/pkg/dist/handlers";
 import {
   DELETE_SCHOOL,
   READ_SCHOOL,
@@ -26,7 +26,7 @@ r.route("/")
   .post(
     guard(WRITE_SCHOOL),
     uploader("school/logo").single("logo"),
-    validate(
+    validator(
       body("code")
         .notEmpty()
         .withMessage("required")
@@ -60,7 +60,7 @@ r.route("/")
 r.route("/many")
   .post(
     guard(WRITE_SCHOOL),
-    validate(
+    validator(
       body()
         .isArray({ min: 1 })
         .withMessage("must be array, has aleast 1 element"),
@@ -91,7 +91,7 @@ r.route("/many")
   )
   .delete(
     guard(DELETE_SCHOOL),
-    validate(
+    validator(
       body()
         .isArray({ min: 1 })
         .withMessage("must be array, has aleast 1 element"),
@@ -103,13 +103,13 @@ r.route("/many")
 r.route("/:id")
   .get(
     guard(READ_SCHOOL),
-    validate(param("id").isMongoId().withMessage("must be mongoId")),
+    validator(param("id").isMongoId().withMessage("must be mongoId")),
     getSchool
   )
   .patch(
     guard(UPDATE_SCHOOL),
     uploader("unit/logo").single("logo"),
-    validate(
+    validator(
       param("id").isMongoId().withMessage("must be mongoId"),
       body("code")
         .optional({ values: "undefined" })
@@ -140,6 +140,6 @@ r.route("/:id")
   )
   .delete(
     guard(DELETE_SCHOOL),
-    validate(param("id").isMongoId().withMessage("must be mongoId")),
+    validator(param("id").isMongoId().withMessage("must be mongoId")),
     delSchool
   );

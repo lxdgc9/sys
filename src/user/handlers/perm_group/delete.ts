@@ -21,7 +21,7 @@ const delPermGroup: RequestHandler = async (req, res, next) => {
       user_id: req.user?.id,
       model: PermGroup.modelName,
       action: "delete",
-      doc: group,
+      data: group,
     });
   } catch (e) {
     next(e);

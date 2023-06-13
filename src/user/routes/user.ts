@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { guard, validate } from "@lxdgc9/pkg/dist/handlers";
+import { guard, validator } from "@lxdgc9/pkg/dist/handlers";
 import {
   READ_USER,
   WRITE_USER,
@@ -9,15 +9,15 @@ import {
 import { body, param } from "express-validator";
 import changePassword from "../handlers/user/change-passwd";
 import changeAccess from "../handlers/user/update-access";
-import readUsers from "../handlers/read-many";
 import writeUser from "../handlers/user/write";
-import login from "../handlers/login";
 import updateUser from "../handlers/user/update";
-import refreshToken from "../handlers/refresh-token";
-import readUser from "../handlers/read";
 import writeUsers from "../handlers/user/write-many";
 import delUsers from "../handlers/user/delete-many";
 import delUser from "../handlers/user/delete";
+import readUsers from "../handlers/auth/read-many";
+import login from "../handlers/auth/login";
+import refreshToken from "../handlers/auth/refresh-token";
+import readUser from "../handlers/auth/read";
 
 const userRouter = Router();
 
@@ -26,7 +26,7 @@ userRouter
   .get(guard(READ_USER), readUsers)
   .post(
     guard(WRITE_USER),
-    validate(
+    validator(
       body("prof")
         .notEmpty()
         .withMessage("Required")
@@ -80,7 +80,7 @@ userRouter
   .get(guard(READ_USER), readUsers)
   .post(
     guard(WRITE_USER),
-    validate(
+    validator(
       body()
         .notEmpty()
         .withMessage("Required")
@@ -136,7 +136,7 @@ userRouter
   )
   .delete(
     guard(DELETE_USER),
-    validate(
+    validator(
       body()
         .notEmpty()
         .withMessage("Required")
@@ -151,12 +151,12 @@ userRouter
   .route("/:id")
   .get(
     guard(READ_USER),
-    validate(param("id").isMongoId().withMessage("Must be mongoId")),
+    validator(param("id").isMongoId().withMessage("Must be mongoId")),
     readUser
   )
   .patch(
     guard(UPDATE_USER),
-    validate(
+    validator(
       param("id").isMongoId().withMessage("Must be mongoId"),
       body("prof")
         .optional({ values: "undefined" })
@@ -195,13 +195,13 @@ userRouter
   )
   .delete(
     guard(DELETE_USER),
-    validate(param("id").isMongoId().withMessage("Must be mongoId")),
+    validator(param("id").isMongoId().withMessage("Must be mongoId")),
     delUser
   );
 
 userRouter.post(
   "/auth",
-  validate(
+  validator(
     body("k")
       .notEmpty()
       .withMessage("Required")
@@ -215,7 +215,7 @@ userRouter.post(
 
 userRouter.post(
   "/auth/refresh-token",
-  validate(
+  validator(
     body("token")
       .notEmpty()
       .withMessage("Required")
@@ -228,7 +228,7 @@ userRouter.post(
 userRouter.patch(
   "/:id/passwd",
   guard(UPDATE_USER),
-  validate(
+  validator(
     param("id").isMongoId().withMessage("Must be mongoId"),
     body("old_password").notEmpty().withMessage("Required"),
     body("new_password")
@@ -248,7 +248,7 @@ userRouter.patch(
 userRouter.patch(
   "/:id/active",
   guard(UPDATE_USER),
-  validate(
+  validator(
     param("id").isMongoId().withMessage("Must be mongoId"),
     body("status")
       .notEmpty()

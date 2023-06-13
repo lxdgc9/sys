@@ -7,6 +7,6 @@ export interface Log {
     user_id?: Types.ObjectId;
     model: string;
     action: "insert" | "update" | "delete";
-    doc: any;
+    data: any;
   };
 }

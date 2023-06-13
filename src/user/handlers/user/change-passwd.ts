@@ -29,12 +29,11 @@ const changePassword: RequestHandler = async (req, res, next) => {
     await user.save();
     res.sendStatus(200);
 
-    const logPublisher = new LogPublisher(nats.cli);
-    await logPublisher.publish({
+    await new LogPublisher(nats.cli).publish({
       user_id: req.user?.id,
       model: User.modelName,
       action: "update",
-      doc: user,
+      data: user,
     });
   } catch (e) {
     next(e);

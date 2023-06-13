@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { body, param } from "express-validator";
-import { guard, validate } from "@lxdgc9/pkg/dist/handlers";
+import { guard, validator } from "@lxdgc9/pkg/dist/handlers";
 import {
   READ_PERM,
   WRITE_PERM,
@@ -22,7 +22,7 @@ permGroupRouter
   .get(guard(READ_PERM), readPermGroups)
   .post(
     guard(WRITE_PERM),
-    validate(
+    validator(
       body("name")
         .notEmpty()
         .withMessage("Required")
@@ -39,7 +39,7 @@ permGroupRouter
   .get(guard(READ_PERM), readPermGroups)
   .post(
     guard(WRITE_PERM),
-    validate(
+    validator(
       body()
         .notEmpty()
         .withMessage("Required")
@@ -56,13 +56,13 @@ permGroupRouter
   )
   .delete(
     guard(DELETE_PERM),
-    validate(
+    validator(
       body()
         .notEmpty()
         .withMessage("Required")
         .isArray({ min: 1 })
         .withMessage("Should be at least 1 element"),
-      body("*").isMongoId().withMessage("Must be mongoId")
+      body("*").isMongoId().withMessage("Must be MongoId")
     ),
     delPermGroups
   );
@@ -71,13 +71,13 @@ permGroupRouter
   .route("/:id")
   .get(
     guard(READ_PERM),
-    validate(param("id").isMongoId().withMessage("Must be mongoId")),
+    validator(param("id").isMongoId().withMessage("Must be MongoId")),
     readPermGroup
   )
   .patch(
     guard(UPDATE_PERM),
-    validate(
-      param("id").isMongoId().withMessage("Must be mongoId"),
+    validator(
+      param("id").isMongoId().withMessage("Must be MongoId"),
       body("name")
         .optional({ values: "undefined" })
         .isString()
@@ -89,7 +89,7 @@ permGroupRouter
   )
   .delete(
     guard(DELETE_PERM),
-    validate(param("id").isMongoId().withMessage("Must be mongoId")),
+    validator(param("id").isMongoId().withMessage("Must be MongoId")),
     delPermGroup
   );
 

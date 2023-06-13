@@ -15,7 +15,7 @@ const writePermGroup: RequestHandler = async (req, res, next) => {
       user_id: req.user?.id,
       model: PermGroup.modelName,
       action: "insert",
-      doc: group,
+      data: group,
     });
   } catch (e) {
     next(e);

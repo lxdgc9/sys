@@ -25,7 +25,6 @@ const writePerms: RequestHandler = async (req, res, next) => {
         [new Set(), new Set()]
       )
       .map((set) => [...set]);
-
     if (codes.length < perms.length) {
       throw new BadReqErr("Code already exist");
     }
@@ -52,6 +51,7 @@ const writePerms: RequestHandler = async (req, res, next) => {
         perm_group: p.perm_group_id,
       }))
     );
+
     await Perm.populate(nPerms, {
       path: "perm_group",
       select: "-items",
@@ -59,30 +59,34 @@ const writePerms: RequestHandler = async (req, res, next) => {
     res.status(201).json(nPerms);
 
     await Promise.allSettled([
-      [
-        ...nPerms
-          .reduce((map, perm) => {
-            const k = perm.perm_group._id.toString();
-            if (!map.has(k)) {
-              map.set(k, []);
+      Promise.all(
+        [
+          ...nPerms
+            .reduce((map, perm) => {
+              const k = perm.perm_group._id.toString();
+              if (!map.has(k)) {
+                map.set(k, []);
+              }
+              map.get(k).push(perm._id);
+              return map;
+            }, new Map())
+            .entries(),
+        ].map(([k, v]) => {
+          PermGroup.updateOne(
+            { _id: k },
+            {
+              $addToSet: {
+                items: v,
+              },
             }
-            map.get(k).push(perm._id);
-
-            return map;
-          }, new Map())
-          .entries(),
-      ].forEach(async ([k, v]) => {
-        await PermGroup.findByIdAndUpdate(k, {
-          $addToSet: {
-            items: v,
-          },
-        });
-      }),
+          );
+        })
+      ),
       new LogPublisher(nats.cli).publish({
         user_id: req.user?.id,
         model: Perm.modelName,
         action: "insert",
-        doc: nPerms,
+        data: nPerms,
       }),
     ]);
   } catch (e) {

@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import redis from "./redis";
-import app from "./app";
 import nats from "./nats";
+import app from "./app";
 
 async function main() {
   [

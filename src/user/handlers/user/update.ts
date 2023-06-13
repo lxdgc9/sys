@@ -109,7 +109,7 @@ const updateUser: RequestHandler = async (req, res, next) => {
         user_id: req.user?.id,
         model: User.modelName,
         action: "update",
-        doc: user,
+        data: user,
       }),
     ]);
   } catch (e) {

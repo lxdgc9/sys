@@ -1,5 +1,5 @@
 import { RequestHandler } from "express";
-import { User } from "../models/user";
+import { User } from "../../models/user";
 
 const readUsers: RequestHandler = async (_req, res, next) => {
   try {

@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { body, param } from "express-validator";
-import { guard, validate } from "@lxdgc9/pkg/dist/handlers";
+import { guard, validator } from "@lxdgc9/pkg/dist/handlers";
 import {
   READ_ROLE,
   WRITE_ROLE,
@@ -22,7 +22,7 @@ roleRouter
   .get(guard(READ_ROLE), readRoles)
   .post(
     guard(WRITE_ROLE),
-    validate(
+    validator(
       body("name")
         .notEmpty()
         .withMessage("Required")
@@ -44,7 +44,7 @@ roleRouter
   .get(guard(READ_ROLE), readRoles)
   .post(
     guard(WRITE_ROLE),
-    validate(
+    validator(
       body()
         .notEmpty()
         .withMessage("Required")
@@ -74,7 +74,7 @@ roleRouter
   )
   .delete(
     guard(DELETE_ROLE),
-    validate(
+    validator(
       body()
         .notEmpty()
         .withMessage("Required")
@@ -89,12 +89,12 @@ roleRouter
   .route("/:id")
   .get(
     guard(READ_ROLE),
-    validate(param("id").isMongoId().withMessage("Must be mongoId")),
+    validator(param("id").isMongoId().withMessage("Must be mongoId")),
     readRole
   )
   .patch(
     guard(UPDATE_ROLE),
-    validate(
+    validator(
       param("id").isMongoId().withMessage("Must be mongoId"),
       body("name")
         .optional({ values: "undefined" })
@@ -113,7 +113,7 @@ roleRouter
   )
   .delete(
     guard(DELETE_ROLE),
-    validate(param("id").isMongoId().withMessage("Must be mongoId")),
+    validator(param("id").isMongoId().withMessage("Must be mongoId")),
     delRole
   );
 

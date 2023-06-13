@@ -20,9 +20,8 @@ const writePerm: RequestHandler = async (req, res, next) => {
   try {
     const [dupl, group] = await Promise.all([
       Perm.exists({ code }),
-      PermGroup.findById(perm_group_id),
+      PermGroup.exists({ _id: perm_group_id }),
     ]);
-
     if (dupl) {
       throw new ConflictErr("Code already exist");
     }
@@ -42,17 +41,21 @@ const writePerm: RequestHandler = async (req, res, next) => {
     });
     res.status(201).json(perm);
 
+    const logPublisher = new LogPublisher(nats.cli);
     await Promise.allSettled([
-      group.updateOne({
-        $addToSet: {
-          items: perm,
-        },
-      }),
-      new LogPublisher(nats.cli).publish({
+      PermGroup.updateOne(
+        { _id: perm_group_id },
+        {
+          $addToSet: {
+            items: perm,
+          },
+        }
+      ),
+      logPublisher.publish({
         user_id: req.user?.id,
         model: Perm.modelName,
         action: "insert",
-        doc: perm,
+        data: perm,
       }),
     ]);
   } catch (e) {
