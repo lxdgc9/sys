@@ -43,8 +43,8 @@ export function guard(...rules: string[]) {
       }
 
       next();
-    } catch (err) {
-      next(err);
+    } catch (e) {
+      next(e);
     }
   };
 

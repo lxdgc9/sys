@@ -9,8 +9,8 @@ const modifyClass: RequestHandler = async (req, res, next) => {
     name,
     school_id,
   }: {
-    name: string | undefined;
-    school_id: Types.ObjectId | undefined;
+    name?: string | undefined;
+    school_id?: Types.ObjectId | undefined;
   } = req.body;
 
   try {

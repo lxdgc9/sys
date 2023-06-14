@@ -3,9 +3,9 @@ import mongoose, { Schema, Types } from "mongoose";
 interface ISchool {
   code: string;
   name: string;
-  address: string | undefined;
-  description: string | undefined;
-  logo_url: string | undefined;
+  address?: string;
+  description?: string;
+  logo_url?: string;
   classes: Types.ObjectId[];
 }
 

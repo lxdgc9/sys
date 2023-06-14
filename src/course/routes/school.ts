@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { body, param } from "express-validator";
 import { guard, validator } from "@lxdgc9/pkg/dist/handlers";
 import {
   READ_SCHOOL,
@@ -6,7 +7,7 @@ import {
   UPDATE_SCHOOL,
   DELETE_SCHOOL,
 } from "@lxdgc9/pkg/dist/rules/course";
-import { body, param } from "express-validator";
+import { COURSE } from "@lxdgc9/pkg/dist/rules/app";
 import uploader from "../helpers/upload";
 import readSchool from "../handlers/school/read";
 import readSchools from "../handlers/school/read-many";
@@ -20,7 +21,7 @@ const schoolRouter = Router();
 
 schoolRouter
   .route("/")
-  .get(guard(READ_SCHOOL), readSchools)
+  .get(guard(COURSE, READ_SCHOOL), readSchools)
   .post(
     guard(WRITE_SCHOOL),
     uploader("school/logo").single("logo"),

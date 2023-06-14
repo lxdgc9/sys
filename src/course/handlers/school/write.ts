@@ -12,8 +12,8 @@ const writeSchool: RequestHandler = async (req, res, next) => {
   }: {
     code: string;
     name: string;
-    address: string | undefined;
-    description: string | undefined;
+    address?: string | undefined;
+    description?: string | undefined;
   } = req.body;
 
   try {

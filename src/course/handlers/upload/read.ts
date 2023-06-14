@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
-import { NotFoundErr } from "@lxdgc9/pkg/dist/err";
 import { RequestHandler } from "express";
+import { NotFoundErr } from "@lxdgc9/pkg/dist/err";
 
 const readFile: RequestHandler = (req, res, next) => {
   const dest = path.join("uploads", req.params[0]);

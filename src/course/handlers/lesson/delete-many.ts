@@ -9,11 +9,9 @@ const delLessons: RequestHandler = async (req, res, next) => {
   const ids = [...new Set(req.body)] as Types.ObjectId[];
 
   try {
-    const lessons = await Lesson.find({
-      _id: { $in: ids },
-    }).lean();
+    const lessons = await Lesson.find({ _id: { $in: ids } }).lean();
     if (lessons.length < ids.length) {
-      throw new BadReqErr("Lesson mismatch");
+      throw new BadReqErr("Lessons mismatch");
     }
 
     await Lesson.deleteMany({

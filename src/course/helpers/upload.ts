@@ -10,6 +10,7 @@ function uploader(path: string = "/") {
         console.log(err);
         throw err;
       }
+
       console.log("Directory created successfully!");
     });
   }
@@ -31,9 +32,7 @@ function uploader(path: string = "/") {
         cb(null, `${Date.now()}.${file.mimetype.split("/")[1]}`);
       },
     }),
-    limits: {
-      fileSize: 1258291200, // ~1.2G
-    },
+    limits: { fileSize: 1258291200 }, // ~1.2G
   });
 }
 

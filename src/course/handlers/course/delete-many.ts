@@ -1,7 +1,7 @@
 import { RequestHandler } from "express";
+import { Types } from "mongoose";
 import { BadReqErr } from "@lxdgc9/pkg/dist/err";
 import { Course } from "../../models/course";
-import { Types } from "mongoose";
 
 const delCourses: RequestHandler = async (req, res, next) => {
   const ids = [...new Set(req.body)] as Types.ObjectId[];

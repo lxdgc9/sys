@@ -4,14 +4,6 @@ import { BadReqErr } from "@lxdgc9/pkg/dist/err";
 import { Course } from "../../models/course";
 import { Lesson } from "../../models/lesson";
 
-// declare global {
-//   namespace Express {
-//     interface Request {
-//       files?: File[];
-//     }
-//   }
-// }
-
 const writeLesson: RequestHandler = async (req, res, next) => {
   const {
     course_id,
@@ -22,8 +14,6 @@ const writeLesson: RequestHandler = async (req, res, next) => {
     title: string;
     content: string;
   } = req.body;
-
-  console.log("debug:", req.files);
 
   try {
     if (!req.files) {
@@ -39,10 +29,10 @@ const writeLesson: RequestHandler = async (req, res, next) => {
       course_id,
       title,
       content,
-      // files: req.files.map((f: any) => ({
-      //   path: f.path,
-      //   mime_type: f.mimetype,
-      // })),
+      files: (req.files as any).map((f: any) => ({
+        path: f.path,
+        mime_type: f.mimetype,
+      })),
     });
     await nLesson.save();
 

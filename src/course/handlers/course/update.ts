@@ -20,28 +20,32 @@ const modifyCourse: RequestHandler = async (req, res, next) => {
   const classIds = [...new Set(class_ids)];
 
   try {
-    const [course, classCount] = await Promise.all([
-      Course.findById(req.params.id),
+    const [hasCourse, numClasses] = await Promise.all([
+      Course.exists({ _id: req.params.id }),
       Class.countDocuments({
         _id: { $in: classIds },
       }),
     ]);
-    if (!course) {
+    if (!hasCourse) {
       throw new BadReqErr("Course not found");
     }
-    if (class_ids && classCount < classIds.length) {
+    if (class_ids && numClasses < classIds.length) {
       throw new BadReqErr("Classes mismatch");
     }
 
-    await course.updateOne({
-      $set: {
-        title,
-        content,
-        is_publish,
-        class_ids: classIds,
+    const modCourse = await Course.findByIdAndUpdate(
+      req.params.id,
+      {
+        $set: {
+          title,
+          content,
+          is_publish,
+          class_ids: classIds,
+        },
       },
-    });
-    res.json(await Course.findById(course._id));
+      { new: true }
+    );
+    res.json(modCourse);
   } catch (e) {
     next(e);
   }
