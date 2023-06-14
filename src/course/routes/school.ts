@@ -7,7 +7,6 @@ import {
   UPDATE_SCHOOL,
   DELETE_SCHOOL,
 } from "@lxdgc9/pkg/dist/rules/course";
-import { COURSE } from "@lxdgc9/pkg/dist/rules/app";
 import uploader from "../helpers/upload";
 import readSchool from "../handlers/school/read";
 import readSchools from "../handlers/school/read-many";
@@ -21,21 +20,21 @@ const schoolRouter = Router();
 
 schoolRouter
   .route("/")
-  .get(guard(COURSE, READ_SCHOOL), readSchools)
+  .get(guard(READ_SCHOOL), readSchools)
   .post(
     guard(WRITE_SCHOOL),
     uploader("school/logo").single("logo"),
     validator(
       body("code")
         .notEmpty()
-        .withMessage("Required")
+        .withMessage("Not empty")
         .isString()
         .withMessage("Must be string")
         .isLength({ min: 1, max: 255 })
         .withMessage("1 <= len <= 255"),
       body("name")
         .notEmpty()
-        .withMessage("Required")
+        .withMessage("Not empty")
         .isString()
         .withMessage("Must be string")
         .isLength({ min: 1, max: 255 })
@@ -65,14 +64,14 @@ schoolRouter
       body("*").isObject().withMessage("Must be object"),
       body("*.code")
         .notEmpty()
-        .withMessage("Required")
+        .withMessage("Not empty")
         .isString()
         .withMessage("Must be string")
         .isLength({ min: 1, max: 255 })
         .withMessage("1 <= len <= 255"),
       body("*.name")
         .notEmpty()
-        .withMessage("Required")
+        .withMessage("Not empty")
         .isString()
         .withMessage("Must be string")
         .isLength({ min: 1, max: 255 })

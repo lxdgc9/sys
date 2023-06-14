@@ -38,7 +38,7 @@ const allocUsers: RequestHandler = async (req, res, next) => {
       }
     );
 
-    res.sendStatus(200);
+    res.sendStatus(204);
   } catch (e) {
     next(e);
   }

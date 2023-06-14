@@ -22,7 +22,7 @@ function uploader(path: string = "/") {
       },
       filename(_req, file, cb) {
         if (!file) {
-          throw new Error("no file received");
+          throw new Error("No file received");
         }
 
         file.originalname = Buffer.from(file.originalname, "latin1").toString(

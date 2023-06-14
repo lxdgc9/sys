@@ -7,7 +7,6 @@ import {
   UPDATE_CLASS,
   DELETE_CLASS,
 } from "@lxdgc9/pkg/dist/rules/course";
-import readUser from "../handlers/user/read";
 import readClasses from "../handlers/class/read-many";
 import delClass from "../handlers/class/delete";
 import delClasses from "../handlers/class/delete-many";
@@ -35,14 +34,14 @@ classRouter
     validator(
       body("name")
         .notEmpty()
-        .withMessage("Required")
+        .withMessage("Not empty")
         .isString()
         .withMessage("Must be string")
         .isLength({ min: 1, max: 255 })
         .withMessage("1 <= len <= 255"),
       body("school_id")
         .notEmpty()
-        .withMessage("Required")
+        .withMessage("Not empty")
         .isMongoId()
         .withMessage("Must be MongoId")
     ),
@@ -62,7 +61,7 @@ classRouter
     validator(
       body()
         .notEmpty()
-        .withMessage("Required")
+        .withMessage("Not empty")
         .isArray({ min: 1 })
         .withMessage("Should be at least 1 element"),
       body("*").isObject().withMessage("Must be object"),
@@ -73,7 +72,7 @@ classRouter
         .withMessage("1 <= len <= 255"),
       body("*.school_id")
         .notEmpty()
-        .withMessage("Required")
+        .withMessage("Not empty")
         .isMongoId()
         .withMessage("Must be MongoId")
     ),

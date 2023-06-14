@@ -5,7 +5,6 @@ import {
   READ_COURSE,
   UPDATE_COURSE,
 } from "@lxdgc9/pkg/dist/rules/course";
-import { READ_USER } from "@lxdgc9/pkg/dist/rules/manage";
 import readCourses from "../handlers/course/read-many";
 import writeCourse from "../handlers/course/write";
 import delCourse from "../handlers/course/delete";
@@ -16,7 +15,7 @@ const courseRouter = Router();
 courseRouter
   .route("/")
   .get(guard(READ_COURSE), readCourses)
-  .post(guard(READ_USER), validator(), writeCourse);
+  .post(guard(READ_COURSE), validator(), writeCourse);
 courseRouter
   .route("/:id")
   .get(guard(READ_COURSE), readCourse)

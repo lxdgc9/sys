@@ -9,10 +9,10 @@ const modifySchool: RequestHandler = async (req, res, next) => {
     address,
     description,
   }: {
-    code: string | undefined;
-    name: string | undefined;
-    address: string | undefined;
-    description: string | undefined;
+    code?: string;
+    name?: string;
+    address?: string;
+    description?: string;
   } = req.body;
 
   try {

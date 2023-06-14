@@ -6,8 +6,8 @@ const writeSchools: RequestHandler = async (req, res, next) => {
   const schools: {
     code: string;
     name: string;
-    address?: string | undefined;
-    description?: string | undefined;
+    address?: string;
+    description?: string;
   }[] = req.body;
 
   const codes = [...new Set(schools.map((el) => el.code))];
@@ -17,7 +17,9 @@ const writeSchools: RequestHandler = async (req, res, next) => {
       throw new ConflictErr("Code already exists");
     }
 
-    const hasCode = await School.exists({ code: { $in: codes } });
+    const hasCode = await School.exists({
+      code: { $in: codes },
+    });
     if (hasCode) {
       throw new ConflictErr("Code already exists");
     }
