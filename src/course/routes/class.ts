@@ -11,9 +11,10 @@ import readUser from "../handlers/user/read";
 import readClasses from "../handlers/class/read-many";
 import delClass from "../handlers/class/delete";
 import delClasses from "../handlers/class/delete-many";
-import modifyClass from "../handlers/class/update";
+import modifyClass from "../handlers/class/modify";
 import writeClasses from "../handlers/class/write-many";
 import writeClass from "../handlers/class/write";
+import readClass from "../handlers/class/read";
 
 const classRouter = Router();
 
@@ -92,7 +93,7 @@ classRouter
   .get(
     guard(READ_CLASS),
     validator(param("id").isMongoId().withMessage("Must be MongoId")),
-    readUser
+    readClass
   )
   .patch()
   .delete(

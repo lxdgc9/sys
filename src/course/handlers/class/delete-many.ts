@@ -24,9 +24,7 @@ const delClasses: RequestHandler = async (req, res, next) => {
     res.sendStatus(204);
 
     await School.updateMany(
-      {
-        classes: { $in: ids },
-      },
+      { classes: { $in: ids } },
       {
         $pullAll: {
           classes: ids,

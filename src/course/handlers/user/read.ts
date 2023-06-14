@@ -4,7 +4,7 @@ import { User } from "../../models/user";
 
 const readUser: RequestHandler = async (req, res, next) => {
   try {
-    const user = await User.findById(req.params.id, "obj");
+    const user = await User.findById(req.params.id).lean();
     if (!user) {
       throw new NotFoundErr("User not found");
     }

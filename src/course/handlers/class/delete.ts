@@ -16,11 +16,14 @@ const delClass: RequestHandler = async (req, res, next) => {
     await _class.deleteOne();
     res.sendStatus(204);
 
-    await School.findByIdAndUpdate(_class.school, {
-      $pull: {
-        classes: _class._id,
-      },
-    });
+    await School.updateOne(
+      { _id: _class.school },
+      {
+        $pull: {
+          classes: _class._id,
+        },
+      }
+    );
   } catch (e) {
     next(e);
   }

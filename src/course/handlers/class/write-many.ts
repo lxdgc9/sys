@@ -38,7 +38,6 @@ const writeClasses: RequestHandler = async (req, res, next) => {
     }, new Map());
 
     [...mapSchool.entries()].forEach(async ([k, v]) => {
-      console.log(k, v);
       await School.updateOne(
         { _id: k },
         {

@@ -30,7 +30,6 @@ const writeSchool: RequestHandler = async (req, res, next) => {
       logo_url: req.file && `/api/courses/${req.file.path}`,
     });
     await nSchool.save();
-
     res.status(201).json(nSchool);
   } catch (e) {
     next(e);

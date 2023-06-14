@@ -1,12 +1,22 @@
 import { RequestHandler } from "express";
 import { User } from "../../models/user";
 
-const getUsers: RequestHandler = async (_req, res, next) => {
+const readUsers: RequestHandler = async (_req, res, next) => {
   try {
-    res.json(await User.find());
+    const users = await User.find()
+      .lean()
+      .populate({
+        path: "classes",
+        populate: {
+          path: "school",
+          select: "-classes",
+        },
+      });
+
+    res.json(users);
   } catch (e) {
     next(e);
   }
 };
 
-export default getUsers;
+export default readUsers;

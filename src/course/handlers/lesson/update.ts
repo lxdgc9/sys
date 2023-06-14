@@ -10,30 +10,34 @@ const modifyLesson: RequestHandler = async (req, res, next) => {
     title,
     content,
   }: {
-    course_id: Types.ObjectId;
-    title: string;
-    content: string;
+    course_id: Types.ObjectId | undefined;
+    title: string | undefined;
+    content: string | undefined;
   } = req.body;
 
   if (req.files) {
     console.log(req.files);
   } else {
-    console.log("no files");
+    console.log("No files");
   }
 
   try {
-    if (!Object.keys(req.body).length) {
-      throw new BadReqErr("body not empty");
+    if (
+      course_id === undefined &&
+      title === undefined &&
+      content === undefined
+    ) {
+      throw new BadReqErr("Missing fields");
     }
 
     const course = await Course.findById(course_id);
     if (!course) {
-      throw new BadReqErr("couse not found");
+      throw new BadReqErr("Course not found");
     }
 
     const lesson = await Lesson.findById(req.params.id);
     if (!lesson) {
-      throw new BadReqErr("lesson not found");
+      throw new BadReqErr("Lesson not found");
     }
 
     await lesson.updateOne({

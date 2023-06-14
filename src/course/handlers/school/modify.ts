@@ -44,7 +44,7 @@ const modifySchool: RequestHandler = async (req, res, next) => {
       throw new ConflictErr("Code already exists");
     }
 
-    const modSchool = await School.findByIdAndUpdate(
+    const school = await School.findByIdAndUpdate(
       req.params.id,
       {
         $set: {
@@ -62,7 +62,7 @@ const modifySchool: RequestHandler = async (req, res, next) => {
         path: "classes",
         select: "-school",
       });
-    res.json(modSchool);
+    res.json(school);
   } catch (e) {
     next(e);
   }
