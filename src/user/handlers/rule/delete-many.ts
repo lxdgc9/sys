@@ -7,29 +7,29 @@ import { Rule } from "../../models/rule";
 import { Catalog } from "../../models/rule-catalog";
 import { Role } from "../../models/role";
 
-const delPerms: RequestHandler = async (req, res, next) => {
+const deleteRules: RequestHandler = async (req, res, next) => {
   const ids = [...new Set(req.body)] as Types.ObjectId[];
 
   try {
-    const [perms, depend] = await Promise.all([
+    const [rules, hasDepend] = await Promise.all([
       Rule.find({ _id: { $in: ids } }).lean(),
       Role.exists({ rules: { $in: ids } }),
     ]);
-    if (perms.length < ids.length) {
-      throw new BadReqErr("Permission mismatch");
+    if (rules.length < ids.length) {
+      throw new BadReqErr("Hệ thống không chấp nhận danh sách");
     }
-    if (depend) {
-      throw new BadReqErr("Found depedent");
+    if (hasDepend) {
+      throw new BadReqErr("Có ràng buộc liên kết");
     }
 
     await Rule.deleteMany({
       _id: { $in: ids },
     });
-    res.sendStatus(204);
+    res.json({ msg: "Xóa thành công" });
 
-    await Rule.populate(perms, {
-      path: "perm_group",
-      select: "-items",
+    await Rule.populate(rules, {
+      path: "catalog",
+      select: "-rules",
     });
 
     await Promise.allSettled([
@@ -47,7 +47,7 @@ const delPerms: RequestHandler = async (req, res, next) => {
         user_id: req.user?.id,
         model: Rule.modelName,
         action: "delete",
-        data: perms,
+        data: rules,
       }),
     ]);
   } catch (e) {
@@ -55,4 +55,4 @@ const delPerms: RequestHandler = async (req, res, next) => {
   }
 };
 
-export default delPerms;
+export default deleteRules;

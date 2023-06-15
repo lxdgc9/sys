@@ -4,12 +4,11 @@ import { Role } from "../../models/role";
 
 const readRole: RequestHandler = async (req, res, next) => {
   try {
-    const role = await Role.findById(req.params.id).lean().populate({
-      path: "perms",
-      select: "-perm_group",
-    });
+    const role = await Role.findById(req.params.id)
+      .lean()
+      .populate("rules", "-catalog");
     if (!role) {
-      throw new NotFoundErr("Role not found");
+      throw new NotFoundErr("Không tìm thấy role");
     }
 
     res.json(role);

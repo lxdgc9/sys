@@ -10,111 +10,109 @@ import {
 import readRole from "../handlers/role/read";
 import readRoles from "../handlers/role/read-many";
 import writeRole from "../handlers/role/write";
-import writePerms from "../handlers/perm/write-many";
 import modifyRole from "../handlers/role/modify";
-import delRole from "../handlers/role/delete";
-import delRoles from "../handlers/role/delete-many";
+import deleteRole from "../handlers/role/delete";
+import deleteRoles from "../handlers/role/delete-many";
+import writeRoles from "../handlers/role/write-many";
 
-export const roleRouter = Router();
+const r = Router();
 
-roleRouter
-  .route("/")
+r.route("/")
   .get(guard(READ_ROLE), readRoles)
   .post(
     guard(WRITE_ROLE),
     validator(
       body("name")
         .notEmpty()
-        .withMessage("Required")
+        .withMessage("Bắt buộc")
         .withMessage({ min: 1, max: 255 })
         .withMessage("1 <= len <= 255"),
-      body("level").isInt({ min: 0 }).withMessage("Must be number, >= 0"),
-      body("perm_ids")
+      body("level").isInt({ min: 0 }).withMessage("Phải là số nguyên dương"),
+      body("rule_ids")
         .notEmpty()
-        .withMessage("Required")
+        .withMessage("Bắt buộc")
         .isArray()
-        .withMessage("Must be array"),
-      body("perm_ids.*").isMongoId().withMessage("Must be mongoId")
+        .withMessage("Phải là mảng")
+        .customSanitizer((vals) => [...new Set(vals)]),
+      body("rule_ids.*").isMongoId().withMessage("Không đúng định dạng")
     ),
     writeRole
   );
 
-roleRouter
-  .route("/many")
+r.route("/many")
   .get(guard(READ_ROLE), readRoles)
   .post(
     guard(WRITE_ROLE),
     validator(
       body()
         .notEmpty()
-        .withMessage("Required")
+        .withMessage("Bắt buộc")
         .isArray({ min: 1 })
-        .withMessage("Should be at least 1 element"),
-      body("*").isObject().withMessage("Must be object"),
+        .withMessage("Nên chứa ít nhất 1 phần tử"),
+      body("*").isObject().withMessage("Nên là Object"),
       body("*.name")
         .notEmpty()
-        .withMessage("Required")
+        .withMessage("Bắt buộc")
         .isString()
-        .withMessage("Must be string")
+        .withMessage("Nên là chuỗi")
         .isLength({ min: 1, max: 255 })
         .withMessage("1 <= len <= 255"),
       body("*.level")
         .notEmpty()
-        .withMessage("Required")
+        .withMessage("Bắt buộc")
         .isInt({ min: 0 })
-        .withMessage("Must be number, >= 0"),
-      body("*.perm_ids").isArray().withMessage("Must be array"),
-      body("*.perm_ids.*")
+        .withMessage("Nên là một số lớn hơn 0"),
+      body("*.rule_ids").isArray().withMessage("Nên là mảng"),
+      body("*.rule_ids.*")
         .notEmpty()
-        .withMessage("Required")
+        .withMessage("Bắt buộc")
         .isMongoId()
-        .withMessage("Must be mongoId")
+        .withMessage("Không đúng định dạng")
     ),
-    writePerms
+    writeRoles
   )
   .delete(
     guard(DELETE_ROLE),
     validator(
       body()
         .notEmpty()
-        .withMessage("Required")
+        .withMessage("Bắt buộc")
         .isArray({ min: 1 })
-        .withMessage("Should be at least 1 element"),
-      body("*").isMongoId().withMessage("Must be mongoId")
+        .withMessage("Nên chứa ít nhất 1 phần tử"),
+      body("*").isMongoId().withMessage("Không đúng định dạng")
     ),
-    delRoles
+    deleteRoles
   );
 
-roleRouter
-  .route("/:id")
+r.route("/:id")
   .get(
     guard(READ_ROLE),
-    validator(param("id").isMongoId().withMessage("Must be mongoId")),
+    validator(param("id").isMongoId().withMessage("Không đúng định dạng")),
     readRole
   )
   .patch(
     guard(UPDATE_ROLE),
     validator(
-      param("id").isMongoId().withMessage("Must be mongoId"),
+      param("id").isMongoId().withMessage("Không đúng định dạng"),
       body("name")
         .optional({ values: "undefined" })
         .isString()
-        .withMessage("Must be string")
+        .withMessage("Nên là chuỗi")
         .isLength({ min: 1, max: 255 })
         .withMessage("1 <= len <= 255"),
       body("level")
         .optional({ values: "undefined" })
         .isInt({ min: 0 })
-        .withMessage("Must be number, >= 0"),
-      body("perm_ids").optional({ values: "undefined" }).isArray({ min: 1 }),
-      body("perm_ids.*").isMongoId().withMessage("Must be mongoId")
+        .withMessage("Nên là một số lớn hơn 0"),
+      body("rule_ids").optional({ values: "undefined" }).isArray({ min: 1 }),
+      body("rule_ids.*").isMongoId().withMessage("Không đúng định dạng")
     ),
     modifyRole
   )
   .delete(
     guard(DELETE_ROLE),
-    validator(param("id").isMongoId().withMessage("Must be mongoId")),
-    delRole
+    validator(param("id").isMongoId().withMessage("Không đúng định dạng")),
+    deleteRole
   );
 
-export default roleRouter;
+export default r;

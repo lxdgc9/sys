@@ -2,43 +2,38 @@ import { Router } from "express";
 import { body, param } from "express-validator";
 import { guard, validator } from "@lxdgc9/pkg/dist/handlers";
 import {
-  READ_PERM,
-  WRITE_PERM,
-  UPDATE_PERM,
-  DELETE_PERM,
+  READ_RULE,
+  WRITE_RULE,
+  UPDATE_RULE,
+  DELETE_RULE,
 } from "@lxdgc9/pkg/dist/rules/manage";
-import readCatalog from "../handlers/perm_group/read";
-import readCatalogs from "../handlers/perm_group/read-many";
-import writeCatalog from "../handlers/perm_group/write";
-import writeCatalogs from "../handlers/perm_group/write-many";
-import modifyCatalog from "../handlers/perm_group/modify";
-import deleteCatalog from "../handlers/perm_group/delete";
-import deleteCatalogs from "../handlers/perm_group/delete-many";
+import readCatalog from "../handlers/rule_catalog/read";
+import readCatalogs from "../handlers/rule_catalog/read-many";
+import writeCatalog from "../handlers/rule_catalog/write";
+import writeCatalogs from "../handlers/rule_catalog/write-many";
+import modifyCatalog from "../handlers/rule_catalog/modify";
+import deleteCatalog from "../handlers/rule_catalog/delete";
+import deleteCatalogs from "../handlers/rule_catalog/delete-many";
 
-const catalogRouter = Router();
+const r = Router();
 
-catalogRouter
-  .route("/")
-  .get(guard(READ_PERM), readCatalogs)
+r.route("/")
+  .get(guard(READ_RULE), readCatalogs)
   .post(
-    guard(WRITE_PERM),
+    guard(WRITE_RULE),
     validator(
       body("name")
         .notEmpty()
-        .withMessage("Bắt buộc")
+        .withMessage("Not empty")
         .isString()
-        .withMessage("Phải là chuỗi")
-        .isLength({ min: 1, max: 255 })
-        .withMessage("1 <= len <= 255")
+        .withMessage("Must be string")
     ),
     writeCatalog
   );
 
-catalogRouter
-  .route("/many")
-  .get(guard(READ_PERM), readCatalogs)
+r.route("/many")
   .post(
-    guard(WRITE_PERM),
+    guard(WRITE_RULE),
     validator(
       body()
         .notEmpty()
@@ -55,7 +50,7 @@ catalogRouter
     writeCatalogs
   )
   .delete(
-    guard(DELETE_PERM),
+    guard(DELETE_RULE),
     validator(
       body()
         .notEmpty()
@@ -67,15 +62,14 @@ catalogRouter
     deleteCatalogs
   );
 
-catalogRouter
-  .route("/:id")
+r.route("/:id")
   .get(
-    guard(READ_PERM),
+    guard(READ_RULE),
     validator(param("id").isMongoId().withMessage("Không đúng định dạng")),
     readCatalog
   )
   .patch(
-    guard(UPDATE_PERM),
+    guard(UPDATE_RULE),
     validator(
       param("id").isMongoId().withMessage("Không đúng định dạng"),
       body("name")
@@ -88,9 +82,9 @@ catalogRouter
     modifyCatalog
   )
   .delete(
-    guard(DELETE_PERM),
+    guard(DELETE_RULE),
     validator(param("id").isMongoId().withMessage("Không đúng định dạng")),
     deleteCatalog
   );
 
-export default catalogRouter;
+export default r;

@@ -1,30 +1,28 @@
 import { RequestHandler } from "express";
-import { BadReqErr } from "@lxdgc9/pkg/dist/err";
+import { BadReqErr, NotFoundErr } from "@lxdgc9/pkg/dist/err";
 import nats from "../../nats";
 import { LogPublisher } from "../../events/publisher/log";
 import { Role } from "../../models/role";
 import { User } from "../../models/user";
 
-const delRole: RequestHandler = async (req, res, next) => {
+const deleteRole: RequestHandler = async (req, res, next) => {
   try {
-    const [role, depend] = await Promise.all([
-      Role.findById(req.params.id),
+    const [hasRole, isDepend] = await Promise.all([
+      Role.exists({ _id: req.params.id }),
       User.exists({ role: req.params.id }),
     ]);
-    if (!role) {
-      throw new BadReqErr("Role not found");
+    if (!hasRole) {
+      throw new NotFoundErr("Không tìm thấy vai trò");
     }
-    if (depend) {
-      throw new BadReqErr("Found dependent");
+    if (isDepend) {
+      throw new BadReqErr("Có ràng buộc liên kết");
     }
 
-    await role.deleteOne();
-    res.sendStatus(204);
+    const role = await Role.findByIdAndDelete(req.params.id)
+      .lean()
+      .populate("rules", "-catalog");
+    res.json({ msg: "Xóa thành công" });
 
-    await Role.populate(role, {
-      path: "perms",
-      select: "-perm_group",
-    });
     await new LogPublisher(nats.cli).publish({
       user_id: req.user?.id,
       model: Role.modelName,
@@ -36,4 +34,4 @@ const delRole: RequestHandler = async (req, res, next) => {
   }
 };
 
-export default delRole;
+export default deleteRole;

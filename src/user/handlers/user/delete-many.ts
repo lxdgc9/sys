@@ -6,8 +6,8 @@ import { LogPublisher } from "../../events/publisher/log";
 import { DeleteManyUserPublisher } from "../../events/publisher/user/delete-many";
 import { User } from "../../models/user";
 
-export const delUsers: RequestHandler = async (req, res, next) => {
-  const ids = [...new Set(req.body)] as Types.ObjectId[];
+export const deleteUsers: RequestHandler = async (req, res, next) => {
+  const ids: Types.ObjectId[] = req.body;
 
   try {
     const users = await User.find({ _id: { $in: ids } })
@@ -15,18 +15,16 @@ export const delUsers: RequestHandler = async (req, res, next) => {
       .populate({
         path: "role",
         populate: {
-          path: "perms",
-          select: "-perm_group",
+          path: "rules",
+          select: "-catalog",
         },
       });
     if (users.length < ids.length) {
       throw new BadReqErr("User mismatch");
     }
 
-    await User.deleteMany({
-      _id: { $in: ids },
-    });
-    res.sendStatus(204);
+    await User.deleteMany({ _id: { $in: ids } });
+    res.json({ msg: "Xóa thành công" });
 
     await Promise.all([
       new DeleteManyUserPublisher(nats.cli).publish(ids),
@@ -42,4 +40,4 @@ export const delUsers: RequestHandler = async (req, res, next) => {
   }
 };
 
-export default delUsers;
+export default deleteUsers;

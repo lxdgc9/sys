@@ -6,34 +6,34 @@ import { LogPublisher } from "../../events/publisher/log";
 import { Rule } from "../../models/rule";
 import { Role } from "../../models/role";
 
-const writePerms: RequestHandler = async (req, res, next) => {
-  const perms: {
+const writeRoles: RequestHandler = async (req, res, next) => {
+  const roles: {
     name: string;
     level: number;
-    perm_ids: Types.ObjectId[];
+    rule_ids: Types.ObjectId[];
   }[] = req.body;
 
-  const permIds = [...new Set(perms.map((p) => p.perm_ids).flat())];
+  const ruleIds = [...new Set(roles.map((r) => r.rule_ids).flat())];
 
   try {
-    const numPerms = await Rule.countDocuments({
-      _id: { $in: permIds },
+    const numRules = await Rule.countDocuments({
+      _id: { $in: ruleIds },
     });
-    if (numPerms < permIds.length) {
-      throw new BadReqErr("Permission mismatch");
+    if (numRules < ruleIds.length) {
+      throw new BadReqErr("Danh sách quyền không hợp lệ");
     }
 
     const nRoles = await Role.insertMany(
-      perms.map((item) => ({
-        name: item.name,
-        level: item.level,
-        perms: [...new Set(item.perm_ids)],
+      roles.map(({ name, level, rule_ids }) => ({
+        name,
+        level,
+        rules: rule_ids,
       }))
     );
 
     await Role.populate(nRoles, {
-      path: "perms",
-      select: "-perm_group",
+      path: "rules",
+      select: "-catalog",
     });
     res.json(nRoles);
 
@@ -48,4 +48,4 @@ const writePerms: RequestHandler = async (req, res, next) => {
   }
 };
 
-export default writePerms;
+export default writeRoles;

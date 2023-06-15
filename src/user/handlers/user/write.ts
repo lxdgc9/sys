@@ -1,31 +1,30 @@
 import { RequestHandler } from "express";
 import { Types } from "mongoose";
-import { BadReqErr, ConflictErr } from "@lxdgc9/pkg/dist/err";
+import { BadReqErr, ConflictErr, NotFoundErr } from "@lxdgc9/pkg/dist/err";
 import nats from "../../nats";
 import { LogPublisher } from "../../events/publisher/log";
 import { InsertUserPublisher } from "../../events/publisher/user/insert";
 import { Role } from "../../models/role";
 import { User } from "../../models/user";
+import { Rule } from "../../models/rule";
 
 const writeUser: RequestHandler = async (req, res, next) => {
   const {
     prof,
     password,
     role_id,
+    spec_rule_ids,
     is_active,
   }: {
-    prof: Object & {
-      username: string;
-      phone: string;
-      email: string;
-    };
+    prof: object & { username: string; phone: string; email: string };
     password: string;
     role_id: Types.ObjectId;
+    spec_rule_ids?: Types.ObjectId[];
     is_active?: boolean;
   } = req.body;
 
   try {
-    const [dupl, exstRole] = await Promise.all([
+    const [isDupl, hasRole, numRules] = await Promise.all([
       User.exists({
         $or: [
           {
@@ -55,12 +54,16 @@ const writeUser: RequestHandler = async (req, res, next) => {
         ],
       }),
       Role.exists({ _id: role_id }),
+      Rule.countDocuments({ _id: { $in: spec_rule_ids } }),
     ]);
-    if (dupl) {
-      throw new ConflictErr("Duplicate username, phone or email");
+    if (isDupl) {
+      throw new ConflictErr("Khóa username, phone hoặc email đã được sử dụng");
     }
-    if (!exstRole) {
-      throw new BadReqErr("Role not found");
+    if (!hasRole) {
+      throw new NotFoundErr("Không tìm thấy role_id tương ứng");
+    }
+    if (spec_rule_ids && numRules < spec_rule_ids.length) {
+      throw new BadReqErr("Không tìm thấy spec_rule_ids tương ứng");
     }
 
     const newUser = new User({
@@ -70,6 +73,7 @@ const writeUser: RequestHandler = async (req, res, next) => {
       })),
       password,
       role: role_id,
+      spec_rules: spec_rule_ids,
       active: is_active,
     });
     await newUser.save();
@@ -77,8 +81,8 @@ const writeUser: RequestHandler = async (req, res, next) => {
     await User.populate(newUser, {
       path: "role",
       populate: {
-        path: "perms",
-        select: "-perm_group",
+        path: "rules",
+        select: "-catalog",
       },
     });
     res.status(201).json(newUser);

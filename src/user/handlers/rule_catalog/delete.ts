@@ -8,10 +8,10 @@ const deleteCatalog: RequestHandler = async (req, res, next) => {
   try {
     const catalog = await Catalog.findById(req.params.id);
     if (!catalog) {
-      throw new BadReqErr("Không tìm thấy danh mục");
+      throw new BadReqErr("Catalog not found");
     }
     if (catalog.rules.length > 0) {
-      throw new BadReqErr("Có tồn tại sự phụ thuộc");
+      throw new BadReqErr("Found dependent");
     }
 
     await catalog.deleteOne();

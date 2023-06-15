@@ -6,7 +6,7 @@ import { UpdateUserPublisher } from "../../events/publisher/user/update";
 import { User } from "../../models/user";
 
 const modifyAccess: RequestHandler = async (req, res, next) => {
-  const { status } = req.body;
+  const { status }: { status: boolean } = req.body;
 
   try {
     const user = await User.findByIdAndUpdate(
@@ -20,12 +20,12 @@ const modifyAccess: RequestHandler = async (req, res, next) => {
     ).populate({
       path: "role",
       populate: {
-        path: "perms",
-        select: "-perm_group",
+        path: "rules",
+        select: "-catalog",
       },
     });
     if (!user) {
-      throw new BadReqErr("User not found");
+      throw new BadReqErr("Không tìm thấy người dùng");
     }
     res.json(user);
 

@@ -10,34 +10,29 @@ const writeRole: RequestHandler = async (req, res, next) => {
   const {
     name,
     level,
-    perm_ids,
+    rule_ids,
   }: {
     name: string;
     level: number;
-    perm_ids: Types.ObjectId[];
+    rule_ids: Types.ObjectId[];
   } = req.body;
 
-  const permIds = [...new Set(perm_ids)];
-
   try {
-    const numPerms = await Rule.countDocuments({
-      _id: { $in: permIds },
+    const numRules = await Rule.countDocuments({
+      _id: { $in: rule_ids },
     });
-    if (numPerms < permIds.length) {
-      throw new BadReqErr("Permission mismatch");
+    if (numRules < rule_ids.length) {
+      throw new BadReqErr("Danh sách rule_ids không hợp lệ");
     }
 
     const nRole = new Role({
       name: name,
       level: level,
-      perms: permIds,
+      rules: rule_ids,
     });
     await nRole.save();
 
-    await Role.populate(nRole, {
-      path: "perms",
-      select: "-perm_group",
-    });
+    await nRole.populate("rules", "-catalog");
     res.json(nRole);
 
     await new LogPublisher(nats.cli).publish({

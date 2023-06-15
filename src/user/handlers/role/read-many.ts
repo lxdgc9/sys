@@ -3,11 +3,7 @@ import { Role } from "../../models/role";
 
 const readRoles: RequestHandler = async (_req, res, next) => {
   try {
-    const roles = await Role.find().lean().populate({
-      path: "perms",
-      select: "-perm_group",
-    });
-
+    const roles = await Role.find().lean().populate("rules", "-catalog");
     res.json(roles);
   } catch (e) {
     next(e);

@@ -1,6 +1,6 @@
 import { RequestHandler } from "express";
 import { Types } from "mongoose";
-import { BadReqErr } from "@lxdgc9/pkg/dist/err";
+import { BadReqErr, NotFoundErr } from "@lxdgc9/pkg/dist/err";
 import nats from "../../nats";
 import { LogPublisher } from "../../events/publisher/log";
 import { Rule } from "../../models/rule";
@@ -10,41 +10,35 @@ const modifyRole: RequestHandler = async (req, res, next) => {
   const {
     name,
     level,
-    perm_ids,
+    rule_ids,
   }: {
     name?: string;
     level?: number;
-    perm_ids?: Types.ObjectId[];
+    rule_ids?: Types.ObjectId[];
   } = req.body;
 
   try {
-    if (name === undefined && level === undefined && perm_ids === undefined) {
-      throw new BadReqErr("Missing fields");
-    }
-
-    const permIds = [...new Set(perm_ids)];
-
-    const [existRole, numPerms] = await Promise.all([
+    const [hasRole, numRules] = await Promise.all([
       Role.exists({ _id: req.params.id }),
       Rule.countDocuments({
-        _id: { $in: permIds },
+        _id: { $in: rule_ids },
       }),
     ]);
-    if (!existRole) {
-      throw new BadReqErr("Role not found");
+    if (!hasRole) {
+      throw new NotFoundErr("Không tìm thấy vai trò");
     }
-    if (perm_ids && numPerms < permIds.length) {
-      throw new BadReqErr("Permission mismatch");
+    if (rule_ids && numRules < rule_ids.length) {
+      throw new BadReqErr("Danh sách quyền không hợp lệ");
     }
 
-    const updRole = await Role.findByIdAndUpdate(
+    const modRole = await Role.findByIdAndUpdate(
       { _id: req.params.id },
       {
-        $set: perm_ids
+        $set: rule_ids
           ? {
               name: name,
               level: level,
-              rules: permIds,
+              rules: rule_ids,
             }
           : {
               name: name,
@@ -54,17 +48,14 @@ const modifyRole: RequestHandler = async (req, res, next) => {
       { new: true }
     )
       .lean()
-      .populate({
-        path: "perms",
-        select: "-perm_group",
-      });
-    res.json(updRole);
+      .populate("rules", "-catalog");
+    res.json(modRole);
 
     await new LogPublisher(nats.cli).publish({
       user_id: req.user?.id,
       model: Role.modelName,
       action: "update",
-      data: updRole,
+      data: modRole,
     });
   } catch (e) {
     next(e);

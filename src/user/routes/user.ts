@@ -7,54 +7,53 @@ import {
   DELETE_USER,
 } from "@lxdgc9/pkg/dist/rules/manage";
 import { body, param } from "express-validator";
-import changePassword from "../handlers/user/change-passwd";
+import modifyPassword from "../handlers/user/modify-passwd";
 import modifyAccess from "../handlers/user/modify-access";
 import writeUser from "../handlers/user/write";
 import modifyUser from "../handlers/user/modify";
 import writeUsers from "../handlers/user/write-many";
-import delUsers from "../handlers/user/delete-many";
+import deleteUsers from "../handlers/user/delete-many";
 import delUser from "../handlers/user/delete";
 import readUsers from "../handlers/user/read-many";
 import login from "../handlers/auth/login";
 import refreshToken from "../handlers/auth/refresh-token";
 import readUser from "../handlers/user/read";
 
-const userRouter = Router();
+const r = Router();
 
-userRouter
-  .route("/")
+r.route("/")
   .get(guard(READ_USER), readUsers)
   .post(
     guard(WRITE_USER),
     validator(
       body("prof")
         .notEmpty()
-        .withMessage("Required")
+        .withMessage("Bắt buộc")
         .isObject()
-        .withMessage("Must be object"),
+        .withMessage("Phải là Object"),
       body("prof.username")
         .notEmpty()
-        .withMessage("Required")
+        .withMessage("Bắt buộc")
         .isString()
-        .withMessage("Must be string")
+        .withMessage("Phải là chuỗi")
         .isLength({ min: 1, max: 255 })
         .withMessage("1 <= len <= 255")
         .trim()
         .toLowerCase(),
       body("prof.phone")
         .notEmpty()
-        .withMessage("Required")
+        .withMessage("Bắt buộc")
         .isMobilePhone("vi-VN")
         .withMessage("invalid phone number"),
       body("prof.email")
         .notEmpty()
-        .withMessage("Required")
+        .withMessage("Bắt buộc")
         .isEmail()
         .withMessage("Must be email")
         .trim(),
       body("password")
         .notEmpty()
-        .withMessage("Required")
+        .withMessage("Bắt buộc")
         .isStrongPassword({
           minLength: 6,
           minSymbols: 0,
@@ -64,9 +63,9 @@ userRouter
         .withMessage("password not strong enough"),
       body("role_id")
         .notEmpty()
-        .withMessage("Required")
+        .withMessage("Bắt buộc")
         .isMongoId()
-        .withMessage("Must be mongoId"),
+        .withMessage("Định dạng không hợp lệ"),
       body("is_active")
         .isBoolean()
         .withMessage("Must be boolean")
@@ -75,46 +74,45 @@ userRouter
     writeUser
   );
 
-userRouter
-  .route("/many")
+r.route("/many")
   .get(guard(READ_USER), readUsers)
   .post(
     guard(WRITE_USER),
     validator(
       body()
         .notEmpty()
-        .withMessage("Required")
+        .withMessage("Bắt buộc")
         .isArray({ min: 1 })
         .withMessage("Must be array, has aleast 1 element"),
-      body("*").isObject().withMessage("Must be object"),
+      body("*").isObject().withMessage("Phải là Object"),
       body("*.prof")
         .notEmpty()
-        .withMessage("Required")
+        .withMessage("Bắt buộc")
         .isObject()
-        .withMessage("Must be object"),
+        .withMessage("Phải là Object"),
       body("*.prof.username")
         .notEmpty()
-        .withMessage("Required")
+        .withMessage("Bắt buộc")
         .isString()
-        .withMessage("Must be string")
+        .withMessage("Phải là chuỗi")
         .isLength({ min: 1, max: 255 })
         .withMessage("1 <= len <= 255")
         .trim()
         .toLowerCase(),
       body("*.prof.phone")
         .notEmpty()
-        .withMessage("Required")
+        .withMessage("Bắt buộc")
         .isMobilePhone("vi-VN")
         .withMessage("invalid phone number"),
       body("*.prof.email")
         .notEmpty()
-        .withMessage("Required")
+        .withMessage("Bắt buộc")
         .isEmail()
         .withMessage("Must be email")
         .trim(),
       body("*.passwd")
         .notEmpty()
-        .withMessage("Required")
+        .withMessage("Bắt buộc")
         .isStrongPassword({
           minLength: 6,
           minSymbols: 0,
@@ -124,9 +122,9 @@ userRouter
         .withMessage("password not strong enough"),
       body("*.role_id")
         .notEmpty()
-        .withMessage("Required")
+        .withMessage("Bắt buộc")
         .isMongoId()
-        .withMessage("Must be mongoId"),
+        .withMessage("Định dạng không hợp lệ"),
       body("users.*.is_active")
         .isBoolean()
         .withMessage("Must be boolean")
@@ -139,29 +137,28 @@ userRouter
     validator(
       body()
         .notEmpty()
-        .withMessage("Required")
+        .withMessage("Bắt buộc")
         .isArray({ min: 1 })
         .withMessage("Must be array, has aleast 1 element"),
-      body("*").isMongoId().withMessage("Must be mongoId")
+      body("*").isMongoId().withMessage("Định dạng không hợp lệ")
     ),
-    delUsers
+    deleteUsers
   );
 
-userRouter
-  .route("/:id")
+r.route("/:id")
   .get(
     guard(READ_USER),
-    validator(param("id").isMongoId().withMessage("Must be mongoId")),
+    validator(param("id").isMongoId().withMessage("Định dạng không hợp lệ")),
     readUser
   )
   .patch(
     guard(UPDATE_USER),
     validator(
-      param("id").isMongoId().withMessage("Must be mongoId"),
+      param("id").isMongoId().withMessage("Định dạng không hợp lệ"),
       body("prof")
         .optional({ values: "undefined" })
         .isObject()
-        .withMessage("Must be object")
+        .withMessage("Phải là Object")
         .custom((v) => {
           if (!Object.keys(v).length) {
             throw new Error("Object Must not be empty");
@@ -171,7 +168,7 @@ userRouter
       body("prof.username")
         .optional({ values: "undefined" })
         .isString()
-        .withMessage("Must be string")
+        .withMessage("Phải là chuỗi")
         .isLength({ min: 1, max: 255 })
         .withMessage("1 <= len <= 255")
         .trim()
@@ -189,51 +186,51 @@ userRouter
       body("role_id")
         .optional({ values: "undefined" })
         .isMongoId()
-        .withMessage("Must be mongoId")
+        .withMessage("Định dạng không hợp lệ")
     ),
     modifyUser
   )
   .delete(
     guard(DELETE_USER),
-    validator(param("id").isMongoId().withMessage("Must be mongoId")),
+    validator(param("id").isMongoId().withMessage("Định dạng không hợp lệ")),
     delUser
   );
 
-userRouter.post(
+r.post(
   "/auth",
   validator(
     body("k")
       .notEmpty()
-      .withMessage("Required")
+      .withMessage("Bắt buộc")
       .isIn(["username", "phone", "email"])
       .withMessage("Invalid field, Must be username, phone or email"),
-    body("v").notEmpty().withMessage("Required"),
-    body("password").notEmpty().withMessage("Required")
+    body("v").notEmpty().withMessage("Bắt buộc"),
+    body("password").notEmpty().withMessage("Bắt buộc")
   ),
   login
 );
 
-userRouter.post(
+r.post(
   "/auth/refresh-token",
   validator(
     body("token")
       .notEmpty()
-      .withMessage("Required")
+      .withMessage("Bắt buộc")
       .isString()
-      .withMessage("Must be string")
+      .withMessage("Phải là chuỗi")
   ),
   refreshToken
 );
 
-userRouter.patch(
+r.patch(
   "/:id/passwd",
   guard(UPDATE_USER),
   validator(
-    param("id").isMongoId().withMessage("Must be mongoId"),
-    body("old_password").notEmpty().withMessage("Required"),
+    param("id").isMongoId().withMessage("Định dạng không hợp lệ"),
+    body("old_password").notEmpty().withMessage("Bắt buộc"),
     body("new_password")
       .notEmpty()
-      .withMessage("Required")
+      .withMessage("Bắt buộc")
       .isStrongPassword({
         minLength: 6,
         minSymbols: 0,
@@ -242,21 +239,21 @@ userRouter.patch(
       })
       .withMessage("Password not strong enough")
   ),
-  changePassword
+  modifyPassword
 );
 
-userRouter.patch(
+r.patch(
   "/:id/active",
   guard(UPDATE_USER),
   validator(
-    param("id").isMongoId().withMessage("Must be mongoId"),
+    param("id").isMongoId().withMessage("Định dạng không hợp lệ"),
     body("status")
       .notEmpty()
-      .withMessage("Required")
+      .withMessage("Bắt buộc")
       .isBoolean()
       .withMessage("Must be boolean")
   ),
   modifyAccess
 );
 
-export default userRouter;
+export default r;

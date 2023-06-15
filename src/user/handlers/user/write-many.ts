@@ -16,6 +16,7 @@ const writeUsers: RequestHandler = async (req, res, next) => {
     };
     passwd: string;
     role_id: Types.ObjectId;
+    spec_rule_ids?: Types.ObjectId[];
     is_active?: boolean;
   }[] = req.body;
 
@@ -93,10 +94,16 @@ const writeUsers: RequestHandler = async (req, res, next) => {
       }))
     );
 
-    await User.populate(newUsers, {
-      path: "role",
-      select: "-perms",
-    });
+    await User.populate(newUsers, [
+      {
+        path: "role",
+        select: "-perms",
+      },
+      {
+        path: "spec_rules",
+        select: "-catalog",
+      },
+    ]);
     res.status(201).json(newUsers);
 
     await Promise.all([

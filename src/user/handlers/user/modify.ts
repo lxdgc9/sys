@@ -1,16 +1,18 @@
 import { RequestHandler } from "express";
 import { Types } from "mongoose";
-import { BadReqErr, ConflictErr } from "@lxdgc9/pkg/dist/err";
+import { BadReqErr, ConflictErr, NotFoundErr } from "@lxdgc9/pkg/dist/err";
 import nats from "../../nats";
 import { LogPublisher } from "../../events/publisher/log";
 import { UpdateUserPublisher } from "../../events/publisher/user/update";
 import { Role } from "../../models/role";
 import { User } from "../../models/user";
+import { Rule } from "../../models/rule";
 
 const modifyUser: RequestHandler = async (req, res, next) => {
   const {
     prof,
     role_id,
+    spec_rule_ids,
   }: {
     prof?: object & {
       username: string;
@@ -18,21 +20,22 @@ const modifyUser: RequestHandler = async (req, res, next) => {
       email: string;
     };
     role_id?: Types.ObjectId;
+    spec_rule_ids?: Types.ObjectId[];
   } = req.body;
 
+  const specRuleIds = [...new Set(spec_rule_ids)];
+
   try {
-    if (prof === undefined && role_id === undefined) {
-      throw new BadReqErr("Missing fields");
+    if (!prof && !role_id && !spec_rule_ids) {
+      throw new BadReqErr("Không có trường cần cập nhật");
     }
 
-    const existUser = await User.exists({
-      _id: req.params.id,
-    });
-    if (!existUser) {
-      throw new BadReqErr("User not found");
+    const hasUser = await User.exists({ _id: req.params.id });
+    if (!hasUser) {
+      throw new NotFoundErr("Không tìm thấy user");
     }
 
-    const [dupl, existRole] = await Promise.all([
+    const [dupl, hasRole, numRules] = await Promise.all([
       User.exists({
         $or: [
           {
@@ -65,15 +68,19 @@ const modifyUser: RequestHandler = async (req, res, next) => {
         ],
       }),
       Role.exists({ _id: role_id }),
+      Rule.countDocuments({ _id: { $in: specRuleIds } }),
     ]);
     if (prof && dupl) {
       throw new ConflictErr("Duplicate username, phone or email");
     }
-    if (role_id && !existRole) {
+    if (role_id && !hasRole) {
       throw new BadReqErr("Role not found");
     }
+    if (spec_rule_ids && numRules < specRuleIds.length) {
+      throw new BadReqErr("Danh sách quyền hạn không hợp lệ");
+    }
 
-    const updUser = await User.findByIdAndUpdate(
+    const modUser = await User.findByIdAndUpdate(
       req.params.id,
       {
         $set: {
@@ -82,26 +89,27 @@ const modifyUser: RequestHandler = async (req, res, next) => {
             v,
           })),
           role: role_id,
+          spec_rules: specRuleIds,
         },
       },
       { new: true }
     ).populate({
       path: "role",
       populate: {
-        path: "perms",
-        select: "-perm_group",
+        path: "rules",
+        select: "-catalog",
       },
     });
 
-    res.json(updUser);
+    res.json(modUser);
 
     await Promise.allSettled([
-      new UpdateUserPublisher(nats.cli).publish(updUser!),
+      new UpdateUserPublisher(nats.cli).publish(modUser!),
       new LogPublisher(nats.cli).publish({
         user_id: req.user?.id,
         model: User.modelName,
         action: "update",
-        data: updUser,
+        data: modUser,
       }),
     ]);
   } catch (e) {

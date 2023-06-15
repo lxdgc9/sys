@@ -1,36 +1,33 @@
 import { RequestHandler } from "express";
-import { BadReqErr } from "@lxdgc9/pkg/dist/err";
+import { BadReqErr, NotFoundErr } from "@lxdgc9/pkg/dist/err";
 import nats from "../../nats";
 import { LogPublisher } from "../../events/publisher/log";
 import { Rule } from "../../models/rule";
 import { Catalog } from "../../models/rule-catalog";
 import { Role } from "../../models/role";
 
-const delPerm: RequestHandler = async (req, res, next) => {
+const deleteRule: RequestHandler = async (req, res, next) => {
   try {
-    const [perm, depend] = await Promise.all([
-      Rule.findById(req.params.id).populate({
-        path: "perm_group",
-        select: "-items",
-      }),
+    const [rule, hasDepend] = await Promise.all([
+      Rule.findById(req.params.id).populate("catalog", "-rules"),
       Role.exists({ rules: { $in: req.params.id } }),
     ]);
-    if (!perm) {
-      throw new BadReqErr("Permission not found");
+    if (!rule) {
+      throw new NotFoundErr("Không tìm thấy quyền");
     }
-    if (depend) {
-      throw new BadReqErr("Found dependent");
+    if (hasDepend) {
+      throw new BadReqErr("Có ràng buộc liên kết");
     }
 
-    await perm.deleteOne();
-    res.sendStatus(204);
+    await rule.deleteOne();
+    res.json({ msg: "Xóa thành công" });
 
     await Promise.allSettled([
       Catalog.updateOne(
-        { _id: perm.catalog._id },
+        { _id: rule.catalog._id },
         {
           $pull: {
-            rules: perm._id,
+            rules: rule._id,
           },
         }
       ),
@@ -38,7 +35,7 @@ const delPerm: RequestHandler = async (req, res, next) => {
         user_id: req.user?.id,
         model: Rule.modelName,
         action: "delete",
-        data: perm,
+        data: rule,
       }),
     ]);
   } catch (e) {
@@ -46,4 +43,4 @@ const delPerm: RequestHandler = async (req, res, next) => {
   }
 };
 
-export default delPerm;
+export default deleteRule;

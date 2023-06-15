@@ -1,5 +1,5 @@
 import { RequestHandler } from "express";
-import { BadReqErr } from "@lxdgc9/pkg/dist/err";
+import { NotFoundErr } from "@lxdgc9/pkg/dist/err";
 import nats from "../../nats";
 import { LogPublisher } from "../../events/publisher/log";
 import { DeleteUserPublisher } from "../../events/publisher/user/delete";
@@ -12,14 +12,14 @@ const delUser: RequestHandler = async (req, res, next) => {
       .populate({
         path: "role",
         populate: {
-          path: "perms",
-          select: "-perm_group",
+          path: "rules",
+          select: "-catalog",
         },
       });
     if (!user) {
-      throw new BadReqErr("User not found");
+      throw new NotFoundErr("Không tìm thấy người dùng");
     }
-    res.sendStatus(204);
+    res.json({ msg: "Xóa thành công" });
 
     await Promise.allSettled([
       new DeleteUserPublisher(nats.cli).publish(user._id),

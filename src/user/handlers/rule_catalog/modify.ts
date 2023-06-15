@@ -1,5 +1,5 @@
 import { RequestHandler } from "express";
-import { BadReqErr, NotFoundErr } from "@lxdgc9/pkg/dist/err";
+import { NotFoundErr } from "@lxdgc9/pkg/dist/err";
 import nats from "../../nats";
 import { LogPublisher } from "../../events/publisher/log";
 import { Catalog } from "../../models/rule-catalog";
@@ -8,19 +8,17 @@ const modifyCatalog: RequestHandler = async (req, res, next) => {
   const { name }: { name: string } = req.body;
 
   try {
-    if (name === undefined) {
-      throw new BadReqErr("Thiếu trường để cập nhật");
-    }
-
     const catalog = await Catalog.findByIdAndUpdate(
       req.params.id,
       {
         $set: { name },
       },
       { new: true }
-    );
+    )
+      .lean()
+      .populate("rules");
     if (!catalog) {
-      throw new NotFoundErr("Không tìm thấy danh mục");
+      throw new NotFoundErr("Catalog not found");
     }
 
     res.json(catalog);

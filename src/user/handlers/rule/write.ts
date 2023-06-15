@@ -1,52 +1,49 @@
 import { RequestHandler } from "express";
 import { Types } from "mongoose";
-import { BadReqErr, ConflictErr } from "@lxdgc9/pkg/dist/err";
+import { ConflictErr, NotFoundErr } from "@lxdgc9/pkg/dist/err";
 import nats from "../../nats";
 import { LogPublisher } from "../../events/publisher/log";
 import { Rule } from "../../models/rule";
 import { Catalog } from "../../models/rule-catalog";
 
-const writePerm: RequestHandler = async (req, res, next) => {
+const writeRule: RequestHandler = async (req, res, next) => {
   const {
     code,
     info,
-    perm_group_id,
+    catalog_id,
   }: {
     code: string;
     info: string;
-    perm_group_id: Types.ObjectId;
+    catalog_id: Types.ObjectId;
   } = req.body;
 
   try {
-    const [dupl, group] = await Promise.all([
+    const [hasRule, hasCatalog] = await Promise.all([
       Rule.exists({ code: code }),
-      Catalog.exists({ _id: perm_group_id }),
+      Catalog.exists({ _id: catalog_id }),
     ]);
-    if (dupl) {
-      throw new ConflictErr("Code already exist");
+    if (hasRule) {
+      throw new ConflictErr("Tồn tại code");
     }
-    if (!group) {
-      throw new BadReqErr("Permission Group not found");
+    if (!hasCatalog) {
+      throw new NotFoundErr("Không tìm thấy catalog_id");
     }
 
-    const perm = new Rule({
+    const rule = new Rule({
       code,
       info,
-      perm_group: group,
+      catalog: catalog_id,
     });
-    await perm.save();
-    await Rule.populate(perm, {
-      path: "perm_group",
-      select: "-items",
-    });
-    res.status(201).json(perm);
+    await rule.save();
+    await rule.populate("catalog", "-rules");
+    res.status(201).json(rule);
 
     await Promise.allSettled([
       Catalog.updateOne(
-        { _id: perm_group_id },
+        { _id: catalog_id },
         {
           $addToSet: {
-            rules: perm,
+            rules: rule,
           },
         }
       ),
@@ -54,7 +51,7 @@ const writePerm: RequestHandler = async (req, res, next) => {
         user_id: req.user?.id,
         model: Rule.modelName,
         action: "insert",
-        data: perm,
+        data: rule,
       }),
     ]);
   } catch (e) {
@@ -62,4 +59,4 @@ const writePerm: RequestHandler = async (req, res, next) => {
   }
 };
 
-export default writePerm;
+export default writeRule;

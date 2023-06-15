@@ -11,10 +11,10 @@ const deleteCatalogs: RequestHandler = async (req, res, next) => {
   try {
     const catalogs = await Catalog.find({ _id: { $in: ids } });
     if (catalogs.length < ids.length) {
-      throw new BadReqErr("Danh sách danh mục không hợp lệ");
+      throw new BadReqErr("Invalid ids");
     }
     if (catalogs.some((el) => el.rules.length > 0)) {
-      throw new BadReqErr("Có tồn tại sự phụ thuộc");
+      throw new BadReqErr("Found dependent");
     }
 
     await Catalog.deleteMany({
