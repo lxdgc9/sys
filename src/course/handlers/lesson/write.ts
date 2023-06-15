@@ -1,6 +1,6 @@
 import { RequestHandler } from "express";
 import { Types } from "mongoose";
-import { BadReqErr } from "@lxdgc9/pkg/dist/err";
+import { BadReqErr, NotFoundErr } from "@lxdgc9/pkg/dist/err";
 import { Course } from "../../models/course";
 import { Lesson } from "../../models/lesson";
 
@@ -22,7 +22,7 @@ const writeLesson: RequestHandler = async (req, res, next) => {
 
     const course = await Course.findById(course_id);
     if (!course) {
-      throw new BadReqErr("Course not found");
+      throw new NotFoundErr("Course not found");
     }
 
     const nLesson = new Lesson({

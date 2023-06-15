@@ -8,7 +8,7 @@ interface IUser {
   }[];
   password: string;
   role: Types.ObjectId;
-  spec_perms: Types.ObjectId[];
+  spec_rules: Types.ObjectId[];
   is_active: boolean;
 }
 
@@ -33,10 +33,10 @@ const schema = new Schema<IUser>(
       ref: "role",
       required: true,
     },
-    spec_perms: [
+    spec_rules: [
       {
         type: Schema.Types.ObjectId,
-        ref: "perm",
+        ref: "rule",
       },
     ],
     is_active: {
@@ -57,7 +57,7 @@ schema.index({
   "attrs.v": 1,
 });
 
-schema.pre("save", async function(next) {
+schema.pre("save", async function (next) {
   try {
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
@@ -67,7 +67,7 @@ schema.pre("save", async function(next) {
   }
 });
 
-schema.pre("insertMany", async function(next, users: IUser[]) {
+schema.pre("insertMany", async function (next, users: IUser[]) {
   try {
     const salt = await bcrypt.genSalt(10);
     const hashedPwds = await Promise.all(

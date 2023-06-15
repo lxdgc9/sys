@@ -1,41 +1,39 @@
 import { RequestHandler } from "express";
-import { BadReqErr } from "@lxdgc9/pkg/dist/err";
+import { BadReqErr, NotFoundErr } from "@lxdgc9/pkg/dist/err";
 import nats from "../../nats";
 import { LogPublisher } from "../../events/publisher/log";
-import { PermGroup } from "../../models/perm-group";
+import { Catalog } from "../../models/rule-catalog";
 
-const modifyPermGroup: RequestHandler = async (req, res, next) => {
+const modifyCatalog: RequestHandler = async (req, res, next) => {
   const { name }: { name: string } = req.body;
 
   try {
     if (name === undefined) {
-      throw new BadReqErr("Missing fields");
+      throw new BadReqErr("Thiếu trường để cập nhật");
     }
 
-    const group = await PermGroup.findByIdAndUpdate(
+    const catalog = await Catalog.findByIdAndUpdate(
       req.params.id,
       {
-        $set: {
-          name,
-        },
+        $set: { name },
       },
       { new: true }
-    ).lean();
-    if (!group) {
-      throw new BadReqErr("Permision Group not found");
+    );
+    if (!catalog) {
+      throw new NotFoundErr("Không tìm thấy danh mục");
     }
 
-    res.json(group);
+    res.json(catalog);
 
     await new LogPublisher(nats.cli).publish({
       user_id: req.user?.id,
-      model: PermGroup.modelName,
+      model: Catalog.modelName,
       action: "update",
-      data: group,
+      data: catalog,
     });
   } catch (e) {
     next(e);
   }
 };
 
-export default modifyPermGroup;
+export default modifyCatalog;

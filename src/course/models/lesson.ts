@@ -15,8 +15,8 @@ const schema = new Schema<ILesson>(
     course_id: {
       type: Schema.Types.ObjectId,
       ref: "course",
-      index: true,
       required: true,
+      index: true,
     },
     title: {
       type: String,

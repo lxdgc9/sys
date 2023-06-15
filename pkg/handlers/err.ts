@@ -9,12 +9,12 @@ export const errHandler: ErrorRequestHandler = (err, _req, res, _next) => {
   }
 
   if (err.name === "JsonWebTokenError") {
-    return res.status(401).json({ msg: "Invalid token" });
+    return res.status(401).json({ msg: "Token không hợp lệ" });
   }
 
   if (err.name === "TokenExpiredError") {
-    return res.status(401).json({ msg: "Token expired" });
+    return res.status(401).json({ msg: "Token đã hết hạn" });
   }
 
-  res.status(500).json({ msg: "Something went wrong" });
+  res.status(500).json({ msg: "Có gì đó sai sai" });
 };

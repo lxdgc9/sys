@@ -3,8 +3,8 @@ import { Types } from "mongoose";
 import { BadReqErr } from "@lxdgc9/pkg/dist/err";
 import nats from "../../nats";
 import { LogPublisher } from "../../events/publisher/log";
-import { Perm } from "../../models/perm";
-import { PermGroup } from "../../models/perm-group";
+import { Rule } from "../../models/rule";
+import { Catalog } from "../../models/rule-catalog";
 
 const writePerms: RequestHandler = async (req, res, next) => {
   const perms: {
@@ -30,10 +30,10 @@ const writePerms: RequestHandler = async (req, res, next) => {
     }
 
     const [dupl, numGroups] = await Promise.all([
-      Perm.exists({
+      Rule.exists({
         code: { $in: codes },
       }),
-      PermGroup.countDocuments({
+      Catalog.countDocuments({
         _id: { $in: groupIds },
       }),
     ]);
@@ -44,7 +44,7 @@ const writePerms: RequestHandler = async (req, res, next) => {
       throw new BadReqErr("Group mismatch");
     }
 
-    const nPerms = await Perm.insertMany(
+    const nPerms = await Rule.insertMany(
       perms.map((p) => ({
         code: p.code,
         info: p.info,
@@ -52,7 +52,7 @@ const writePerms: RequestHandler = async (req, res, next) => {
       }))
     );
 
-    await Perm.populate(nPerms, {
+    await Rule.populate(nPerms, {
       path: "perm_group",
       select: "-items",
     });
@@ -63,7 +63,7 @@ const writePerms: RequestHandler = async (req, res, next) => {
         [
           ...nPerms
             .reduce((map, perm) => {
-              const k = perm.perm_group._id.toString();
+              const k = perm.catalog._id.toString();
               if (!map.has(k)) {
                 map.set(k, []);
               }
@@ -72,11 +72,11 @@ const writePerms: RequestHandler = async (req, res, next) => {
             }, new Map())
             .entries(),
         ].map(([k, v]) => {
-          PermGroup.updateOne(
+          Catalog.updateOne(
             { _id: k },
             {
               $addToSet: {
-                items: v,
+                rules: v,
               },
             }
           );
@@ -84,7 +84,7 @@ const writePerms: RequestHandler = async (req, res, next) => {
       ),
       new LogPublisher(nats.cli).publish({
         user_id: req.user?.id,
-        model: Perm.modelName,
+        model: Rule.modelName,
         action: "insert",
         data: nPerms,
       }),

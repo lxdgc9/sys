@@ -1,10 +1,10 @@
 import { NotFoundErr } from "@lxdgc9/pkg/dist/err";
 import { RequestHandler } from "express";
-import { Perm } from "../../models/perm";
+import { Rule } from "../../models/rule";
 
 const readPerm: RequestHandler = async (req, res, next) => {
   try {
-    const perm = await Perm.findById(req.params.id).lean().populate({
+    const perm = await Rule.findById(req.params.id).lean().populate({
       path: "perm_group",
       select: "-items",
     });

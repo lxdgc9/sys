@@ -3,7 +3,7 @@ import { Types } from "mongoose";
 import { BadReqErr } from "@lxdgc9/pkg/dist/err";
 import nats from "../../nats";
 import { LogPublisher } from "../../events/publisher/log";
-import { Perm } from "../../models/perm";
+import { Rule } from "../../models/rule";
 import { Role } from "../../models/role";
 
 const modifyRole: RequestHandler = async (req, res, next) => {
@@ -26,7 +26,7 @@ const modifyRole: RequestHandler = async (req, res, next) => {
 
     const [existRole, numPerms] = await Promise.all([
       Role.exists({ _id: req.params.id }),
-      Perm.countDocuments({
+      Rule.countDocuments({
         _id: { $in: permIds },
       }),
     ]);
@@ -44,7 +44,7 @@ const modifyRole: RequestHandler = async (req, res, next) => {
           ? {
               name: name,
               level: level,
-              perms: permIds,
+              rules: permIds,
             }
           : {
               name: name,

@@ -1,29 +1,26 @@
 import { RequestHandler } from "express";
-import { BadReqErr, ConflictErr } from "@lxdgc9/pkg/dist/err";
+import { BadReqErr, ConflictErr, NotFoundErr } from "@lxdgc9/pkg/dist/err";
 import { School } from "../../models/school";
 
 const modifySchool: RequestHandler = async (req, res, next) => {
   const {
     code,
     name,
-    address,
-    description,
+    info,
   }: {
     code?: string;
     name?: string;
-    address?: string;
-    description?: string;
+    info?: string;
   } = req.body;
 
   try {
     if (
       code === undefined &&
       name === undefined &&
-      address === undefined &&
-      description === undefined &&
+      info === undefined &&
       req.file === undefined
     ) {
-      throw new BadReqErr("Missing fields");
+      throw new BadReqErr("Thiếu trường để  cập nhật");
     }
 
     const [hasSchool, hasCode] = await Promise.all([
@@ -38,30 +35,26 @@ const modifySchool: RequestHandler = async (req, res, next) => {
       }),
     ]);
     if (!hasSchool) {
-      throw new BadReqErr("School not found");
+      throw new NotFoundErr("Trường học không tồn tại");
     }
     if (code && hasCode) {
-      throw new ConflictErr("Code already exists");
+      throw new ConflictErr("Mã trường đã tồn tại");
+    }
+
+    let logo = undefined;
+    if (req.file) {
+      logo = `/api/courses/${req.file.path}`;
     }
 
     const school = await School.findByIdAndUpdate(
       req.params.id,
       {
-        $set: {
-          code,
-          name,
-          address: address,
-          description: description,
-          logo_url: req.file && `/api/courses/${req.file?.path}`,
-        },
+        $set: { code, name, info, logo },
       },
       { new: true }
     )
       .lean()
-      .populate({
-        path: "classes",
-        select: "-school",
-      });
+      .populate("classes", "-school");
     res.json(school);
   } catch (e) {
     next(e);

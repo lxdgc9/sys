@@ -1,6 +1,6 @@
 import { RequestHandler } from "express";
 import { Types } from "mongoose";
-import { BadReqErr } from "@lxdgc9/pkg/dist/err";
+import { NotFoundErr } from "@lxdgc9/pkg/dist/err";
 import { Class } from "../../models/class";
 import { School } from "../../models/school";
 
@@ -16,7 +16,7 @@ const writeClass: RequestHandler = async (req, res, next) => {
   try {
     const hasSchool = await School.exists({ _id: school_id });
     if (!hasSchool) {
-      throw new BadReqErr("School not found");
+      throw new NotFoundErr("Trường học không tồn tại");
     }
 
     const nClass = new Class({
@@ -24,6 +24,7 @@ const writeClass: RequestHandler = async (req, res, next) => {
       school: school_id,
     });
     await nClass.save();
+
     res.status(201).json(nClass);
 
     await School.updateOne(

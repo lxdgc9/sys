@@ -3,7 +3,7 @@ import { Types } from "mongoose";
 import { BadReqErr } from "@lxdgc9/pkg/dist/err";
 import nats from "../../nats";
 import { LogPublisher } from "../../events/publisher/log";
-import { Perm } from "../../models/perm";
+import { Rule } from "../../models/rule";
 import { Role } from "../../models/role";
 
 const writeRole: RequestHandler = async (req, res, next) => {
@@ -20,7 +20,7 @@ const writeRole: RequestHandler = async (req, res, next) => {
   const permIds = [...new Set(perm_ids)];
 
   try {
-    const numPerms = await Perm.countDocuments({
+    const numPerms = await Rule.countDocuments({
       _id: { $in: permIds },
     });
     if (numPerms < permIds.length) {

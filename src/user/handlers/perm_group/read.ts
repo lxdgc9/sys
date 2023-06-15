@@ -1,20 +1,18 @@
 import { RequestHandler } from "express";
 import { NotFoundErr } from "@lxdgc9/pkg/dist/err";
-import { PermGroup } from "../../models/perm-group";
+import { Catalog } from "../../models/rule-catalog";
 
-const readPermGroup: RequestHandler = async (req, res, next) => {
+const readCatalog: RequestHandler = async (req, res, next) => {
   try {
-    const group = await PermGroup.findById(req.params.id)
-      .lean()
-      .select("-items");
-    if (!group) {
-      throw new NotFoundErr("Permission Group not found");
+    const catalog = await Catalog.findById(req.params.id).lean();
+    if (!catalog) {
+      throw new NotFoundErr("Không tìm thấy danh mục");
     }
 
-    res.json(group);
+    res.json(catalog);
   } catch (e) {
     next(e);
   }
 };
 
-export default readPermGroup;
+export default readCatalog;

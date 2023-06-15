@@ -1,26 +1,26 @@
 import mongoose, { Schema, Types } from "mongoose";
 
-interface IPerm {
+interface IRule {
   code: string;
   info: string;
-  perm_group: Types.ObjectId;
+  catalog: Types.ObjectId;
 }
 
-const schema = new Schema<IPerm>({
+const schema = new Schema<IRule>({
   code: {
     type: String,
-    required: true,
     unique: true,
+    required: true,
   },
   info: {
     type: String,
     required: true,
   },
-  perm_group: {
+  catalog: {
     type: Schema.Types.ObjectId,
-    ref: "perm_group",
+    ref: "catalog",
     required: true,
   },
 });
 
-export const Perm = mongoose.model<IPerm>("perm", schema);
+export const Rule = mongoose.model<IRule>("rule", schema);

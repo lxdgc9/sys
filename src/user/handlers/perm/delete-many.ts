@@ -3,8 +3,8 @@ import { Types } from "mongoose";
 import { BadReqErr } from "@lxdgc9/pkg/dist/err";
 import nats from "../../nats";
 import { LogPublisher } from "../../events/publisher/log";
-import { Perm } from "../../models/perm";
-import { PermGroup } from "../../models/perm-group";
+import { Rule } from "../../models/rule";
+import { Catalog } from "../../models/rule-catalog";
 import { Role } from "../../models/role";
 
 const delPerms: RequestHandler = async (req, res, next) => {
@@ -12,8 +12,8 @@ const delPerms: RequestHandler = async (req, res, next) => {
 
   try {
     const [perms, depend] = await Promise.all([
-      Perm.find({ _id: { $in: ids } }).lean(),
-      Role.exists({ perms: { $in: ids } }),
+      Rule.find({ _id: { $in: ids } }).lean(),
+      Role.exists({ rules: { $in: ids } }),
     ]);
     if (perms.length < ids.length) {
       throw new BadReqErr("Permission mismatch");
@@ -22,30 +22,30 @@ const delPerms: RequestHandler = async (req, res, next) => {
       throw new BadReqErr("Found depedent");
     }
 
-    await Perm.deleteMany({
+    await Rule.deleteMany({
       _id: { $in: ids },
     });
     res.sendStatus(204);
 
-    await Perm.populate(perms, {
+    await Rule.populate(perms, {
       path: "perm_group",
       select: "-items",
     });
 
     await Promise.allSettled([
-      PermGroup.updateMany(
+      Catalog.updateMany(
         {
-          items: { $in: ids },
+          rules: { $in: ids },
         },
         {
           $pullAll: {
-            items: ids,
+            rules: ids,
           },
         }
       ),
       new LogPublisher(nats.cli).publish({
         user_id: req.user?.id,
-        model: Perm.modelName,
+        model: Rule.modelName,
         action: "delete",
         data: perms,
       }),

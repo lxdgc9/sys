@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { body, param, query } from "express-validator";
+import { body, param } from "express-validator";
 import { guard, validator } from "@lxdgc9/pkg/dist/handlers";
 import {
   READ_CLASS,
@@ -19,16 +19,7 @@ const classRouter = Router();
 
 classRouter
   .route("/")
-  .get(
-    guard(READ_CLASS),
-    validator(
-      query("school_id")
-        .optional({ values: "undefined" })
-        .isMongoId()
-        .withMessage("Must be MongoId")
-    ),
-    readClasses
-  )
+  .get(guard(READ_CLASS), validator(), readClasses)
   .post(
     guard(WRITE_CLASS),
     validator(

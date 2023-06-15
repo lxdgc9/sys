@@ -3,34 +3,34 @@ import { Types } from "mongoose";
 import { BadReqErr } from "@lxdgc9/pkg/dist/err";
 import nats from "../../nats";
 import { LogPublisher } from "../../events/publisher/log";
-import { PermGroup } from "../../models/perm-group";
+import { Catalog } from "../../models/rule-catalog";
 
-const delPermGroups: RequestHandler = async (req, res, next) => {
+const deleteCatalogs: RequestHandler = async (req, res, next) => {
   const ids = [...new Set(req.body)] as Types.ObjectId[];
 
   try {
-    const groups = await PermGroup.find({ _id: { $in: ids } }).lean();
-    if (groups.length < ids.length) {
-      throw new BadReqErr("Permission Group mismatch");
+    const catalogs = await Catalog.find({ _id: { $in: ids } });
+    if (catalogs.length < ids.length) {
+      throw new BadReqErr("Danh sách danh mục không hợp lệ");
     }
-    if (groups.some((el) => el.items.length > 0)) {
-      throw new BadReqErr("Found dependent");
+    if (catalogs.some((el) => el.rules.length > 0)) {
+      throw new BadReqErr("Có tồn tại sự phụ thuộc");
     }
 
-    await PermGroup.deleteMany({
+    await Catalog.deleteMany({
       _id: { $in: ids },
     });
     res.sendStatus(204);
 
     await new LogPublisher(nats.cli).publish({
       user_id: req.user?.id,
-      model: PermGroup.modelName,
+      model: Catalog.modelName,
       action: "delete",
-      data: groups,
+      data: catalogs,
     });
   } catch (e) {
     next(e);
   }
 };
 
-export default delPermGroups;
+export default deleteCatalogs;

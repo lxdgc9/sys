@@ -1,13 +1,13 @@
 import { RequestHandler } from "express";
-import { PermGroup } from "../../models/perm-group";
+import { Catalog } from "../../models/rule-catalog";
 
-const readPermGroups: RequestHandler = async (_req, res, next) => {
+const readCatalogs: RequestHandler = async (_req, res, next) => {
   try {
-    const groups = await PermGroup.find().lean().select("-items");
-    res.json(groups);
+    const catalogs = await Catalog.find().lean();
+    res.json(catalogs);
   } catch (e) {
     next(e);
   }
 };
 
-export default readPermGroups;
+export default readCatalogs;

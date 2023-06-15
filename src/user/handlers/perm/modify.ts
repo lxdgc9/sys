@@ -3,8 +3,8 @@ import { Types } from "mongoose";
 import { BadReqErr, ConflictErr } from "@lxdgc9/pkg/dist/err";
 import nats from "../../nats";
 import { LogPublisher } from "../../events/publisher/log";
-import { Perm } from "../../models/perm";
-import { PermGroup } from "../../models/perm-group";
+import { Rule } from "../../models/rule";
+import { Catalog } from "../../models/rule-catalog";
 
 const modifyPerm: RequestHandler = async (req, res, next) => {
   const {
@@ -26,23 +26,23 @@ const modifyPerm: RequestHandler = async (req, res, next) => {
       throw new BadReqErr("Missing fields");
     }
 
-    const perm = await Perm.findById(req.params.id).lean();
+    const perm = await Rule.findById(req.params.id).lean();
     if (!perm) {
       throw new BadReqErr("Permission not found");
     }
 
     const [dupl, existGroup] = await Promise.all([
       code &&
-        Perm.exists({
+        Rule.exists({
           $and: [
             {
               _id: { $ne: perm._id },
             },
-            { code },
+            { code: code },
           ],
         }),
       perm_group_id &&
-        PermGroup.exists({
+        Catalog.exists({
           _id: {
             $in: perm_group_id,
           },
@@ -55,13 +55,13 @@ const modifyPerm: RequestHandler = async (req, res, next) => {
       throw new BadReqErr("Permission Group not found");
     }
 
-    const modPerm = await Perm.findByIdAndUpdate(
+    const modPerm = await Rule.findByIdAndUpdate(
       perm._id,
       {
         $set: {
-          code,
-          info,
-          perm_group: perm_group_id,
+          code: code,
+          detail: info,
+          group_id: perm_group_id,
         },
       },
       { new: true }
@@ -74,25 +74,25 @@ const modifyPerm: RequestHandler = async (req, res, next) => {
     res.json(modPerm);
 
     await Promise.allSettled([
-      PermGroup.updateOne(
-        { _id: perm.perm_group },
+      Catalog.updateOne(
+        { _id: perm.catalog },
         {
           $pull: {
-            items: perm._id,
+            rules: perm._id,
           },
         }
       ),
-      PermGroup.updateOne(
-        { _id: modPerm!.perm_group._id },
+      Catalog.updateOne(
+        { _id: modPerm!.catalog._id },
         {
           $addToSet: {
-            items: perm._id,
+            rules: perm._id,
           },
         }
       ),
       new LogPublisher(nats.cli).publish({
         user_id: req.user?.id,
-        model: Perm.modelName,
+        model: Rule.modelName,
         action: "update",
         data: modPerm,
       }),

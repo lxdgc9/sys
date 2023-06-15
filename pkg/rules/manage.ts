@@ -8,7 +8,7 @@ export const WRITE_ROLE = "write_role";
 export const UPDATE_ROLE = "update_role";
 export const DELETE_ROLE = "delete_role";
 
-export const READ_PERM = "read_perm";
-export const WRITE_PERM = "write_perm";
-export const UPDATE_PERM = "update_perm";
-export const DELETE_PERM = "delete_perm";
+export const READ_RULE = "read_rule";
+export const WRITE_RULE = "write_rule";
+export const UPDATE_RULE = "update_rule";
+export const DELETE_RULE = "delete_rule";

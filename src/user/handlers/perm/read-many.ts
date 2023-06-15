@@ -1,9 +1,9 @@
 import { RequestHandler } from "express";
-import { PermGroup } from "../../models/perm-group";
+import { Catalog } from "../../models/rule-catalog";
 
 const readPerms: RequestHandler = async (_req, res, next) => {
   try {
-    const perms = await PermGroup.find().lean().populate({
+    const perms = await Catalog.find().lean().populate({
       path: "items",
       select: "-perm_group",
     });

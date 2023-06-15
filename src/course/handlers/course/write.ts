@@ -35,7 +35,17 @@ const writeCourse: RequestHandler = async (req, res, next) => {
       classes: classIds,
     });
     await nCourse.save();
+
     res.status(201).json(nCourse);
+
+    await Class.updateMany(
+      { _id: { $in: classIds } },
+      {
+        $addToSet: {
+          courses: nCourse,
+        },
+      }
+    );
   } catch (e) {
     next(e);
   }

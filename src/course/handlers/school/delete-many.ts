@@ -12,10 +12,10 @@ const delSchools: RequestHandler = async (req, res, next) => {
       _id: { $in: ids },
     }).lean();
     if (schools.length < ids.length) {
-      throw new BadReqErr("School mismatch");
+      throw new BadReqErr("Danh sách trường học không hợp lệ");
     }
     if (schools.some((el) => el.classes.length > 0)) {
-      throw new BadReqErr("Found dependent");
+      throw new BadReqErr("Tồn tại sự phụ thuộc");
     }
 
     await School.deleteMany({
@@ -24,8 +24,8 @@ const delSchools: RequestHandler = async (req, res, next) => {
     res.sendStatus(204);
 
     schools.forEach((el) => {
-      if (el.logo_url) {
-        fs.rmSync(el.logo_url.replace("/api/courses/", ""));
+      if (el.logo) {
+        fs.rmSync(el.logo.replace("/api/courses/", ""));
       }
     });
   } catch (e) {

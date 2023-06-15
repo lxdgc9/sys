@@ -6,18 +6,9 @@ const readSchool: RequestHandler = async (req, res, next) => {
   try {
     const school = await School.findById(req.params.id)
       .lean()
-      .populate({
-        path: "classes",
-        select: "-members",
-        populate: [
-          {
-            path: "school",
-            select: "-classes",
-          },
-        ],
-      });
+      .populate("classes", "-members");
     if (!school) {
-      throw new NotFoundErr("School not found");
+      throw new NotFoundErr("Trường học không tìm thấy");
     }
 
     res.json(school);

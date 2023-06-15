@@ -1,18 +1,13 @@
 import mongoose, { Schema, Types } from "mongoose";
 
-interface IRole {
+interface ICatalog {
   name: string;
-  level: number;
   rules: Types.ObjectId[];
 }
 
-const schema = new Schema<IRole>({
+const schema = new Schema<ICatalog>({
   name: {
     type: String,
-    required: true,
-  },
-  level: {
-    type: Number,
     required: true,
   },
   rules: [
@@ -23,4 +18,4 @@ const schema = new Schema<IRole>({
   ],
 });
 
-export const Role = mongoose.model<IRole>("role", schema);
+export const Catalog = mongoose.model<ICatalog>("catalog", schema);

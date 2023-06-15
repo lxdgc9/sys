@@ -25,7 +25,7 @@ export function guard(...rules: string[]) {
         return next();
       }
 
-      throw new UnauthorizedErr("Require token");
+      throw new UnauthorizedErr("Yêu cầu token");
     }
 
     try {
@@ -35,11 +35,11 @@ export function guard(...rules: string[]) {
       ) as JwtPayload;
 
       if (!req.user.is_active) {
-        throw new ForbiddenErr("Access denied");
+        throw new ForbiddenErr("Không được phép truy cập");
       }
 
       if (rules.length > 0 && !req.user.rules.some((r) => rules.includes(r))) {
-        throw new ForbiddenErr("Permission denied");
+        throw new ForbiddenErr("Truy cập bị từ chối");
       }
 
       next();

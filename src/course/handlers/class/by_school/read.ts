@@ -4,7 +4,16 @@ import { BadReqErr } from "@lxdgc9/pkg/dist/err";
 
 const readClassBySchool: RequestHandler = async (req, res, next) => {
   try {
-    const _class = await Class.findById(req.params.school_id);
+    const _class = await Class.findById(req.params.school_id).populate([
+      {
+        path: "school",
+        select: "-classes",
+      },
+      {
+        path: "members",
+        select: "-classes",
+      },
+    ]);
     if (!_class) {
       throw new BadReqErr("Class not found");
     }

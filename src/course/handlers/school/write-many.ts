@@ -6,30 +6,27 @@ const writeSchools: RequestHandler = async (req, res, next) => {
   const schools: {
     code: string;
     name: string;
-    address?: string;
-    description?: string;
+    info: string;
   }[] = req.body;
 
   const codes = [...new Set(schools.map((el) => el.code))];
 
   try {
     if (codes.length < schools.length) {
-      throw new ConflictErr("Code already exists");
+      throw new ConflictErr("Mã trường bị trùng");
     }
 
-    const hasCode = await School.exists({
-      code: { $in: codes },
-    });
+    const hasCode = await School.exists({ code: { $in: codes } });
     if (hasCode) {
-      throw new ConflictErr("Code already exists");
+      throw new ConflictErr("Mã trường đã tồn tại");
     }
 
     const nSchools = await School.insertMany(
       schools.map((el) => ({
         code: el.code,
         name: el.name,
-        address: el.address,
-        description: el.description,
+        info: el.info,
+        logo: "/api/courses/def-logo.jpg",
       }))
     );
     res.status(201).json(nSchools);

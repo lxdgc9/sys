@@ -4,6 +4,7 @@ interface IClass {
   name: string;
   school: Types.ObjectId;
   members: Types.ObjectId[];
+  courses: Types.ObjectId[];
 }
 
 const schema = new Schema<IClass>(
@@ -21,6 +22,12 @@ const schema = new Schema<IClass>(
       {
         type: Schema.Types.ObjectId,
         ref: "user",
+      },
+    ],
+    courses: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "course",
       },
     ],
   },
