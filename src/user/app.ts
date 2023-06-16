@@ -17,7 +17,7 @@ app.use("/api/users/roles", role);
 app.use("/api/users", user);
 
 app.all("*", (_req, res) => {
-  res.status(404).json({ msg: "Yêu cầu không tồn tại" });
+  res.status(404).json({ msg: "Request not found" });
 });
 
 app.use(errHandler);

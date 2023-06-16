@@ -7,21 +7,19 @@ import { User } from "../../models/user";
 
 const deleteRole: RequestHandler = async (req, res, next) => {
   try {
-    const [hasRole, isDepend] = await Promise.all([
-      Role.exists({ _id: req.params.id }),
+    const [role, isDepend] = await Promise.all([
+      Role.findById(req.params.id).populate("rules", "-catalog"),
       User.exists({ role: req.params.id }),
     ]);
-    if (!hasRole) {
-      throw new NotFoundErr("Không tìm thấy vai trò");
+    if (!role) {
+      throw new NotFoundErr("Role not found");
     }
     if (isDepend) {
-      throw new BadReqErr("Có ràng buộc liên kết");
+      throw new BadReqErr("Fount dependent");
     }
 
-    const role = await Role.findByIdAndDelete(req.params.id)
-      .lean()
-      .populate("rules", "-catalog");
-    res.json({ msg: "Xóa thành công" });
+    await role.deleteOne();
+    res.sendStatus(204);
 
     await new LogPublisher(nats.cli).publish({
       user_id: req.user?.id,

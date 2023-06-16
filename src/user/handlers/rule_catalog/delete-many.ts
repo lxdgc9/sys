@@ -6,7 +6,7 @@ import { LogPublisher } from "../../events/publisher/log";
 import { Catalog } from "../../models/rule-catalog";
 
 const deleteCatalogs: RequestHandler = async (req, res, next) => {
-  const ids = [...new Set(req.body)] as Types.ObjectId[];
+  const ids: Types.ObjectId[] = req.body;
 
   try {
     const catalogs = await Catalog.find({ _id: { $in: ids } });

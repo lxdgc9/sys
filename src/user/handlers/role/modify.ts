@@ -25,10 +25,10 @@ const modifyRole: RequestHandler = async (req, res, next) => {
       }),
     ]);
     if (!hasRole) {
-      throw new NotFoundErr("Không tìm thấy vai trò");
+      throw new NotFoundErr("Role not found");
     }
     if (rule_ids && numRules < rule_ids.length) {
-      throw new BadReqErr("Danh sách quyền không hợp lệ");
+      throw new BadReqErr("Invalid rule_ids");
     }
 
     const modRole = await Role.findByIdAndUpdate(

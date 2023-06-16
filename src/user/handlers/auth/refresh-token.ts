@@ -17,15 +17,15 @@ const refreshToken: RequestHandler = async (req, res, next) => {
       .lean()
       .populate<{
         role: {
-          perms: {
+          rules: {
             code: string;
           }[];
         };
       }>({
         path: "role",
         populate: {
-          path: "perms",
-          select: "-perm_group",
+          path: "rules",
+          select: "-catalog",
         },
       });
     if (!user) {
@@ -35,7 +35,7 @@ const refreshToken: RequestHandler = async (req, res, next) => {
     const access_token = jwt.sign(
       {
         id,
-        rules: user.role.perms.map((p) => p.code),
+        rules: user.role.rules.map((p) => p.code),
         is_active: user.is_active,
       },
       process.env.ACCESS_TOKEN_SECRET as Secret,

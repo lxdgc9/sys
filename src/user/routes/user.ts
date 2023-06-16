@@ -28,44 +28,50 @@ r.route("/")
     validator(
       body("prof")
         .notEmpty()
-        .withMessage("Bắt buộc")
+        .withMessage("Not empty")
         .isObject()
-        .withMessage("Phải là Object"),
+        .withMessage("Must be object"),
       body("prof.username")
         .notEmpty()
-        .withMessage("Bắt buộc")
+        .withMessage("Not empty")
         .isString()
-        .withMessage("Phải là chuỗi")
-        .isLength({ min: 1, max: 255 })
-        .withMessage("1 <= len <= 255")
+        .withMessage("Must be string")
         .trim()
         .toLowerCase(),
       body("prof.phone")
         .notEmpty()
-        .withMessage("Bắt buộc")
+        .withMessage("Not empty")
         .isMobilePhone("vi-VN")
-        .withMessage("invalid phone number"),
+        .withMessage("Invalid phone number"),
       body("prof.email")
         .notEmpty()
-        .withMessage("Bắt buộc")
+        .withMessage("Not empty")
         .isEmail()
         .withMessage("Must be email")
         .trim(),
       body("password")
         .notEmpty()
-        .withMessage("Bắt buộc")
+        .withMessage("Not empty")
         .isStrongPassword({
           minLength: 6,
           minSymbols: 0,
           minLowercase: 0,
           minUppercase: 0,
         })
-        .withMessage("password not strong enough"),
+        .withMessage("Password not strong enough"),
       body("role_id")
         .notEmpty()
-        .withMessage("Bắt buộc")
+        .withMessage("Not empty")
         .isMongoId()
-        .withMessage("Định dạng không hợp lệ"),
+        .withMessage("Must be mongoId"),
+      body("spec_rule_ids")
+        .optional({ values: "undefined" })
+        .isArray()
+        .withMessage("Must be array"),
+      body("spec_rule_ids.*")
+        .optional({ values: "undefined" })
+        .isMongoId()
+        .withMessage("Must be mongoId"),
       body("is_active")
         .isBoolean()
         .withMessage("Must be boolean")
@@ -81,50 +87,48 @@ r.route("/many")
     validator(
       body()
         .notEmpty()
-        .withMessage("Bắt buộc")
+        .withMessage("Not empty")
         .isArray({ min: 1 })
-        .withMessage("Must be array, has aleast 1 element"),
-      body("*").isObject().withMessage("Phải là Object"),
+        .withMessage("Should be at least 1 element"),
+      body("*").isObject().withMessage("Must be object"),
       body("*.prof")
         .notEmpty()
-        .withMessage("Bắt buộc")
+        .withMessage("Not empty")
         .isObject()
-        .withMessage("Phải là Object"),
+        .withMessage("Must be object"),
       body("*.prof.username")
         .notEmpty()
-        .withMessage("Bắt buộc")
+        .withMessage("Not empty")
         .isString()
-        .withMessage("Phải là chuỗi")
-        .isLength({ min: 1, max: 255 })
-        .withMessage("1 <= len <= 255")
+        .withMessage("Must be string")
         .trim()
         .toLowerCase(),
       body("*.prof.phone")
         .notEmpty()
-        .withMessage("Bắt buộc")
+        .withMessage("Not empty")
         .isMobilePhone("vi-VN")
-        .withMessage("invalid phone number"),
+        .withMessage("Invalid phone number"),
       body("*.prof.email")
         .notEmpty()
-        .withMessage("Bắt buộc")
+        .withMessage("Not empty")
         .isEmail()
         .withMessage("Must be email")
         .trim(),
       body("*.passwd")
         .notEmpty()
-        .withMessage("Bắt buộc")
+        .withMessage("Not empty")
         .isStrongPassword({
           minLength: 6,
           minSymbols: 0,
           minLowercase: 0,
           minUppercase: 0,
         })
-        .withMessage("password not strong enough"),
+        .withMessage("Password not strong enough"),
       body("*.role_id")
         .notEmpty()
-        .withMessage("Bắt buộc")
+        .withMessage("Not empty")
         .isMongoId()
-        .withMessage("Định dạng không hợp lệ"),
+        .withMessage("Must be mongoId"),
       body("users.*.is_active")
         .isBoolean()
         .withMessage("Must be boolean")
@@ -137,10 +141,10 @@ r.route("/many")
     validator(
       body()
         .notEmpty()
-        .withMessage("Bắt buộc")
+        .withMessage("Not empty")
         .isArray({ min: 1 })
-        .withMessage("Must be array, has aleast 1 element"),
-      body("*").isMongoId().withMessage("Định dạng không hợp lệ")
+        .withMessage("Should be at least 1 element"),
+      body("*").isMongoId().withMessage("Must be mongoId")
     ),
     deleteUsers
   );
@@ -148,17 +152,17 @@ r.route("/many")
 r.route("/:id")
   .get(
     guard(READ_USER),
-    validator(param("id").isMongoId().withMessage("Định dạng không hợp lệ")),
+    validator(param("id").isMongoId().withMessage("Must be mongoId")),
     readUser
   )
   .patch(
     guard(UPDATE_USER),
     validator(
-      param("id").isMongoId().withMessage("Định dạng không hợp lệ"),
+      param("id").isMongoId().withMessage("Must be mongoId"),
       body("prof")
         .optional({ values: "undefined" })
         .isObject()
-        .withMessage("Phải là Object")
+        .withMessage("Must be object")
         .custom((v) => {
           if (!Object.keys(v).length) {
             throw new Error("Object Must not be empty");
@@ -168,7 +172,7 @@ r.route("/:id")
       body("prof.username")
         .optional({ values: "undefined" })
         .isString()
-        .withMessage("Phải là chuỗi")
+        .withMessage("Must be string")
         .isLength({ min: 1, max: 255 })
         .withMessage("1 <= len <= 255")
         .trim()
@@ -176,7 +180,7 @@ r.route("/:id")
       body("prof.phone")
         .optional({ values: "undefined" })
         .isMobilePhone("vi-VN")
-        .withMessage("invalid phone number"),
+        .withMessage("Invalid phone number"),
       body("prof.email")
         .optional({ values: "undefined" })
         .isMobilePhone("vi-VN")
@@ -186,13 +190,13 @@ r.route("/:id")
       body("role_id")
         .optional({ values: "undefined" })
         .isMongoId()
-        .withMessage("Định dạng không hợp lệ")
+        .withMessage("Must be mongoId")
     ),
     modifyUser
   )
   .delete(
     guard(DELETE_USER),
-    validator(param("id").isMongoId().withMessage("Định dạng không hợp lệ")),
+    validator(param("id").isMongoId().withMessage("Must be mongoId")),
     delUser
   );
 
@@ -201,11 +205,11 @@ r.post(
   validator(
     body("k")
       .notEmpty()
-      .withMessage("Bắt buộc")
+      .withMessage("Not empty")
       .isIn(["username", "phone", "email"])
       .withMessage("Invalid field, Must be username, phone or email"),
-    body("v").notEmpty().withMessage("Bắt buộc"),
-    body("password").notEmpty().withMessage("Bắt buộc")
+    body("v").notEmpty().withMessage("Not empty"),
+    body("password").notEmpty().withMessage("Not empty")
   ),
   login
 );
@@ -215,9 +219,9 @@ r.post(
   validator(
     body("token")
       .notEmpty()
-      .withMessage("Bắt buộc")
+      .withMessage("Not empty")
       .isString()
-      .withMessage("Phải là chuỗi")
+      .withMessage("Must be string")
   ),
   refreshToken
 );
@@ -226,11 +230,11 @@ r.patch(
   "/:id/passwd",
   guard(UPDATE_USER),
   validator(
-    param("id").isMongoId().withMessage("Định dạng không hợp lệ"),
-    body("old_password").notEmpty().withMessage("Bắt buộc"),
+    param("id").isMongoId().withMessage("Must be mongoId"),
+    body("old_password").notEmpty().withMessage("Not empty"),
     body("new_password")
       .notEmpty()
-      .withMessage("Bắt buộc")
+      .withMessage("Not empty")
       .isStrongPassword({
         minLength: 6,
         minSymbols: 0,
@@ -246,10 +250,10 @@ r.patch(
   "/:id/active",
   guard(UPDATE_USER),
   validator(
-    param("id").isMongoId().withMessage("Định dạng không hợp lệ"),
+    param("id").isMongoId().withMessage("Must be mongoId"),
     body("status")
       .notEmpty()
-      .withMessage("Bắt buộc")
+      .withMessage("Not empty")
       .isBoolean()
       .withMessage("Must be boolean")
   ),

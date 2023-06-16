@@ -5,15 +5,15 @@ import { LOG } from "@lxdgc9/pkg/dist/rules/log";
 import readParts from "../handlers/parts";
 import readLogs from "../handlers/logs";
 
-const logRouter = Router();
+const r = Router();
 
-logRouter.get("/", guard(LOG), readParts);
+r.get("/", guard(LOG), readParts);
 
-logRouter.get(
+r.get(
   "/:part",
   guard(LOG),
-  validator(param("part").isString().withMessage("must be string")),
+  validator(param("part").isString().withMessage("Must be string")),
   readLogs
 );
 
-export default logRouter;
+export default r;

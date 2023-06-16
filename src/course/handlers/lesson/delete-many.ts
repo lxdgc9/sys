@@ -5,13 +5,13 @@ import { Types } from "mongoose";
 import { Course } from "../../models/course";
 import { Lesson } from "../../models/lesson";
 
-const delLessons: RequestHandler = async (req, res, next) => {
-  const ids = [...new Set(req.body)] as Types.ObjectId[];
+const deleteLessons: RequestHandler = async (req, res, next) => {
+  const ids: Types.ObjectId[] = req.body;
 
   try {
     const lessons = await Lesson.find({ _id: { $in: ids } }).lean();
     if (lessons.length < ids.length) {
-      throw new BadReqErr("Lessons mismatch");
+      throw new BadReqErr("Invalids ids");
     }
 
     await Lesson.deleteMany({
@@ -40,4 +40,4 @@ const delLessons: RequestHandler = async (req, res, next) => {
   }
 };
 
-export default delLessons;
+export default deleteLessons;

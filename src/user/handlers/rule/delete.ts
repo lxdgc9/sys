@@ -13,14 +13,14 @@ const deleteRule: RequestHandler = async (req, res, next) => {
       Role.exists({ rules: { $in: req.params.id } }),
     ]);
     if (!rule) {
-      throw new NotFoundErr("Không tìm thấy quyền");
+      throw new NotFoundErr("Rule not found");
     }
     if (hasDepend) {
-      throw new BadReqErr("Có ràng buộc liên kết");
+      throw new BadReqErr("Found dependent");
     }
 
     await rule.deleteOne();
-    res.json({ msg: "Xóa thành công" });
+    res.sendStatus(204);
 
     await Promise.allSettled([
       Catalog.updateOne(

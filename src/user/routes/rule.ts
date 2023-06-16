@@ -36,7 +36,7 @@ r.route("/")
         .notEmpty()
         .withMessage("Not empty")
         .isMongoId()
-        .withMessage("Must be MongoId")
+        .withMessage("Must be mongoId")
     ),
     writeRule
   );
@@ -48,21 +48,13 @@ r.route("/many")
     validator(
       body()
         .notEmpty()
-        .withMessage("Bắt buộc")
+        .withMessage("Not empty")
         .isArray({ min: 1 })
-        .withMessage("Nên chứa ít nhất 1 phần tử"),
-      body("*").isObject().withMessage("Nên là Object"),
-      body("*.code")
-        .isString()
-        .withMessage("Phải là chuỗi")
-        .isLength({ min: 1, max: 255 })
-        .withMessage("1 <= len <= 255"),
-      body("*.info")
-        .isString()
-        .withMessage("Phải là chuỗi")
-        .isLength({ min: 1, max: 255 })
-        .withMessage("1 <= len <= 255"),
-      body("*.catalog_id").isMongoId().withMessage("Không đúng định dạng")
+        .withMessage("Should be at least 1 element"),
+      body("*").isObject().withMessage("Must be object"),
+      body("*.code").isString().withMessage("Must be string"),
+      body("*.info").isString().withMessage("Must be string"),
+      body("*.catalog_id").isMongoId().withMessage("Must be mongoId")
     ),
     writeRules
   )
@@ -71,10 +63,10 @@ r.route("/many")
     validator(
       body()
         .notEmpty()
-        .withMessage("Bắt buộc")
+        .withMessage("Not empty")
         .isArray({ min: 1 })
-        .withMessage("Nên chứa ít nhất 1 phần tử"),
-      body("*").isMongoId().withMessage("Không đúng định dạng")
+        .withMessage("Should be at least 1 element"),
+      body("*").isMongoId().withMessage("Must be mongoId")
     ),
     deleteRules
   );
@@ -82,34 +74,31 @@ r.route("/many")
 r.route("/:id")
   .get(
     guard(READ_RULE),
-    validator(param("id").isMongoId().withMessage("Không đúng định dạng")),
+    validator(param("id").isMongoId().withMessage("Must be mongoId")),
     readRule
   )
   .patch(
     guard(UPDATE_RULE),
     validator(
-      param("id").isMongoId().withMessage("Không đúng định dạng"),
+      param("id").isMongoId().withMessage("Must be mongoId"),
       body("code")
         .optional({ values: "undefined" })
         .isString()
-        .withMessage("Phải là chuỗi")
-        .isLength({ min: 1, max: 255 })
-        .withMessage("1 <= len <= 255"),
+        .withMessage("Must be string"),
       body("info")
         .optional({ values: "undefined" })
         .isString()
-        .withMessage("Phải là chuỗi")
-        .isLength({ min: 1, max: 255 }),
+        .withMessage("Must be string"),
       body("catalog_id")
         .optional({ values: "undefined" })
         .isMongoId()
-        .withMessage("Không đúng định dạng")
+        .withMessage("Must be mongoId")
     ),
     modifyRule
   )
   .delete(
     guard(DELETE_RULE),
-    validator(param("id").isMongoId().withMessage("Không đúng định dạng")),
+    validator(param("id").isMongoId().withMessage("Must be mongoId")),
     deleteRule
   );
 

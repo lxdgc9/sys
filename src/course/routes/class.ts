@@ -15,10 +15,9 @@ import writeClasses from "../handlers/class/write-many";
 import writeClass from "../handlers/class/write";
 import readClass from "../handlers/class/read";
 
-const classRouter = Router();
+const r = Router();
 
-classRouter
-  .route("/")
+r.route("/")
   .get(guard(READ_CLASS), validator(), readClasses)
   .post(
     guard(WRITE_CLASS),
@@ -45,8 +44,7 @@ classRouter
     delClass
   );
 
-classRouter
-  .route("/many")
+r.route("/many")
   .post(
     guard(WRITE_CLASS),
     validator(
@@ -78,8 +76,7 @@ classRouter
     delClasses
   );
 
-classRouter
-  .route("/:id")
+r.route("/:id")
   .get(
     guard(READ_CLASS),
     validator(param("id").isMongoId().withMessage("Must be MongoId")),
@@ -92,4 +89,4 @@ classRouter
     delClass
   );
 
-export default classRouter;
+export default r;

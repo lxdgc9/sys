@@ -16,10 +16,9 @@ import modifySchool from "../handlers/school/modify";
 import delSchools from "../handlers/school/delete-many";
 import delSchool from "../handlers/school/delete";
 
-const schoolRouter = Router();
+const r = Router();
 
-schoolRouter
-  .route("/")
+r.route("/")
   .get(guard(READ_SCHOOL), readSchools)
   .post(
     guard(WRITE_SCHOOL),
@@ -55,8 +54,7 @@ schoolRouter
     writeSchool
   );
 
-schoolRouter
-  .route("/many")
+r.route("/many")
   .post(
     guard(WRITE_SCHOOL),
     validator(
@@ -100,8 +98,7 @@ schoolRouter
     delSchools
   );
 
-schoolRouter
-  .route("/:id")
+r.route("/:id")
   .get(
     guard(READ_SCHOOL),
     validator(param("id").isMongoId().withMessage("Must be MongoId")),
@@ -145,4 +142,4 @@ schoolRouter
     delSchool
   );
 
-export default schoolRouter;
+export default r;

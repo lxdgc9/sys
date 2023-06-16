@@ -3,15 +3,15 @@ import { Types } from "mongoose";
 import { BadReqErr } from "@lxdgc9/pkg/dist/err";
 import { Course } from "../../models/course";
 
-const delCourses: RequestHandler = async (req, res, next) => {
-  const ids = [...new Set(req.body)] as Types.ObjectId[];
+const deleteCourses: RequestHandler = async (req, res, next) => {
+  const ids: Types.ObjectId[] = req.body;
 
   try {
     const numCourses = await Course.countDocuments({
       _id: { $in: ids },
     });
     if (numCourses < ids.length) {
-      throw new BadReqErr("Courses mismatch");
+      throw new BadReqErr("Invalid ids");
     }
 
     await Course.deleteMany({
@@ -23,4 +23,4 @@ const delCourses: RequestHandler = async (req, res, next) => {
   }
 };
 
-export default delCourses;
+export default deleteCourses;

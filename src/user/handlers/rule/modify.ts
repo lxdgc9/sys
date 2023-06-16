@@ -18,37 +18,32 @@ const modifyRule: RequestHandler = async (req, res, next) => {
   } = req.body;
 
   try {
-    const rule = await Rule.findById(req.params.id).lean();
+    const rule = await Rule.findById({ _id: req.params.id }).lean();
     if (!rule) {
-      throw new NotFoundErr("Không tìm thấy quyền");
+      throw new NotFoundErr("Rule not found");
     }
 
-    const [isDupl, hasCatalog] = await Promise.all([
+    const [hasCode, hasCatalog] = await Promise.all([
       code &&
         Rule.exists({
           $and: [
             {
-              _id: { $ne: rule._id },
+              _id: { $ne: req.params.id },
             },
             { code: code },
           ],
         }),
-      catalog_id &&
-        Catalog.exists({
-          _id: {
-            $in: catalog_id,
-          },
-        }),
+      catalog_id && Catalog.exists({ _id: { $in: catalog_id } }),
     ]);
-    if (code && isDupl) {
-      throw new ConflictErr("Tồn tại code trong hệ thống");
+    if (code && hasCode) {
+      throw new ConflictErr("Duplicate code");
     }
     if (catalog_id && !hasCatalog) {
-      throw new NotFoundErr("Không tìm thấy danh mục");
+      throw new NotFoundErr("Catalog not found");
     }
 
     const modRule = await Rule.findByIdAndUpdate(
-      rule._id,
+      req.params.id,
       {
         $set: {
           code,
@@ -72,7 +67,7 @@ const modifyRule: RequestHandler = async (req, res, next) => {
         }
       ),
       Catalog.updateOne(
-        { _id: modRule!.catalog._id },
+        { _id: catalog_id },
         {
           $addToSet: {
             rules: rule._id,

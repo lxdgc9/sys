@@ -10,9 +10,9 @@ export class LogListener extends Listener<Log> {
   qGroup = qGroup;
 
   async onMsg(data: Log["data"], msg: Message) {
-    const { user_id, model: _model, action, data: _data } = data;
+    const { user_id, model, action, data: _data } = data;
 
-    const Model = mongoose.model(_model, schema);
+    const Model = mongoose.model(model, schema);
     const newDoc = new Model({
       actor: user_id,
       action,

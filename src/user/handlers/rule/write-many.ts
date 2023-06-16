@@ -1,5 +1,5 @@
 import { RequestHandler } from "express";
-import { Types } from "mongoose";
+import { ConnectionStates, Types } from "mongoose";
 import { BadReqErr } from "@lxdgc9/pkg/dist/err";
 import nats from "../../nats";
 import { LogPublisher } from "../../events/publisher/log";
@@ -25,7 +25,7 @@ const writeRules: RequestHandler = async (req, res, next) => {
       )
       .map((s) => [...s]);
     if (codes.length < rules.length) {
-      throw new BadReqErr("Xuất hiện code trùng lặp");
+      throw new BadReqErr("Duplicate code");
     }
 
     const [hasRule, numCatalogs] = await Promise.all([
@@ -33,10 +33,10 @@ const writeRules: RequestHandler = async (req, res, next) => {
       Catalog.countDocuments({ _id: { $in: catalogIds } }),
     ]);
     if (hasRule) {
-      throw new BadReqErr("Tồn tại code đã sử dụng");
+      throw new BadReqErr("Duplicate code");
     }
     if (numCatalogs < catalogIds.length) {
-      throw new BadReqErr("Tồn tại catalog_id không hợp lệ");
+      throw new BadReqErr("Invalid catalog_id");
     }
 
     const nRules = await Rule.insertMany(
@@ -54,7 +54,7 @@ const writeRules: RequestHandler = async (req, res, next) => {
     res.status(201).json(nRules);
 
     await Promise.allSettled([
-      Promise.all(
+      await Promise.all(
         [
           ...nRules
             .reduce((m, rule) => {
@@ -67,8 +67,8 @@ const writeRules: RequestHandler = async (req, res, next) => {
               return m;
             }, new Map())
             .entries(),
-        ].map(([k, v]) => {
-          Catalog.updateOne(
+        ].map(async ([k, v]) => {
+          await Catalog.updateOne(
             { _id: k },
             {
               $addToSet: {

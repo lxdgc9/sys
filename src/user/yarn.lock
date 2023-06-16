@@ -27,10 +27,10 @@
     "@jridgewell/resolve-uri" "^3.0.3"
     "@jridgewell/sourcemap-codec" "^1.4.10"
 
-"@lxdgc9/pkg@^1.0.15":
-  version "1.0.15"
-  resolved "https://npm.pkg.github.com/download/@lxdgc9/pkg/1.0.15/0b523d3bd673a249c20eb39cc8b52ca5901a0bea#0b523d3bd673a249c20eb39cc8b52ca5901a0bea"
-  integrity sha512-aOoOVDs00himikKmZEr/1LC41nFh4CSSb/sbkW3hxtIpE+kGHgkGKZq+i2iIL3B0ldBzdIIqk4HrR6lOJoi5bQ==
+"@lxdgc9/pkg@^1.0.16":
+  version "1.0.16"
+  resolved "https://npm.pkg.github.com/download/@lxdgc9/pkg/1.0.16/439fb7ca0f13095ac9f1bb6ebc84c626da560af4#439fb7ca0f13095ac9f1bb6ebc84c626da560af4"
+  integrity sha512-46uhdIOq7xGcS0NF83qL4+NbiyfV6ZWJKsKpA5iahTj5oZMjgRo+geOus28odCD8YU3Mbl2piY0jema4gs2MXQ==
   dependencies:
     express "^4.18.2"
     express-validator "^7.0.1"

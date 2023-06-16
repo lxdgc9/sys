@@ -23,10 +23,10 @@ const writeRule: RequestHandler = async (req, res, next) => {
       Catalog.exists({ _id: catalog_id }),
     ]);
     if (hasRule) {
-      throw new ConflictErr("Tồn tại code");
+      throw new ConflictErr("Duplicate code");
     }
     if (!hasCatalog) {
-      throw new NotFoundErr("Không tìm thấy catalog_id");
+      throw new NotFoundErr("Catalog not found");
     }
 
     const rule = new Rule({

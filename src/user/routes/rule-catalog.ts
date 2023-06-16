@@ -37,15 +37,11 @@ r.route("/many")
     validator(
       body()
         .notEmpty()
-        .withMessage("Bắt buộc")
+        .withMessage("Not empty")
         .isArray({ min: 1 })
-        .withMessage("Nên chứa ít nhất một phần tử"),
+        .withMessage("Should be at least 1 element"),
       body("*").isObject().withMessage("Must be object"),
-      body("*.name")
-        .isString()
-        .withMessage("Phải là chuỗi")
-        .isLength({ min: 1, max: 255 })
-        .withMessage("1 <= len <= 255")
+      body("*.name").isString().withMessage("Must be string")
     ),
     writeCatalogs
   )
@@ -54,10 +50,10 @@ r.route("/many")
     validator(
       body()
         .notEmpty()
-        .withMessage("Bắt buộc")
+        .withMessage("Not empty")
         .isArray({ min: 1 })
-        .withMessage("Nên chứa ít nhất một phần tử"),
-      body("*").isMongoId().withMessage("Không đúng định dạng")
+        .withMessage("Should be at least 1 element"),
+      body("*").isMongoId().withMessage("Must be mongoId")
     ),
     deleteCatalogs
   );
@@ -65,25 +61,23 @@ r.route("/many")
 r.route("/:id")
   .get(
     guard(READ_RULE),
-    validator(param("id").isMongoId().withMessage("Không đúng định dạng")),
+    validator(param("id").isMongoId().withMessage("Must be mongoId")),
     readCatalog
   )
   .patch(
     guard(UPDATE_RULE),
     validator(
-      param("id").isMongoId().withMessage("Không đúng định dạng"),
+      param("id").isMongoId().withMessage("Must be mongoId"),
       body("name")
         .optional({ values: "undefined" })
         .isString()
-        .withMessage("Phải là chuỗi")
-        .isLength({ min: 1, max: 255 })
-        .withMessage("1 <= len <= 255")
+        .withMessage("Must be string")
     ),
     modifyCatalog
   )
   .delete(
     guard(DELETE_RULE),
-    validator(param("id").isMongoId().withMessage("Không đúng định dạng")),
+    validator(param("id").isMongoId().withMessage("Must be mongoId")),
     deleteCatalog
   );
 

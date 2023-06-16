@@ -22,7 +22,7 @@ const writeSchool: RequestHandler = async (req, res, next) => {
   try {
     const hasCode = await School.exists({ code });
     if (hasCode) {
-      throw new ConflictErr(`Mã trường ${code} đã tồn tại`);
+      throw new ConflictErr("Duplicate code");
     }
 
     const nSchool = new School({ code, name, info, logo });

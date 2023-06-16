@@ -22,7 +22,7 @@ const writeRole: RequestHandler = async (req, res, next) => {
       _id: { $in: rule_ids },
     });
     if (numRules < rule_ids.length) {
-      throw new BadReqErr("Danh sách rule_ids không hợp lệ");
+      throw new BadReqErr("Invalid rule_ids");
     }
 
     const nRole = new Role({

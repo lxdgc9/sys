@@ -8,7 +8,7 @@ const readRole: RequestHandler = async (req, res, next) => {
       .lean()
       .populate("rules", "-catalog");
     if (!role) {
-      throw new NotFoundErr("Không tìm thấy role");
+      throw new NotFoundErr("Role not found");
     }
 
     res.json(role);

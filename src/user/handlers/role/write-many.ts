@@ -20,7 +20,7 @@ const writeRoles: RequestHandler = async (req, res, next) => {
       _id: { $in: ruleIds },
     });
     if (numRules < ruleIds.length) {
-      throw new BadReqErr("Danh sách quyền không hợp lệ");
+      throw new BadReqErr("Invalid rule_ids");
     }
 
     const nRoles = await Role.insertMany(

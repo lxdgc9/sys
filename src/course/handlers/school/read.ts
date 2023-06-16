@@ -8,7 +8,7 @@ const readSchool: RequestHandler = async (req, res, next) => {
       .lean()
       .populate("classes", "-members");
     if (!school) {
-      throw new NotFoundErr("Trường học không tìm thấy");
+      throw new NotFoundErr("School not found");
     }
 
     res.json(school);

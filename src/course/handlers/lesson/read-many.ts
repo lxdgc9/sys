@@ -6,11 +6,7 @@ const readLessonsByCourse: RequestHandler = async (req, res, next) => {
   try {
     const course = await Course.findById(req.params.couse_id)
       .lean()
-      .populate([
-        {
-          path: "lesson",
-        },
-      ]);
+      .populate("lessons");
     if (!course) {
       throw new NotFoundErr("Course not found");
     }

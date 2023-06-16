@@ -1,9 +1,9 @@
 import { RequestHandler } from "express";
-import { Catalog } from "../../models/rule-catalog";
+import { Rule } from "../../models/rule";
 
 const readRules: RequestHandler = async (_req, res, next) => {
   try {
-    const rules = await Catalog.find().lean().populate("rules", "-catalog");
+    const rules = await Rule.find().lean().populate("catalog", "-rules");
 
     res.json(rules);
   } catch (e) {

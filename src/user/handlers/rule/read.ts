@@ -8,7 +8,7 @@ const readRule: RequestHandler = async (req, res, next) => {
       .lean()
       .populate("catalog", "-rules");
     if (!rule) {
-      throw new NotFoundErr("Không tìm thấy quyền");
+      throw new NotFoundErr("Rule not found");
     }
 
     res.json(rule);

@@ -22,19 +22,15 @@ r.route("/")
   .post(
     guard(WRITE_ROLE),
     validator(
-      body("name")
-        .notEmpty()
-        .withMessage("Bắt buộc")
-        .withMessage({ min: 1, max: 255 })
-        .withMessage("1 <= len <= 255"),
-      body("level").isInt({ min: 0 }).withMessage("Phải là số nguyên dương"),
+      body("name").notEmpty().withMessage("Not empty"),
+      body("level").isInt({ min: 0 }).withMessage("Must be Int > 0"),
       body("rule_ids")
         .notEmpty()
-        .withMessage("Bắt buộc")
+        .withMessage("Not empty")
         .isArray()
-        .withMessage("Phải là mảng")
+        .withMessage("Must be array")
         .customSanitizer((vals) => [...new Set(vals)]),
-      body("rule_ids.*").isMongoId().withMessage("Không đúng định dạng")
+      body("rule_ids.*").isMongoId().withMessage("Must be mongoId")
     ),
     writeRole
   );
@@ -46,28 +42,26 @@ r.route("/many")
     validator(
       body()
         .notEmpty()
-        .withMessage("Bắt buộc")
+        .withMessage("Not empty")
         .isArray({ min: 1 })
-        .withMessage("Nên chứa ít nhất 1 phần tử"),
-      body("*").isObject().withMessage("Nên là Object"),
+        .withMessage("Should be at least 1 element"),
+      body("*").isObject().withMessage("Must be object"),
       body("*.name")
         .notEmpty()
-        .withMessage("Bắt buộc")
+        .withMessage("Not empty")
         .isString()
-        .withMessage("Nên là chuỗi")
-        .isLength({ min: 1, max: 255 })
-        .withMessage("1 <= len <= 255"),
+        .withMessage("Must be string"),
       body("*.level")
         .notEmpty()
-        .withMessage("Bắt buộc")
+        .withMessage("Not empty")
         .isInt({ min: 0 })
-        .withMessage("Nên là một số lớn hơn 0"),
-      body("*.rule_ids").isArray().withMessage("Nên là mảng"),
+        .withMessage("Must be Int > 0"),
+      body("*.rule_ids").isArray().withMessage("Must be array"),
       body("*.rule_ids.*")
         .notEmpty()
-        .withMessage("Bắt buộc")
+        .withMessage("Not empty")
         .isMongoId()
-        .withMessage("Không đúng định dạng")
+        .withMessage("Must be mongoId")
     ),
     writeRoles
   )
@@ -76,10 +70,10 @@ r.route("/many")
     validator(
       body()
         .notEmpty()
-        .withMessage("Bắt buộc")
+        .withMessage("Not empty")
         .isArray({ min: 1 })
-        .withMessage("Nên chứa ít nhất 1 phần tử"),
-      body("*").isMongoId().withMessage("Không đúng định dạng")
+        .withMessage("Should be at least 1 element"),
+      body("*").isMongoId().withMessage("Must be object")
     ),
     deleteRoles
   );
@@ -87,31 +81,32 @@ r.route("/many")
 r.route("/:id")
   .get(
     guard(READ_ROLE),
-    validator(param("id").isMongoId().withMessage("Không đúng định dạng")),
+    validator(param("id").isMongoId().withMessage("Must be object")),
     readRole
   )
   .patch(
     guard(UPDATE_ROLE),
     validator(
-      param("id").isMongoId().withMessage("Không đúng định dạng"),
+      param("id").isMongoId().withMessage("Must be object"),
       body("name")
         .optional({ values: "undefined" })
         .isString()
-        .withMessage("Nên là chuỗi")
-        .isLength({ min: 1, max: 255 })
-        .withMessage("1 <= len <= 255"),
+        .withMessage("Must be string"),
       body("level")
         .optional({ values: "undefined" })
         .isInt({ min: 0 })
-        .withMessage("Nên là một số lớn hơn 0"),
-      body("rule_ids").optional({ values: "undefined" }).isArray({ min: 1 }),
-      body("rule_ids.*").isMongoId().withMessage("Không đúng định dạng")
+        .withMessage("Must be Int > 0"),
+      body("rule_ids")
+        .optional({ values: "undefined" })
+        .isArray()
+        .withMessage("Must be array"),
+      body("rule_ids.*").isMongoId().withMessage("Must be mongoId")
     ),
     modifyRole
   )
   .delete(
     guard(DELETE_ROLE),
-    validator(param("id").isMongoId().withMessage("Không đúng định dạng")),
+    validator(param("id").isMongoId().withMessage("Must be mongoId")),
     deleteRole
   );
 

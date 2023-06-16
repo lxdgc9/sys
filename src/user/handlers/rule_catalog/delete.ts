@@ -1,5 +1,5 @@
 import { RequestHandler } from "express";
-import { BadReqErr } from "@lxdgc9/pkg/dist/err";
+import { BadReqErr, NotFoundErr } from "@lxdgc9/pkg/dist/err";
 import nats from "../../nats";
 import { LogPublisher } from "../../events/publisher/log";
 import { Catalog } from "../../models/rule-catalog";
@@ -8,7 +8,7 @@ const deleteCatalog: RequestHandler = async (req, res, next) => {
   try {
     const catalog = await Catalog.findById(req.params.id);
     if (!catalog) {
-      throw new BadReqErr("Catalog not found");
+      throw new NotFoundErr("Catalog not found");
     }
     if (catalog.rules.length > 0) {
       throw new BadReqErr("Found dependent");

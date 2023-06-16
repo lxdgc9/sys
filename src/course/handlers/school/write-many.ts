@@ -13,19 +13,19 @@ const writeSchools: RequestHandler = async (req, res, next) => {
 
   try {
     if (codes.length < schools.length) {
-      throw new ConflictErr("Mã trường bị trùng");
+      throw new ConflictErr("Duplicate code");
     }
 
     const hasCode = await School.exists({ code: { $in: codes } });
     if (hasCode) {
-      throw new ConflictErr("Mã trường đã tồn tại");
+      throw new ConflictErr("Duplicate code");
     }
 
     const nSchools = await School.insertMany(
-      schools.map((el) => ({
-        code: el.code,
-        name: el.name,
-        info: el.info,
+      schools.map(({ code, name, info }) => ({
+        code,
+        name,
+        info,
         logo: "/api/courses/def-logo.jpg",
       }))
     );

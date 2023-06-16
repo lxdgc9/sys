@@ -11,25 +11,21 @@ const deleteRoles: RequestHandler = async (req, res, next) => {
 
   try {
     const [roles, isDepend] = await Promise.all([
-      Role.find({ _id: { $in: ids } }).lean(),
+      Role.find({ _id: { $in: ids } })
+        .lean()
+        .populate("rules", "-catalog"),
       User.exists({ role: { $in: ids } }),
     ]);
     if (roles.length < ids.length) {
-      throw new BadReqErr("Danh sách không hợp lệ");
+      throw new BadReqErr("Invalid array");
     }
     if (isDepend) {
-      throw new BadReqErr("Có ràng buộc liên kết");
+      throw new BadReqErr("Found dependent");
     }
 
-    await Role.deleteMany({
-      _id: { $in: ids },
-    });
+    await Role.deleteMany({ _id: { $in: ids } });
     res.sendStatus(204);
 
-    await Role.populate(roles, {
-      path: "rules",
-      select: "-catalog",
-    });
     await new LogPublisher(nats.cli).publish({
       user_id: req.user?.id,
       model: Role.modelName,

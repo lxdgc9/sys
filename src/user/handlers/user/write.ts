@@ -57,13 +57,13 @@ const writeUser: RequestHandler = async (req, res, next) => {
       Rule.countDocuments({ _id: { $in: spec_rule_ids } }),
     ]);
     if (isDupl) {
-      throw new ConflictErr("Khóa username, phone hoặc email đã được sử dụng");
+      throw new ConflictErr("Duplicate uniq fields: username, phone or email");
     }
     if (!hasRole) {
-      throw new NotFoundErr("Không tìm thấy role_id tương ứng");
+      throw new NotFoundErr("Role not found");
     }
     if (spec_rule_ids && numRules < spec_rule_ids.length) {
-      throw new BadReqErr("Không tìm thấy spec_rule_ids tương ứng");
+      throw new BadReqErr("Invalid spec_rule_ids");
     }
 
     const newUser = new User({

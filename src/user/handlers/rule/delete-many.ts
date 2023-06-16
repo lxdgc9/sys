@@ -8,7 +8,7 @@ import { Catalog } from "../../models/rule-catalog";
 import { Role } from "../../models/role";
 
 const deleteRules: RequestHandler = async (req, res, next) => {
-  const ids = [...new Set(req.body)] as Types.ObjectId[];
+  const ids: Types.ObjectId[] = req.body;
 
   try {
     const [rules, hasDepend] = await Promise.all([
@@ -16,16 +16,16 @@ const deleteRules: RequestHandler = async (req, res, next) => {
       Role.exists({ rules: { $in: ids } }),
     ]);
     if (rules.length < ids.length) {
-      throw new BadReqErr("Hệ thống không chấp nhận danh sách");
+      throw new BadReqErr("Invalid array");
     }
     if (hasDepend) {
-      throw new BadReqErr("Có ràng buộc liên kết");
+      throw new BadReqErr("Found dependent");
     }
 
     await Rule.deleteMany({
       _id: { $in: ids },
     });
-    res.json({ msg: "Xóa thành công" });
+    res.sendStatus(204);
 
     await Rule.populate(rules, {
       path: "catalog",

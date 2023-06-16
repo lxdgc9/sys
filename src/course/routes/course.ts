@@ -10,16 +10,14 @@ import writeCourse from "../handlers/course/write";
 import delCourse from "../handlers/course/delete";
 import readCourse from "../handlers/course/read";
 
-const courseRouter = Router();
+const r = Router();
 
-courseRouter
-  .route("/")
+r.route("/")
   .get(guard(READ_COURSE), readCourses)
   .post(guard(READ_COURSE), validator(), writeCourse);
-courseRouter
-  .route("/:id")
+r.route("/:id")
   .get(guard(READ_COURSE), readCourse)
   .patch(guard(UPDATE_COURSE))
   .delete(guard(DELETE_COURSE), delCourse);
 
-export default courseRouter;
+export default r;

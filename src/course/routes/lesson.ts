@@ -3,12 +3,11 @@ import { guard, validator } from "@lxdgc9/pkg/dist/handlers";
 import { READ_USER } from "@lxdgc9/pkg/dist/rules/manage";
 import uploader from "../helpers/upload";
 import writeLesson from "../handlers/lesson/write";
-import delLessons from "../handlers/lesson/delete-many";
+import deleteLessons from "../handlers/lesson/delete-many";
 
-const lessonRouter = Router();
+const r = Router();
 
-lessonRouter
-  .route("/")
+r.route("/")
   .post(
     guard(READ_USER),
     uploader("lessons").array("files"),
@@ -17,11 +16,10 @@ lessonRouter
   )
   .get(guard(READ_USER), validator());
 
-lessonRouter.route("/many").delete(guard(), validator(), delLessons);
+r.route("/many").delete(guard(), validator(), deleteLessons);
 
-lessonRouter
-  .route("/:id")
+r.route("/:id")
   .get(guard(), validator())
-  .delete(guard(), validator(), delLessons);
+  .delete(guard(), validator(), deleteLessons);
 
-export default lessonRouter;
+export default r;
