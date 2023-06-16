@@ -4,18 +4,18 @@ import { Types } from "mongoose";
 import { BadReqErr } from "@lxdgc9/pkg/dist/err";
 import { School } from "../../models/school";
 
-const delSchools: RequestHandler = async (req, res, next) => {
-  const ids = [...new Set(req.body)] as Types.ObjectId[];
+const deleteSchools: RequestHandler = async (req, res, next) => {
+  const ids: Types.ObjectId[] = req.body;
 
   try {
     const schools = await School.find({
       _id: { $in: ids },
     }).lean();
     if (schools.length < ids.length) {
-      throw new BadReqErr("Danh sách trường học không hợp lệ");
+      throw new BadReqErr("Invalid ids");
     }
-    if (schools.some((el) => el.classes.length > 0)) {
-      throw new BadReqErr("Tồn tại sự phụ thuộc");
+    if (schools.some((el) => el.members.length > 0 || el.classes.length > 0)) {
+      throw new BadReqErr("Found dependent");
     }
 
     await School.deleteMany({
@@ -33,4 +33,4 @@ const delSchools: RequestHandler = async (req, res, next) => {
   }
 };
 
-export default delSchools;
+export default deleteSchools;

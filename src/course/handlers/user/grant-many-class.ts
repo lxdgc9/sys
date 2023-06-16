@@ -14,25 +14,46 @@ const grantUsersToClass: RequestHandler = async (req, res, next) => {
   } = req.body;
 
   try {
-    const [numUsers, hasClass] = await Promise.all([
+    const [numUsers, _class] = await Promise.all([
       User.countDocuments({ _id: user_ids }),
-      Class.exists({ _id: class_id }),
+      Class.findById(class_id)
+        .lean()
+        .select("schools")
+        .populate<{ school: { members: Types.ObjectId[] } }>(
+          "school",
+          "members"
+        ),
     ]);
     if (numUsers < user_ids.length) {
-      throw new BadReqErr("Users mismatch");
+      throw new BadReqErr("Invalid user_ids");
     }
-    if (!hasClass) {
+    if (!_class) {
       throw new BadReqErr("Class not found");
     }
 
-    await User.updateMany(
-      { _id: { $in: user_ids } },
-      {
-        $addToSet: {
-          classes: class_id,
-        },
-      }
-    );
+    const memberIds = _class.school.members;
+    if (!user_ids.every((user) => memberIds.some((mem) => mem.equals(user)))) {
+      throw new BadReqErr("Invalid user_ids, must be in school");
+    }
+
+    await Promise.allSettled([
+      User.updateMany(
+        { _id: { $in: user_ids } },
+        {
+          $addToSet: {
+            classes: class_id,
+          },
+        }
+      ),
+      Class.updateOne(
+        { _id: class_id },
+        {
+          $addToSet: {
+            members: user_ids,
+          },
+        }
+      ),
+    ]);
 
     res.sendStatus(204);
   } catch (e) {

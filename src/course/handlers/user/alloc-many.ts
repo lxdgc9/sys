@@ -21,22 +21,30 @@ const allocUsers: RequestHandler = async (req, res, next) => {
       School.exists({ _id: school_id }),
     ]);
     if (numUsers < user_ids.length) {
-      throw new BadReqErr("Users mismatch");
+      throw new BadReqErr("Invalid user_ids");
     }
     if (!hasSchool) {
       throw new BadReqErr("School not found");
     }
 
-    await User.updateMany(
-      {
-        _id: { $in: user_ids },
-      },
-      {
-        $addToSet: {
-          schools: school_id,
-        },
-      }
-    );
+    await Promise.allSettled([
+      User.updateMany(
+        { _id: { $in: user_ids } },
+        {
+          $addToSet: {
+            schools: school_id,
+          },
+        }
+      ),
+      School.updateOne(
+        { _id: school_id },
+        {
+          $addToSet: {
+            members: user_ids,
+          },
+        }
+      ),
+    ]);
 
     res.sendStatus(204);
   } catch (e) {

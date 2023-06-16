@@ -14,12 +14,7 @@ const modifySchool: RequestHandler = async (req, res, next) => {
   } = req.body;
 
   try {
-    if (
-      code === undefined &&
-      name === undefined &&
-      info === undefined &&
-      req.file === undefined
-    ) {
+    if (!code && !name && !info && !req.file) {
       throw new BadReqErr("Thiếu trường để  cập nhật");
     }
 

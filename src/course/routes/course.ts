@@ -15,6 +15,7 @@ const r = Router();
 r.route("/")
   .get(guard(READ_COURSE), readCourses)
   .post(guard(READ_COURSE), validator(), writeCourse);
+r.get("/class/:class_id", guard(), validator());
 r.route("/:id")
   .get(guard(READ_COURSE), readCourse)
   .patch(guard(UPDATE_COURSE))

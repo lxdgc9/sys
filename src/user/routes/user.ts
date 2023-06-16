@@ -114,7 +114,7 @@ r.route("/many")
         .isEmail()
         .withMessage("Must be email")
         .trim(),
-      body("*.passwd")
+      body("*.password")
         .notEmpty()
         .withMessage("Not empty")
         .isStrongPassword({
@@ -227,7 +227,7 @@ r.post(
 );
 
 r.patch(
-  "/:id/passwd",
+  "/:id/password",
   guard(UPDATE_USER),
   validator(
     param("id").isMongoId().withMessage("Must be mongoId"),

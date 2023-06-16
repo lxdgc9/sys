@@ -2,9 +2,10 @@ import mongoose, { Schema, Types } from "mongoose";
 
 interface ICmt {
   user: Types.ObjectId;
+  type: string;
   time_point?: number;
   body: string;
-  repl_id?: Types.ObjectId;
+  rep_id?: Types.ObjectId;
 }
 
 const schema = new Schema<ICmt>(
@@ -14,6 +15,9 @@ const schema = new Schema<ICmt>(
       ref: "user",
       required: true,
     },
+    type: {
+      type: String,
+    },
     time_point: {
       type: Number,
     },
@@ -21,7 +25,7 @@ const schema = new Schema<ICmt>(
       type: String,
       required: true,
     },
-    repl_id: {
+    rep_id: {
       type: Schema.Types.ObjectId,
       ref: "comment",
     },

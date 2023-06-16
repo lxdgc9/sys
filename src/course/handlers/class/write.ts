@@ -16,7 +16,7 @@ const writeClass: RequestHandler = async (req, res, next) => {
   try {
     const hasSchool = await School.exists({ _id: school_id });
     if (!hasSchool) {
-      throw new NotFoundErr("Trường học không tồn tại");
+      throw new NotFoundErr("School not found");
     }
 
     const nClass = new Class({
@@ -24,7 +24,7 @@ const writeClass: RequestHandler = async (req, res, next) => {
       school: school_id,
     });
     await nClass.save();
-
+    await nClass.populate("school", "-classes");
     res.status(201).json(nClass);
 
     await School.updateOne(

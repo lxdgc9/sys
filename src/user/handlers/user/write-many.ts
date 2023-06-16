@@ -14,7 +14,7 @@ const writeUsers: RequestHandler = async (req, res, next) => {
       phone: string;
       email: string;
     };
-    passwd: string;
+    password: string;
     role_id: Types.ObjectId;
     spec_rule_ids?: Types.ObjectId[];
     is_active?: boolean;
@@ -33,16 +33,16 @@ const writeUsers: RequestHandler = async (req, res, next) => {
         },
         [new Set(), new Set(), new Set(), new Set()]
       )
-      .map((set) => [...set]);
+      .map((s) => [...s]);
     if (
       usernames.length < users.length ||
       phones.length < users.length ||
       emails.length < users.length
     ) {
-      throw new ConflictErr("Duplicate fields");
+      throw new ConflictErr("Duplicate uniq fields: username, phone or email");
     }
 
-    const [dupl, numRoles] = await Promise.all([
+    const [isDupl, numRoles] = await Promise.all([
       User.exists({
         $or: [
           {
@@ -75,44 +75,38 @@ const writeUsers: RequestHandler = async (req, res, next) => {
         _id: { $in: roleIds },
       }),
     ]);
-    if (dupl) {
+    if (isDupl) {
       throw new ConflictErr("Duplicate fields");
     }
     if (numRoles < roleIds.length) {
       throw new BadReqErr("Role mismatch");
     }
 
-    const newUsers = await User.insertMany(
-      users.map(({ prof, passwd, role_id: roleId, is_active: isActive }) => ({
+    const nUsers = await User.insertMany(
+      users.map(({ prof, password, role_id, is_active }) => ({
         attrs: Object.entries(prof).map(([k, v]) => ({
           k,
           v,
         })),
-        passwd,
-        role: roleId,
-        active: isActive,
+        password,
+        role: role_id,
+        active: is_active,
       }))
     );
 
-    await User.populate(newUsers, [
-      {
-        path: "role",
-        select: "-perms",
-      },
-      {
-        path: "spec_rules",
-        select: "-catalog",
-      },
+    await User.populate(nUsers, [
+      { path: "role", select: "-rules" },
+      { path: "spec_rules", select: "-catalog" },
     ]);
-    res.status(201).json(newUsers);
+    res.status(201).json(nUsers);
 
     await Promise.all([
-      new InsertManyUserPublisher(nats.cli).publish(newUsers),
+      new InsertManyUserPublisher(nats.cli).publish(nUsers),
       new LogPublisher(nats.cli).publish({
         model: User.modelName,
         user_id: req.user?.id,
         action: "insert",
-        data: newUsers,
+        data: nUsers,
       }),
     ]);
   } catch (e) {

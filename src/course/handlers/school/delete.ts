@@ -3,14 +3,14 @@ import { RequestHandler } from "express";
 import { BadReqErr, NotFoundErr } from "@lxdgc9/pkg/dist/err";
 import { School } from "../../models/school";
 
-const delSchool: RequestHandler = async (req, res, next) => {
+const deleteSchool: RequestHandler = async (req, res, next) => {
   try {
     const school = await School.findById(req.params.id);
     if (!school) {
-      throw new NotFoundErr("Không tìm thấy trường học");
+      throw new NotFoundErr("School not found");
     }
-    if (school.classes.length > 0) {
-      throw new BadReqErr("Có tồn tại sự phụ thuộc");
+    if (school.members.length > 0 || school.classes.length > 0) {
+      throw new BadReqErr("Found dependent");
     }
 
     await school.deleteOne();
@@ -24,4 +24,4 @@ const delSchool: RequestHandler = async (req, res, next) => {
   }
 };
 
-export default delSchool;
+export default deleteSchool;

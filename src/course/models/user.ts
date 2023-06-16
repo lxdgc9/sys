@@ -3,8 +3,8 @@ import mongoose, { Schema, Types } from "mongoose";
 interface IUser {
   user_id: Types.ObjectId;
   data: any;
-  classes: Types.ObjectId[];
   schools: Types.ObjectId[];
+  classes: Types.ObjectId[];
   courses: {
     course: Types.ObjectId;
     process: number;
@@ -22,16 +22,16 @@ const schema = new Schema<IUser>(
       type: Schema.Types.Mixed,
       required: true,
     },
-    classes: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "user",
-      },
-    ],
     schools: [
       {
         type: Schema.Types.ObjectId,
         ref: "school",
+      },
+    ],
+    classes: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "user",
       },
     ],
     courses: [
@@ -43,6 +43,7 @@ const schema = new Schema<IUser>(
         process: {
           type: Number,
           min: 0,
+          default: 0,
         },
       },
     ],

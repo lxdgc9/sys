@@ -3,6 +3,7 @@ import { Types } from "mongoose";
 import { BadReqErr } from "@lxdgc9/pkg/dist/err";
 import { Class } from "../../models/class";
 import { Course } from "../../models/course";
+import { User } from "../../models/user";
 
 const writeCourse: RequestHandler = async (req, res, next) => {
   const {
@@ -17,35 +18,53 @@ const writeCourse: RequestHandler = async (req, res, next) => {
     class_ids: Types.ObjectId[];
   } = req.body;
 
-  const classIds = [...new Set(class_ids)];
-
   try {
-    const numClasses = await Class.countDocuments({
-      _id: { $in: classIds },
-    });
-    if (numClasses < classIds.length) {
-      throw new BadReqErr("Classes mismatch");
+    const user = await User.findOne({ user_id: req.user?.id })
+      .lean()
+      .select("classes");
+    if (!user) {
+      throw new BadReqErr("Invalid token");
     }
+
+    if (!class_ids.every((el) => user.classes.some((u) => u.equals(el)))) {
+      throw new BadReqErr("Invalid class_ids");
+    }
+
+    const _classes = await Class.find({ _id: { $in: class_ids } })
+      .lean()
+      .select("members");
+    const allMember = [...new Set(_classes.map((el) => el.members).flat())];
 
     const nCourse = new Course({
       title,
       content,
-      author: req.user!.id,
+      author: req.user?.id,
       is_publish,
-      classes: classIds,
+      classes: class_ids,
     });
     await nCourse.save();
-
     res.status(201).json(nCourse);
 
-    await Class.updateMany(
-      { _id: { $in: classIds } },
-      {
-        $addToSet: {
-          courses: nCourse,
-        },
-      }
-    );
+    await Promise.allSettled([
+      Class.updateMany(
+        { _id: { $in: class_ids } },
+        {
+          $addToSet: {
+            courses: nCourse,
+          },
+        }
+      ),
+      User.updateMany(
+        { _id: { $in: allMember } },
+        {
+          $addToSet: {
+            courses: {
+              course: nCourse,
+            },
+          },
+        }
+      ),
+    ]);
   } catch (e) {
     next(e);
   }

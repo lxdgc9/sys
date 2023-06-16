@@ -1,5 +1,5 @@
 import express from "express";
-import compress from "compression";
+import compression from "compression";
 import { errHandler } from "@lxdgc9/pkg/dist/handlers";
 import school from "./routes/school";
 import _class from "./routes/class";
@@ -10,7 +10,7 @@ import user from "./routes/user";
 
 const app = express();
 
-app.use(compress());
+app.use(compression());
 app.use(express.json());
 
 app.use("/api/courses/schools", school);

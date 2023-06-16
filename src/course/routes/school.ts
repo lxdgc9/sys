@@ -13,8 +13,8 @@ import readSchools from "../handlers/school/read-many";
 import writeSchool from "../handlers/school/write";
 import writeSchools from "../handlers/school/write-many";
 import modifySchool from "../handlers/school/modify";
-import delSchools from "../handlers/school/delete-many";
-import delSchool from "../handlers/school/delete";
+import deleteSchools from "../handlers/school/delete-many";
+import deleteSchool from "../handlers/school/delete";
 
 const r = Router();
 
@@ -28,28 +28,16 @@ r.route("/")
         .notEmpty()
         .withMessage("Not empty")
         .isString()
-        .withMessage("Must be string")
-        .isLength({ min: 1, max: 255 })
-        .withMessage("1 <= len <= 255"),
+        .withMessage("Must be string"),
       body("name")
         .notEmpty()
         .withMessage("Not empty")
         .isString()
-        .withMessage("Must be string")
-        .isLength({ min: 1, max: 255 })
-        .withMessage("1 <= len <= 255"),
-      body("address")
+        .withMessage("Must be string"),
+      body("info")
         .optional({ values: "undefined" })
         .isString()
         .withMessage("Must be string")
-        .isLength({ min: 1, max: 255 })
-        .withMessage("1 <= len <= 255"),
-      body("description")
-        .optional({ values: "undefined" })
-        .isString()
-        .withMessage("Must be string")
-        .isLength({ min: 1, max: 255 })
-        .withMessage("1 <= len <= 255")
     ),
     writeSchool
   );
@@ -64,38 +52,29 @@ r.route("/many")
         .notEmpty()
         .withMessage("Not empty")
         .isString()
-        .withMessage("Must be string")
-        .isLength({ min: 1, max: 255 })
-        .withMessage("1 <= len <= 255"),
+        .withMessage("Must be string"),
       body("*.name")
         .notEmpty()
         .withMessage("Not empty")
         .isString()
-        .withMessage("Must be string")
-        .isLength({ min: 1, max: 255 })
-        .withMessage("1 <= len <= 255"),
-      body("*.address")
+        .withMessage("Must be string"),
+      body("*.info")
         .optional({ values: "undefined" })
         .isString()
         .withMessage("Must be string")
-        .isLength({ min: 1, max: 255 })
-        .withMessage("1 <= len <= 255"),
-      body("*.description")
-        .optional({ values: "undefined" })
-        .isString()
-        .withMessage("Must be string")
-        .isLength({ min: 1, max: 255 })
-        .withMessage("1 <= len <= 255")
     ),
     writeSchools
   )
   .delete(
     guard(DELETE_SCHOOL),
     validator(
-      body().isArray({ min: 1 }).withMessage("Should be at least 1 element"),
+      body()
+        .isArray({ min: 1 })
+        .withMessage("Should be at least 1 element")
+        .customSanitizer((vals) => [...new Set(vals)]),
       body("*").isMongoId().withMessage("Must be MongoId")
     ),
-    delSchools
+    deleteSchools
   );
 
 r.route("/:id")
@@ -112,34 +91,22 @@ r.route("/:id")
       body("code")
         .optional({ values: "undefined" })
         .isString()
-        .withMessage("Must be string")
-        .isLength({ min: 1, max: 255 })
-        .withMessage("1 <= len <= 255"),
+        .withMessage("Must be string"),
       body("name")
         .optional({ values: "undefined" })
         .isString()
-        .withMessage("Must be string")
-        .isLength({ min: 1, max: 255 })
-        .withMessage("1 <= len <= 255"),
-      body("addr")
+        .withMessage("Must be string"),
+      body("info")
         .optional({ values: "undefined" })
         .isString()
         .withMessage("Must be string")
-        .isLength({ min: 1, max: 255 })
-        .withMessage("1 <= len <= 255"),
-      body("desc")
-        .optional({ values: "undefined" })
-        .isString()
-        .withMessage("Must be string")
-        .isLength({ min: 1, max: 255 })
-        .withMessage("1 <= len <= 255")
     ),
     modifySchool
   )
   .delete(
     guard(DELETE_SCHOOL),
     validator(param("id").isMongoId().withMessage("Must be MongoId")),
-    delSchool
+    deleteSchool
   );
 
 export default r;

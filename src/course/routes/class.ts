@@ -26,9 +26,7 @@ r.route("/")
         .notEmpty()
         .withMessage("Not empty")
         .isString()
-        .withMessage("Must be string")
-        .isLength({ min: 1, max: 255 })
-        .withMessage("1 <= len <= 255"),
+        .withMessage("Must be string"),
       body("school_id")
         .notEmpty()
         .withMessage("Not empty")

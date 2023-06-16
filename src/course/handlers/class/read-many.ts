@@ -5,16 +5,8 @@ const readClasses: RequestHandler = async (_req, res, next) => {
   try {
     const classes = await Class.find()
       .lean()
-      .populate([
-        {
-          path: "school",
-          select: "-classes",
-        },
-        {
-          path: "members",
-          select: "-classes -courses",
-        },
-      ]);
+      .select("-members -courses")
+      .populate("school", "-classes -members");
 
     res.json(classes);
   } catch (e) {

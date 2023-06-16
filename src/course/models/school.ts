@@ -6,6 +6,7 @@ interface ISchool {
   info: string;
   logo: string;
   classes: Types.ObjectId[];
+  members: Types.ObjectId[];
 }
 
 const schema = new Schema<ISchool>(
@@ -19,12 +20,22 @@ const schema = new Schema<ISchool>(
       type: String,
       required: true,
     },
-    info: String,
-    logo: String,
+    info: {
+      type: String,
+    },
+    logo: {
+      type: String,
+    },
     classes: [
       {
         type: Schema.Types.ObjectId,
         ref: "class",
+      },
+    ],
+    members: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "user",
       },
     ],
   },

@@ -6,7 +6,10 @@ const readSchool: RequestHandler = async (req, res, next) => {
   try {
     const school = await School.findById(req.params.id)
       .lean()
-      .populate("classes", "-members");
+      .populate([
+        { path: "classes", select: "name" },
+        { path: "members", select: "data" },
+      ]);
     if (!school) {
       throw new NotFoundErr("School not found");
     }

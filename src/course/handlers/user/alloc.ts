@@ -25,14 +25,25 @@ const allocUser: RequestHandler = async (req, res, next) => {
       throw new BadReqErr("School not found");
     }
 
-    await User.updateOne(
-      { _id: user_id },
-      {
-        $addToSet: {
-          schools: school_id,
-        },
-      }
-    );
+    await Promise.allSettled([
+      User.updateOne(
+        { _id: user_id },
+        {
+          $addToSet: {
+            schools: school_id,
+          },
+        }
+      ),
+      School.updateOne(
+        { _id: school_id },
+        {
+          $addToSet: {
+            members: user_id,
+          },
+        }
+      ),
+    ]);
+
     res.sendStatus(204);
   } catch (e) {
     next(e);
