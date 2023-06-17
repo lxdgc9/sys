@@ -8,8 +8,8 @@ export class InsertManyUserListener extends Listener<InsertManyUser> {
   subject: Subject.INSERT_MANY_USER = Subject.INSERT_MANY_USER;
   qGroup = qGroup;
 
-  async onMsg(data: InsertManyUser["data"], msg: Message) {
-    await User.insertMany(
+  onMsg(data: InsertManyUser["data"], msg: Message) {
+    User.insertMany(
       data.map((u) => ({
         user_id: u._id,
         data: u,

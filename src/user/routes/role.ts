@@ -10,10 +10,10 @@ import {
 import readRole from "../handlers/role/read";
 import readRoles from "../handlers/role/read-many";
 import writeRole from "../handlers/role/write";
+import writeRoles from "../handlers/role/write-many";
 import modifyRole from "../handlers/role/modify";
 import deleteRole from "../handlers/role/delete";
 import deleteRoles from "../handlers/role/delete-many";
-import writeRoles from "../handlers/role/write-many";
 
 const r = Router();
 

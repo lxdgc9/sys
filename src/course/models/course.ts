@@ -26,6 +26,12 @@ const schema = new Schema<ICourse>(
       type: String,
       required: true,
     },
+    lessons: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "lesson",
+      },
+    ],
     is_publish: {
       type: Boolean,
       default: false,

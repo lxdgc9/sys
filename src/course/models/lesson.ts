@@ -6,6 +6,7 @@ interface ILesson {
   content: string;
   files: {
     path: string;
+    filename: string;
     mime_type: string;
   }[];
 }
@@ -29,6 +30,9 @@ const schema = new Schema<ILesson>(
     files: [
       {
         path: {
+          type: String,
+        },
+        filename: {
           type: String,
         },
         mime_type: {

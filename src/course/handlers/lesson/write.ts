@@ -3,6 +3,7 @@ import { Types } from "mongoose";
 import { BadReqErr, NotFoundErr } from "@lxdgc9/pkg/dist/err";
 import { Course } from "../../models/course";
 import { Lesson } from "../../models/lesson";
+import { User } from "../../models/user";
 
 const writeLesson: RequestHandler = async (req, res, next) => {
   const {
@@ -20,6 +21,18 @@ const writeLesson: RequestHandler = async (req, res, next) => {
       throw new BadReqErr("Require files");
     }
 
+    const user = await User.findOne({ user_id: req.user?.id })
+      .lean()
+      .select("courses");
+    if (!user) {
+      throw new BadReqErr("Invalid token");
+    }
+
+    const coursesIdsByUser = user.courses.map((el) => el.course);
+    if (!coursesIdsByUser.some((el) => el.equals(course_id))) {
+      throw new BadReqErr("Invalid course_id");
+    }
+
     const course = await Course.findById(course_id);
     if (!course) {
       throw new NotFoundErr("Course not found");
@@ -30,7 +43,8 @@ const writeLesson: RequestHandler = async (req, res, next) => {
       title,
       content,
       files: (req.files as any).map((f: any) => ({
-        path: f.path,
+        path: `/api/courses/${f.path}`,
+        filename: f.originalname,
         mime_type: f.mimetype,
       })),
     });

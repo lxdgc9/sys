@@ -38,11 +38,12 @@ const writeCourse: RequestHandler = async (req, res, next) => {
     const nCourse = new Course({
       title,
       content,
-      author: req.user?.id,
+      author: user,
       is_publish,
       classes: class_ids,
     });
     await nCourse.save();
+    await nCourse.populate("classes", "name");
     res.status(201).json(nCourse);
 
     await Promise.allSettled([
@@ -61,6 +62,7 @@ const writeCourse: RequestHandler = async (req, res, next) => {
             courses: {
               course: nCourse,
             },
+            created_courses: nCourse,
           },
         }
       ),

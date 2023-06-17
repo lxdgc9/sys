@@ -4,6 +4,7 @@ import { READ_USER } from "@lxdgc9/pkg/dist/rules/manage";
 import uploader from "../helpers/upload";
 import writeLesson from "../handlers/lesson/write";
 import deleteLessons from "../handlers/lesson/delete-many";
+import { body } from "express-validator";
 
 const r = Router();
 
@@ -11,7 +12,23 @@ r.route("/")
   .post(
     guard(READ_USER),
     uploader("lessons").array("files"),
-    validator(),
+    validator(
+      body("course_id")
+        .notEmpty()
+        .withMessage("Not empty")
+        .isMongoId()
+        .withMessage("Must be mongoId"),
+      body("title")
+        .notEmpty()
+        .withMessage("Not empty")
+        .isString()
+        .withMessage("Must be string"),
+      body("content")
+        .notEmpty()
+        .withMessage("Not empty")
+        .isString()
+        .withMessage("Must be string")
+    ),
     writeLesson
   )
   .get(guard(READ_USER), validator());

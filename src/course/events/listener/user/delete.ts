@@ -8,8 +8,8 @@ export class DeleteUserListener extends Listener<DeleteUser> {
   subject: Subject.DELETE_USER = Subject.DELETE_USER;
   qGroup = qGroup;
 
-  async onMsg(id: DeleteUser["data"], msg: Message) {
-    await User.findOneAndDelete({ user_id: id });
+  onMsg(id: DeleteUser["data"], msg: Message) {
+    User.findOneAndDelete({ user_id: id });
 
     msg.ack();
   }

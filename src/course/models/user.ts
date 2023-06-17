@@ -9,6 +9,7 @@ interface IUser {
     course: Types.ObjectId;
     process: number;
   }[];
+  created_courses: Types.ObjectId[];
 }
 
 const schema = new Schema<IUser>(
@@ -45,6 +46,12 @@ const schema = new Schema<IUser>(
           min: 0,
           default: 0,
         },
+      },
+    ],
+    created_courses: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "course",
       },
     ],
   },

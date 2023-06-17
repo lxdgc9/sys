@@ -8,8 +8,8 @@ export class DeleteManyUserListener extends Listener<DeleteManyUser> {
   subject: Subject.DELETE_MANY_USER = Subject.DELETE_MANY_USER;
   qGroup = qGroup;
 
-  async onMsg(ids: DeleteManyUser["data"], msg: Message) {
-    await User.deleteMany({
+  onMsg(ids: DeleteManyUser["data"], msg: Message) {
+    User.deleteMany({
       user_id: { $in: ids },
     });
 
