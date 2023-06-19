@@ -11,7 +11,7 @@ const deleteCatalogs: RequestHandler = async (req, res, next) => {
   try {
     const catalogs = await Catalog.find({ _id: { $in: ids } });
     if (catalogs.length < ids.length) {
-      throw new BadReqErr("Invalid ids");
+      throw new BadReqErr("Invalid request");
     }
     if (catalogs.some((el) => el.rules.length > 0)) {
       throw new BadReqErr("Found dependent");
