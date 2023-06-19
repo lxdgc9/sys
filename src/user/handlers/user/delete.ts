@@ -1,11 +1,11 @@
 import { RequestHandler } from "express";
 import { NotFoundErr } from "@lxdgc9/pkg/dist/err";
-import nats from "../../nats";
-import { LogPublisher } from "../../events/publisher/log";
-import { DeleteUserPublisher } from "../../events/publisher/user/delete";
 import { User } from "../../models/user";
+import { DeleteUserPublisher } from "../../events/publisher/user/delete";
+import { LogPublisher } from "../../events/publisher/log";
+import nats from "../../nats";
 
-const delUser: RequestHandler = async (req, res, next) => {
+const deleteUser: RequestHandler = async (req, res, next) => {
   try {
     const user = await User.findByIdAndDelete(req.params.id)
       .lean()
@@ -17,9 +17,9 @@ const delUser: RequestHandler = async (req, res, next) => {
         },
       });
     if (!user) {
-      throw new NotFoundErr("Không tìm thấy người dùng");
+      throw new NotFoundErr("User not found");
     }
-    res.json({ msg: "Xóa thành công" });
+    res.sendStatus(204);
 
     await Promise.allSettled([
       new DeleteUserPublisher(nats.cli).publish(user._id),
@@ -35,4 +35,4 @@ const delUser: RequestHandler = async (req, res, next) => {
   }
 };
 
-export default delUser;
+export default deleteUser;

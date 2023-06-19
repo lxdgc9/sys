@@ -1,8 +1,8 @@
 import { RequestHandler } from "express";
 import { BadReqErr, NotFoundErr } from "@lxdgc9/pkg/dist/err";
-import nats from "../../nats";
-import { LogPublisher } from "../../events/publisher/log";
 import { Catalog } from "../../models/rule-catalog";
+import { LogPublisher } from "../../events/publisher/log";
+import nats from "../../nats";
 
 const deleteCatalog: RequestHandler = async (req, res, next) => {
   try {

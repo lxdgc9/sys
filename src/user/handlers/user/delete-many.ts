@@ -1,10 +1,10 @@
 import { RequestHandler } from "express";
 import { Types } from "mongoose";
 import { BadReqErr } from "@lxdgc9/pkg/dist/err";
-import nats from "../../nats";
-import { LogPublisher } from "../../events/publisher/log";
-import { DeleteManyUserPublisher } from "../../events/publisher/user/delete-many";
 import { User } from "../../models/user";
+import { DeleteManyUserPublisher } from "../../events/publisher/user/delete-many";
+import { LogPublisher } from "../../events/publisher/log";
+import nats from "../../nats";
 
 export const deleteUsers: RequestHandler = async (req, res, next) => {
   const ids: Types.ObjectId[] = req.body;

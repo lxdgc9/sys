@@ -1,4 +1,5 @@
 import express from "express";
+import cors from "cors";
 import compression from "compression";
 import { errHandler } from "@lxdgc9/pkg/dist/handlers";
 import school from "./routes/school";
@@ -10,6 +11,7 @@ import user from "./routes/user";
 
 const app = express();
 
+app.use(cors());
 app.use(compression());
 app.use(express.json());
 

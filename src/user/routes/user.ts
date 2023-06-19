@@ -13,7 +13,7 @@ import writeUser from "../handlers/user/write";
 import modifyUser from "../handlers/user/modify";
 import writeUsers from "../handlers/user/write-many";
 import deleteUsers from "../handlers/user/delete-many";
-import delUser from "../handlers/user/delete";
+import deleteUser from "../handlers/user/delete";
 import readUsers from "../handlers/user/read-many";
 import login from "../handlers/auth/login";
 import refreshToken from "../handlers/auth/refresh-token";
@@ -197,7 +197,7 @@ r.route("/:id")
   .delete(
     guard(DELETE_USER),
     validator(param("id").isMongoId().withMessage("Must be mongoId")),
-    delUser
+    deleteUser
   );
 
 r.post(

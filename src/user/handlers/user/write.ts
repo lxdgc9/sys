@@ -1,12 +1,12 @@
 import { RequestHandler } from "express";
 import { Types } from "mongoose";
 import { BadReqErr, ConflictErr, NotFoundErr } from "@lxdgc9/pkg/dist/err";
-import nats from "../../nats";
-import { LogPublisher } from "../../events/publisher/log";
-import { InsertUserPublisher } from "../../events/publisher/user/insert";
 import { Role } from "../../models/role";
 import { User } from "../../models/user";
 import { Rule } from "../../models/rule";
+import { InsertUserPublisher } from "../../events/publisher/user/insert";
+import { LogPublisher } from "../../events/publisher/log";
+import nats from "../../nats";
 
 const writeUser: RequestHandler = async (req, res, next) => {
   const {

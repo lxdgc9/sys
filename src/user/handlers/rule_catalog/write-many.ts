@@ -1,7 +1,7 @@
 import { RequestHandler } from "express";
-import nats from "../../nats";
-import { LogPublisher } from "../../events/publisher/log";
 import { Catalog } from "../../models/rule-catalog";
+import { LogPublisher } from "../../events/publisher/log";
+import nats from "../../nats";
 
 const writeCatalogs: RequestHandler = async (req, res, next) => {
   const catalogs: { name: string }[] = req.body;

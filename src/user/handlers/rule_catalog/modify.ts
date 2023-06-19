@@ -16,7 +16,7 @@ const modifyCatalog: RequestHandler = async (req, res, next) => {
       { new: true }
     )
       .lean()
-      .populate("rules");
+      .populate("rules", "-catalog");
     if (!catalog) {
       throw new NotFoundErr("Catalog not found");
     }

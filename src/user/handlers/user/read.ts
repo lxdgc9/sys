@@ -18,7 +18,7 @@ const readUser: RequestHandler = async (req, res, next) => {
       },
     ]);
     if (!user) {
-      throw new NotFoundErr("Không tìm thấy người dùng");
+      throw new NotFoundErr("User not found");
     }
 
     res.json(user);

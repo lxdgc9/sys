@@ -1,9 +1,9 @@
 import { RequestHandler } from "express";
 import bcrypt from "bcryptjs";
 import { BadReqErr, NotFoundErr } from "@lxdgc9/pkg/dist/err";
-import nats from "../../nats";
-import { LogPublisher } from "../../events/publisher/log";
 import { User } from "../../models/user";
+import { LogPublisher } from "../../events/publisher/log";
+import nats from "../../nats";
 
 const modifyPassword: RequestHandler = async (req, res, next) => {
   const {

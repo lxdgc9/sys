@@ -1,10 +1,10 @@
 import { RequestHandler } from "express";
 import { Types } from "mongoose";
 import { ConflictErr, NotFoundErr } from "@lxdgc9/pkg/dist/err";
-import nats from "../../nats";
-import { LogPublisher } from "../../events/publisher/log";
 import { Rule } from "../../models/rule";
 import { Catalog } from "../../models/rule-catalog";
+import { LogPublisher } from "../../events/publisher/log";
+import nats from "../../nats";
 
 const modifyRule: RequestHandler = async (req, res, next) => {
   const {
