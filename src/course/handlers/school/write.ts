@@ -32,7 +32,7 @@ const writeSchool: RequestHandler = async (req, res, next) => {
   } catch (e) {
     next(e);
     if (req.file) {
-      fs.rmSync(req.file.path);
+      fs.rmSync(req.file.path, { force: true });
     }
   }
 };

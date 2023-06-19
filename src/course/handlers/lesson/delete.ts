@@ -15,7 +15,7 @@ const delLesson: RequestHandler = async (req, res, next) => {
     res.sendStatus(204);
 
     lesson!.files.forEach((el) => {
-      fs.rmSync(el.path.replace("/api/courses", ""));
+      fs.rmSync(el.path.replace("/api/courses", ""), { force: true });
     });
 
     await Course.findByIdAndUpdate(lesson!.course_id, {

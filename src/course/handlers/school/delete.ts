@@ -17,7 +17,7 @@ const deleteSchool: RequestHandler = async (req, res, next) => {
     res.sendStatus(204);
 
     if (school.logo) {
-      fs.rmSync(school.logo.replace("/api/courses/", ""));
+      fs.rmSync(school.logo.replace("/api/courses/", ""), { force: true });
     }
   } catch (e) {
     next(e);

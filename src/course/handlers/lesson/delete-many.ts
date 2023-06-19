@@ -21,7 +21,7 @@ const deleteLessons: RequestHandler = async (req, res, next) => {
 
     lessons.forEach((el) => {
       el.files.forEach((el) => {
-        fs.rmSync(el.path.replace("/api/courses", ""));
+        fs.rmSync(el.path.replace("/api/courses", ""), { force: true });
       });
     });
 

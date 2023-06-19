@@ -1,11 +1,12 @@
+import fs from "fs";
 import { RequestHandler } from "express";
-import { User } from "../../models/user";
 import { BadReqErr, UnauthorizedErr } from "@lxdgc9/pkg/dist/err";
+import { User } from "../../models/user";
 
 const uploadAvt: RequestHandler = async (req, res, next) => {
   try {
     if (!req.file) {
-      throw new BadReqErr("No avatar");
+      throw new BadReqErr("Missing file");
     }
 
     const user = await User.findById(req.user?.id);
@@ -13,16 +14,19 @@ const uploadAvt: RequestHandler = async (req, res, next) => {
       throw new UnauthorizedErr("Invalid token");
     }
 
-    const attr = user.attrs.find((el) => el.k === "avatar");
-    if (!attr) {
+    const avtUrl = user.attrs.find((el) => el.k === "avatar");
+    if (avtUrl) {
+      fs.rmSync(avtUrl.v.replace("/api/users/", ""), { force: true });
+      avtUrl.v = `/api/users/${req.file.path}`;
+    } else {
       user.attrs.push({
         k: "avatar",
-        v: `/api/users/${req.path}`,
+        v: `/api/users/${req.file.path}`,
       });
-    } else {
-      attr.v = `/api/users/${req.file.path}`;
     }
-    user.save();
+    await user.updateOne({
+      $set: { attrs: user.attrs },
+    });
 
     res.sendStatus(200);
   } catch (e) {

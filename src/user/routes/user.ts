@@ -17,10 +17,10 @@ import deleteUsers from "../handlers/user/delete-many";
 import deleteUser from "../handlers/user/delete";
 import readUsers from "../handlers/user/read-many";
 import me from "../handlers/user/me";
+import uploadAvt from "../handlers/user/upload-avt";
 import login from "../handlers/auth/login";
 import refreshToken from "../handlers/auth/refresh-token";
 import readUser from "../handlers/user/read";
-import uploadAvt from "../handlers/user/upload-avt";
 import uploader from "../helpers/upload";
 
 const r = Router();
