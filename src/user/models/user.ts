@@ -58,7 +58,7 @@ const schema = new Schema<IUser>(
         );
 
         delete ret.attrs;
-        delete ret.passwd;
+        delete ret.password;
       },
     },
   }

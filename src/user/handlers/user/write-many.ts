@@ -98,7 +98,13 @@ const writeUsers: RequestHandler = async (req, res, next) => {
       spec_rules: { code: string }[];
       is_active: boolean;
     }>(nUsers, [
-      { path: "role", select: "-rules" },
+      {
+        path: "role",
+        populate: {
+          path: "rules",
+          select: "-catalog",
+        },
+      },
       { path: "spec_rules", select: "-catalog" },
     ]);
     res.status(201).json(nUsers);
