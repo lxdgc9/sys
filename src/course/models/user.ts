@@ -92,6 +92,8 @@ const schema = new Schema<IUser>(
         ret.attrs.forEach(
           ({ k, v }: { k: string; v: string }) => (ret.prof[k] = v)
         );
+
+        delete ret.attrs;
       },
     },
   }
