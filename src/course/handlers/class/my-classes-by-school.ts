@@ -5,7 +5,7 @@ import { School } from "../../models/school";
 
 const readMyClassesBySchool: RequestHandler = async (req, res, next) => {
   try {
-    const user = await User.findOne({ user_id: req.user?.id }).lean();
+    const user = await User.findOne({ user_id: req.user?.id });
     if (!user) {
       throw new UnauthorizedErr("Invalid token");
     }
@@ -14,9 +14,9 @@ const readMyClassesBySchool: RequestHandler = async (req, res, next) => {
       throw new BadReqErr("Invalid school");
     }
 
-    const school = await School.findById(req.params.school_id)
-      .lean()
-      .populate("classes");
+    const school = await School.findById(req.params.school_id).populate(
+      "classes"
+    );
     if (!school) {
       throw new NotFoundErr("School not found");
     }

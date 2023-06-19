@@ -21,9 +21,9 @@ const writeLesson: RequestHandler = async (req, res, next) => {
       throw new BadReqErr("Require files");
     }
 
-    const user = await User.findOne({ user_id: req.user?.id })
-      .lean()
-      .select("courses");
+    const user = await User.findOne({ user_id: req.user?.id }).select(
+      "courses"
+    );
     if (!user) {
       throw new BadReqErr("Invalid token");
     }

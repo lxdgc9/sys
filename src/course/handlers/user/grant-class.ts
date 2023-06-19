@@ -17,7 +17,6 @@ const grantUserToClass: RequestHandler = async (req, res, next) => {
     const [hasUser, _class] = await Promise.all([
       User.exists({ _id: user_id }),
       Class.findById(class_id)
-        .lean()
         .select("schools")
         .populate<{ school: { members: Types.ObjectId[] } }>(
           "school",

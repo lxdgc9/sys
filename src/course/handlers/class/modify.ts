@@ -38,18 +38,16 @@ const modifyClass: RequestHandler = async (req, res, next) => {
         },
       },
       { new: true }
-    )
-      .lean()
-      .populate([
-        {
-          path: "school",
-          select: "-classses",
-        },
-        {
-          path: "members",
-          select: "-classses",
-        },
-      ]);
+    ).populate([
+      {
+        path: "school",
+        select: "-classses",
+      },
+      {
+        path: "members",
+        select: "-classses",
+      },
+    ]);
     res.json(modClass);
 
     await Promise.allSettled([

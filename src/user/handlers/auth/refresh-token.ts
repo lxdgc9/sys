@@ -13,21 +13,19 @@ const refreshToken: RequestHandler = async (req, res, next) => {
       process.env.REFRESH_TOKEN_SECRET as Secret
     ) as JwtPayload;
 
-    const user = await User.findById(id)
-      .lean()
-      .populate<{
-        role: {
-          rules: {
-            code: string;
-          }[];
-        };
-      }>({
-        path: "role",
-        populate: {
-          path: "rules",
-          select: "-catalog",
-        },
-      });
+    const user = await User.findById(id).populate<{
+      role: {
+        rules: {
+          code: string;
+        }[];
+      };
+    }>({
+      path: "role",
+      populate: {
+        path: "rules",
+        select: "-catalog",
+      },
+    });
     if (!user) {
       throw new UnauthorizedErr("Invalid token");
     }

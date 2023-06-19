@@ -5,7 +5,6 @@ import { BadReqErr } from "@lxdgc9/pkg/dist/err";
 const readCourses: RequestHandler = async (req, res, next) => {
   try {
     const user = await User.findOne({ user_id: req.user?.id })
-      .lean()
       .select("courses")
       .populate({
         path: "courses.course",

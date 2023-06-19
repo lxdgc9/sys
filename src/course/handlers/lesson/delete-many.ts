@@ -9,7 +9,7 @@ const deleteLessons: RequestHandler = async (req, res, next) => {
   const ids: Types.ObjectId[] = req.body;
 
   try {
-    const lessons = await Lesson.find({ _id: { $in: ids } }).lean();
+    const lessons = await Lesson.find({ _id: { $in: ids } });
     if (lessons.length < ids.length) {
       throw new BadReqErr("Invalids ids");
     }

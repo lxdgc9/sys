@@ -46,9 +46,7 @@ const modifyRole: RequestHandler = async (req, res, next) => {
             },
       },
       { new: true }
-    )
-      .lean()
-      .populate("rules", "-catalog");
+    ).populate("rules", "-catalog");
     res.json(modRole);
 
     await new LogPublisher(nats.cli).publish({

@@ -11,7 +11,7 @@ const delLesson: RequestHandler = async (req, res, next) => {
       throw new BadReqErr("Lesson not found");
     }
 
-    const lesson = await Lesson.findByIdAndDelete(req.params.id).lean();
+    const lesson = await Lesson.findByIdAndDelete(req.params.id);
     res.sendStatus(204);
 
     lesson!.files.forEach((el) => {

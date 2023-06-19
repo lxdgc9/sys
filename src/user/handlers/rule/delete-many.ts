@@ -12,7 +12,7 @@ const deleteRules: RequestHandler = async (req, res, next) => {
 
   try {
     const [rules, hasDepend] = await Promise.all([
-      Rule.find({ _id: { $in: ids } }).lean(),
+      Rule.find({ _id: { $in: ids } }),
       Role.exists({ rules: { $in: ids } }),
     ]);
     if (rules.length < ids.length) {

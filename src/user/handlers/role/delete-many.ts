@@ -11,9 +11,7 @@ const deleteRoles: RequestHandler = async (req, res, next) => {
 
   try {
     const [roles, isDepend] = await Promise.all([
-      Role.find({ _id: { $in: ids } })
-        .lean()
-        .populate("rules", "-catalog"),
+      Role.find({ _id: { $in: ids } }).populate("rules", "-catalog"),
       User.exists({ role: { $in: ids } }),
     ]);
     if (roles.length < ids.length) {

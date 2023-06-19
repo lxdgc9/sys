@@ -4,7 +4,7 @@ import { Course } from "../../models/course";
 
 const readCourse: RequestHandler = async (req, res, next) => {
   try {
-    const course = await Course.findById(req.params.id).lean();
+    const course = await Course.findById(req.params.id);
     if (!course) {
       throw new BadReqErr("Course not found");
     }

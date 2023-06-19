@@ -19,9 +19,9 @@ const writeCourse: RequestHandler = async (req, res, next) => {
   } = req.body;
 
   try {
-    const user = await User.findOne({ user_id: req.user?.id })
-      .lean()
-      .select("classes");
+    const user = await User.findOne({ user_id: req.user?.id }).select(
+      "classes"
+    );
     if (!user) {
       throw new BadReqErr("Invalid token");
     }
@@ -30,9 +30,9 @@ const writeCourse: RequestHandler = async (req, res, next) => {
       throw new BadReqErr("Invalid class_ids");
     }
 
-    const _classes = await Class.find({ _id: { $in: class_ids } })
-      .lean()
-      .select("members");
+    const _classes = await Class.find({ _id: { $in: class_ids } }).select(
+      "members"
+    );
     const allMember = [...new Set(_classes.map((el) => el.members).flat())];
 
     const nCourse = new Course({

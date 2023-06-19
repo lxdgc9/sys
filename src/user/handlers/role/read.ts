@@ -4,9 +4,10 @@ import { Role } from "../../models/role";
 
 const readRole: RequestHandler = async (req, res, next) => {
   try {
-    const role = await Role.findById(req.params.id)
-      .lean()
-      .populate("rules", "-catalog");
+    const role = await Role.findById(req.params.id).populate(
+      "rules",
+      "-catalog"
+    );
     if (!role) {
       throw new NotFoundErr("Role not found");
     }

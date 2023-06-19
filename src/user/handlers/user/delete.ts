@@ -7,15 +7,13 @@ import nats from "../../nats";
 
 const deleteUser: RequestHandler = async (req, res, next) => {
   try {
-    const user = await User.findByIdAndDelete(req.params.id)
-      .lean()
-      .populate({
-        path: "role",
-        populate: {
-          path: "rules",
-          select: "-catalog",
-        },
-      });
+    const user = await User.findByIdAndDelete(req.params.id).populate({
+      path: "role",
+      populate: {
+        path: "rules",
+        select: "-catalog",
+      },
+    });
     if (!user) {
       throw new NotFoundErr("User not found");
     }

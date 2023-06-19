@@ -4,9 +4,9 @@ import { NotFoundErr } from "@lxdgc9/pkg/dist/err";
 
 const readLessonsByCourse: RequestHandler = async (req, res, next) => {
   try {
-    const course = await Course.findById(req.params.couse_id)
-      .lean()
-      .populate("lessons");
+    const course = await Course.findById(req.params.couse_id).populate(
+      "lessons"
+    );
     if (!course) {
       throw new NotFoundErr("Course not found");
     }

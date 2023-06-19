@@ -4,7 +4,6 @@ import { Class } from "../../models/class";
 const readClasses: RequestHandler = async (_req, res, next) => {
   try {
     const classes = await Class.find()
-      .lean()
       .select("-members -courses")
       .populate("school", "-classes -members");
 

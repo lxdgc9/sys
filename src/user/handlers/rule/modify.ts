@@ -18,7 +18,7 @@ const modifyRule: RequestHandler = async (req, res, next) => {
   } = req.body;
 
   try {
-    const rule = await Rule.findById({ _id: req.params.id }).lean();
+    const rule = await Rule.findById({ _id: req.params.id });
     if (!rule) {
       throw new NotFoundErr("Rule not found");
     }
@@ -52,9 +52,7 @@ const modifyRule: RequestHandler = async (req, res, next) => {
         },
       },
       { new: true }
-    )
-      .lean()
-      .populate("catalog", "-rules");
+    ).populate("catalog", "-rules");
     res.json(modRule);
 
     await Promise.allSettled([
