@@ -57,10 +57,10 @@ const writeUser: RequestHandler = async (req, res, next) => {
       Rule.countDocuments({ _id: { $in: spec_rule_ids } }),
     ]);
     if (isDupl) {
-      throw new ConflictErr("Duplicate uniq fields: username, phone or email");
+      throw new ConflictErr("Duplicate username, phone or email");
     }
     if (!hasRole) {
-      throw new NotFoundErr("Role not found");
+      throw new NotFoundErr("role_id not found");
     }
     if (spec_rule_ids && numRules < spec_rule_ids.length) {
       throw new BadReqErr("Invalid spec_rule_ids");
@@ -78,17 +78,41 @@ const writeUser: RequestHandler = async (req, res, next) => {
     });
     await nUser.save();
 
-    await User.populate(nUser, {
-      path: "role",
-      populate: {
-        path: "rules",
+    const _user = await User.populate<{
+      role: {
+        name: string;
+        rules: { code: string }[];
+      };
+      spec_rules: { code: string }[];
+    }>(nUser, [
+      {
+        path: "role",
+        populate: {
+          path: "rules",
+          select: "-catalog",
+        },
+      },
+      {
+        path: "spec_rules",
         select: "-catalog",
       },
-    });
+    ]);
     res.status(201).json(nUser);
 
     await Promise.allSettled([
-      new InsertUserPublisher(nats.cli).publish(nUser),
+      new InsertUserPublisher(nats.cli).publish({
+        id: _user._id,
+        attrs: _user.attrs,
+        role: _user.role.name,
+        rules: [
+          ...new Set(
+            _user.role.rules
+              .map((el) => el.code)
+              .concat(_user.spec_rules.map((el) => el.code))
+          ),
+        ],
+        is_active: _user.is_active,
+      }),
       new LogPublisher(nats.cli).publish({
         user_id: req.user?.id,
         model: User.modelName,

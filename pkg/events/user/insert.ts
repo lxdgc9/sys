@@ -1,7 +1,16 @@
-import { Document } from "mongoose";
+import { Types } from "mongoose";
 import { Subject } from "../subject";
 
 export interface InsertUser {
   subject: Subject.INSERT_USER;
-  data: Document;
+  data: {
+    id: Types.ObjectId;
+    attrs: {
+      k: string;
+      v: string;
+    }[];
+    role: string;
+    rules: string[];
+    is_active: boolean;
+  };
 }

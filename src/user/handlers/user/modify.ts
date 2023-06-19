@@ -104,7 +104,7 @@ const modifyUser: RequestHandler = async (req, res, next) => {
     res.json(modUser);
 
     await Promise.allSettled([
-      new UpdateUserPublisher(nats.cli).publish(modUser!),
+      // new UpdateUserPublisher(nats.cli).publish(modUser!),
       new LogPublisher(nats.cli).publish({
         user_id: req.user?.id,
         model: User.modelName,

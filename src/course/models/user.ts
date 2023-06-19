@@ -2,7 +2,13 @@ import mongoose, { Schema, Types } from "mongoose";
 
 interface IUser {
   user_id: Types.ObjectId;
-  data: any;
+  attrs: {
+    k: string;
+    v: string;
+  }[];
+  role: string;
+  rules: string[];
+  is_active: boolean;
   schools: Types.ObjectId[];
   classes: Types.ObjectId[];
   courses: {
@@ -19,8 +25,27 @@ const schema = new Schema<IUser>(
       required: true,
       unique: true,
     },
-    data: {
-      type: Schema.Types.Mixed,
+    attrs: [
+      {
+        k: {
+          type: String,
+        },
+        v: {
+          type: String,
+        },
+      },
+    ],
+    role: {
+      type: String,
+      required: true,
+    },
+    rules: [
+      {
+        type: String,
+      },
+    ],
+    is_active: {
+      type: Boolean,
       required: true,
     },
     schools: [
@@ -59,6 +84,18 @@ const schema = new Schema<IUser>(
     timestamps: {
       createdAt: "created_at",
       updatedAt: "updated_at",
+    },
+    toJSON: {
+      virtuals: true,
+      transform(_doc, ret, _opts) {
+        ret.prof = {};
+        ret.attrs.forEach(
+          ({ k, v }: { k: string; v: string }) => (ret.prof[k] = v)
+        );
+
+        delete ret.attrs;
+        delete ret.passwd;
+      },
     },
   }
 );

@@ -49,6 +49,18 @@ const schema = new Schema<IUser>(
       createdAt: "created_at",
       updatedAt: "updated_at",
     },
+    toJSON: {
+      virtuals: true,
+      transform(_doc, ret, _opts) {
+        ret.prof = {};
+        ret.attrs.forEach(
+          ({ k, v }: { k: string; v: string }) => (ret.prof[k] = v)
+        );
+
+        delete ret.attrs;
+        delete ret.passwd;
+      },
+    },
   }
 );
 

@@ -30,7 +30,7 @@ const modifyAccess: RequestHandler = async (req, res, next) => {
     res.json(user);
 
     await Promise.allSettled([
-      new UpdateUserPublisher(nats.cli).publish(user),
+      // new UpdateUserPublisher(nats.cli).publish(user),
       new LogPublisher(nats.cli).publish({
         user_id: req.user?.id,
         model: User.modelName,

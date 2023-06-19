@@ -10,9 +10,12 @@ export class InsertManyUserListener extends Listener<InsertManyUser> {
 
   onMsg(data: InsertManyUser["data"], msg: Message) {
     User.insertMany(
-      data.map((u) => ({
-        user_id: u._id,
-        data: u,
+      data.map(({ id, attrs, role, rules, is_active }) => ({
+        user_id: id,
+        attrs,
+        role,
+        rules,
+        is_active,
       }))
     );
 

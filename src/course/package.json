@@ -8,7 +8,7 @@
     "dev": "nodemon index.ts"
   },
   "dependencies": {
-    "@lxdgc9/pkg": "^1.0.16",
+    "@lxdgc9/pkg": "^1.0.19",
     "compression": "^1.7.4",
     "cors": "^2.8.5",
     "express": "^4.18.2",

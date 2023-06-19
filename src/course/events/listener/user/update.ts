@@ -9,14 +9,14 @@ export class UpdateUserListener extends Listener<UpdateUser> {
   qGroup = qGroup;
 
   onMsg(data: UpdateUser["data"], msg: Message) {
-    User.findOneAndUpdate(
-      { user_id: data._id },
-      {
-        $set: {
-          data,
-        },
-      }
-    );
+    const { id, attrs, role } = data;
+    // User.findOneAndUpdate(
+    //   {
+    //     $set: {
+    //       data,
+    //     },
+    //   }
+    // );
 
     msg.ack();
   }
