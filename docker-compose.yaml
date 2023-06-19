@@ -76,8 +76,6 @@ services:
       - NATS_CLIENT_ID=nats-cli_user
       - NATS_CLUSTER_ID=nats_clus
       - REDIS_URI=redis://redis:6379
-    volumes:
-      - ./src/user:/usr/app:rw
     networks:
       - bridge
     depends_on:
@@ -102,7 +100,7 @@ services:
       - NATS_CLIENT_ID=nats-cli_course
       - NATS_CLUSTER_ID=nats_clus
     volumes:
-      - ./src/course:/usr/app:rw
+      - ./src/uploads:/usr/uploads:rw
     networks:
       - bridge
     depends_on:
@@ -125,8 +123,6 @@ services:
       - NATS_URL=http://nats:4222
       - NATS_CLIENT_ID=nats-cli_log
       - NATS_CLUSTER_ID=nats_clus
-    volumes:
-      - ./src/log:/usr/app:rw
     networks:
       - bridge
     depends_on:
