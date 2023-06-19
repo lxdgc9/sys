@@ -14,11 +14,7 @@ const modifyUser: RequestHandler = async (req, res, next) => {
     role_id,
     spec_rule_ids,
   }: {
-    prof?: object & {
-      username: string;
-      phone: string;
-      email: string;
-    };
+    prof?: object & { username: string; phone: string; email: string };
     role_id?: Types.ObjectId;
     spec_rule_ids?: Types.ObjectId[];
   } = req.body;
@@ -26,13 +22,9 @@ const modifyUser: RequestHandler = async (req, res, next) => {
   const specRuleIds = [...new Set(spec_rule_ids)];
 
   try {
-    if (!prof && !role_id && !spec_rule_ids) {
-      throw new BadReqErr("Không có trường cần cập nhật");
-    }
-
     const hasUser = await User.exists({ _id: req.params.id });
     if (!hasUser) {
-      throw new NotFoundErr("Không tìm thấy user");
+      throw new NotFoundErr("User not found");
     }
 
     const [dupl, hasRole, numRules] = await Promise.all([
@@ -77,7 +69,7 @@ const modifyUser: RequestHandler = async (req, res, next) => {
       throw new BadReqErr("Role not found");
     }
     if (spec_rule_ids && numRules < specRuleIds.length) {
-      throw new BadReqErr("Danh sách quyền hạn không hợp lệ");
+      throw new BadReqErr("Invalid spec_rule_ids");
     }
 
     const modUser = await User.findByIdAndUpdate(
@@ -93,7 +85,9 @@ const modifyUser: RequestHandler = async (req, res, next) => {
         },
       },
       { new: true }
-    ).populate({
+    ).populate<{
+      role: { name: string };
+    }>({
       path: "role",
       populate: {
         path: "rules",
@@ -104,7 +98,12 @@ const modifyUser: RequestHandler = async (req, res, next) => {
     res.json(modUser);
 
     await Promise.allSettled([
-      // new UpdateUserPublisher(nats.cli).publish(modUser!),
+      new UpdateUserPublisher(nats.cli).publish({
+        id: modUser!._id,
+        attrs: modUser!.attrs,
+        role: modUser!.role.name,
+        is_active: modUser!.is_active,
+      }),
       new LogPublisher(nats.cli).publish({
         user_id: req.user?.id,
         model: User.modelName,

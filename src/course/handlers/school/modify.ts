@@ -1,5 +1,5 @@
 import { RequestHandler } from "express";
-import { BadReqErr, ConflictErr, NotFoundErr } from "@lxdgc9/pkg/dist/err";
+import { ConflictErr, NotFoundErr } from "@lxdgc9/pkg/dist/err";
 import { School } from "../../models/school";
 
 const modifySchool: RequestHandler = async (req, res, next) => {
@@ -14,10 +14,6 @@ const modifySchool: RequestHandler = async (req, res, next) => {
   } = req.body;
 
   try {
-    if (!code && !name && !info && !req.file) {
-      throw new BadReqErr("Thiếu trường để  cập nhật");
-    }
-
     const [hasSchool, hasCode] = await Promise.all([
       School.exists({ _id: req.params.id }),
       School.exists({
@@ -30,10 +26,10 @@ const modifySchool: RequestHandler = async (req, res, next) => {
       }),
     ]);
     if (!hasSchool) {
-      throw new NotFoundErr("Trường học không tồn tại");
+      throw new NotFoundErr("School not found");
     }
     if (code && hasCode) {
-      throw new ConflictErr("Mã trường đã tồn tại");
+      throw new ConflictErr("Duplicate code");
     }
 
     let logo = undefined;
@@ -47,9 +43,7 @@ const modifySchool: RequestHandler = async (req, res, next) => {
         $set: { code, name, info, logo },
       },
       { new: true }
-    )
-      .lean()
-      .populate("classes", "-school");
+    ).populate("classes", "-school");
     res.json(school);
   } catch (e) {
     next(e);

@@ -2,6 +2,7 @@ import { Router } from "express";
 import { body, param } from "express-validator";
 import { guard, validator } from "@lxdgc9/pkg/dist/handlers";
 import { ACCESS_COURSE } from "@lxdgc9/pkg/dist/rules/app";
+import { ALLOC_USER } from "@lxdgc9/pkg/dist/rules/course";
 import readUsers from "../handlers/user/read-many";
 import readUser from "../handlers/user/read";
 import allocUser from "../handlers/user/alloc";
@@ -14,7 +15,7 @@ const r = Router();
 r.route("/")
   .get(guard(ACCESS_COURSE), readUsers)
   .patch(
-    guard(),
+    guard(ALLOC_USER),
     validator(
       body("user_id")
         .notEmpty()
@@ -31,7 +32,7 @@ r.route("/")
   );
 
 r.route("/many").patch(
-  guard(ACCESS_COURSE),
+  guard(ALLOC_USER),
   validator(
     body("user_ids")
       .notEmpty()
@@ -50,13 +51,14 @@ r.route("/many").patch(
 
 r.get(
   "/:id",
+  guard(ACCESS_COURSE),
   validator(param("id").isMongoId().withMessage("Must be MongoId")),
   readUser
 );
 
 r.patch(
   "/alloc-to-class",
-  guard(),
+  guard(ALLOC_USER),
   validator(
     body("user_id")
       .notEmpty()
@@ -74,7 +76,7 @@ r.patch(
 
 r.patch(
   "/alloc-many-to-class",
-  guard(),
+  guard(ALLOC_USER),
   validator(
     body("user_ids")
       .notEmpty()

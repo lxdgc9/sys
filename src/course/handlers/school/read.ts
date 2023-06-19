@@ -4,12 +4,10 @@ import { School } from "../../models/school";
 
 const readSchool: RequestHandler = async (req, res, next) => {
   try {
-    const school = await School.findById(req.params.id)
-      .lean()
-      .populate([
-        { path: "classes", select: "name" },
-        { path: "members", select: "data" },
-      ]);
+    const school = await School.findById(req.params.id).populate([
+      { path: "classes", select: "name" },
+      { path: "members" },
+    ]);
     if (!school) {
       throw new NotFoundErr("School not found");
     }

@@ -9,13 +9,12 @@ export class InsertUserListener extends Listener<InsertUser> {
   qGroup = qGroup;
 
   onMsg(data: InsertUser["data"], msg: Message) {
-    const { id, attrs, role, rules, is_active } = data;
+    const { id, attrs, role, is_active } = data;
 
     const user = new User({
       user_id: id,
       attrs,
       role,
-      rules,
       is_active,
     });
     user.save();

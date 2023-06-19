@@ -81,9 +81,7 @@ const writeUser: RequestHandler = async (req, res, next) => {
     const _user = await User.populate<{
       role: {
         name: string;
-        rules: { code: string }[];
       };
-      spec_rules: { code: string }[];
     }>(nUser, [
       {
         path: "role",
@@ -104,13 +102,6 @@ const writeUser: RequestHandler = async (req, res, next) => {
         id: _user._id,
         attrs: _user.attrs,
         role: _user.role.name,
-        rules: [
-          ...new Set(
-            _user.role.rules
-              .map((el) => el.code)
-              .concat(_user.spec_rules.map((el) => el.code))
-          ),
-        ],
         is_active: _user.is_active,
       }),
       new LogPublisher(nats.cli).publish({

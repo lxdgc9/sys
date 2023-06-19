@@ -10,7 +10,6 @@ export interface InsertUser {
       v: string;
     }[];
     role: string;
-    rules: string[];
     is_active: boolean;
   };
 }

@@ -35,7 +35,7 @@ const writeUsers: RequestHandler = async (req, res, next) => {
       phones.length < users.length ||
       emails.length < users.length
     ) {
-      throw new ConflictErr("Duplicate uniq fields: username, phone or email");
+      throw new ConflictErr("Duplicate username, phone or email");
     }
 
     const [isDupl, numRoles] = await Promise.all([
@@ -93,10 +93,7 @@ const writeUsers: RequestHandler = async (req, res, next) => {
     const _users = await User.populate<{
       role: {
         name: string;
-        rules: { code: string }[];
       };
-      spec_rules: { code: string }[];
-      is_active: boolean;
     }>(nUsers, [
       {
         path: "role",
@@ -115,13 +112,6 @@ const writeUsers: RequestHandler = async (req, res, next) => {
           id: user._id,
           attrs: user.attrs,
           role: user.role.name,
-          rules: [
-            ...new Set(
-              user.role.rules
-                .map((el) => el.code)
-                .concat(user.spec_rules.map((el) => el.code))
-            ),
-          ],
           is_active: user.is_active,
         }))
       ),

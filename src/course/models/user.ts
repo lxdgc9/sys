@@ -7,7 +7,6 @@ interface IUser {
     v: string;
   }[];
   role: string;
-  rules: string[];
   is_active: boolean;
   schools: Types.ObjectId[];
   classes: Types.ObjectId[];
@@ -39,11 +38,6 @@ const schema = new Schema<IUser>(
       type: String,
       required: true,
     },
-    rules: [
-      {
-        type: String,
-      },
-    ],
     is_active: {
       type: Boolean,
       required: true,

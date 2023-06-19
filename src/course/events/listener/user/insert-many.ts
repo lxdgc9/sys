@@ -9,13 +9,11 @@ export class InsertManyUserListener extends Listener<InsertManyUser> {
   qGroup = qGroup;
 
   onMsg(data: InsertManyUser["data"], msg: Message) {
-    console.log(data);
     User.insertMany(
-      data.map(({ id, attrs, role, rules, is_active }) => ({
+      data.map(({ id, attrs, role, is_active }) => ({
         user_id: id,
         attrs,
         role,
-        rules,
         is_active,
       }))
     );

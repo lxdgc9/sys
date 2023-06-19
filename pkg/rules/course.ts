@@ -12,3 +12,5 @@ export const READ_COURSE = "read_course";
 export const WRITE_COURSE = "write_course";
 export const UPDATE_COURSE = "update_course";
 export const DELETE_COURSE = "delete_course";
+
+export const ALLOC_USER = "alloc_user";

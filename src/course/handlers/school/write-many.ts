@@ -26,7 +26,7 @@ const writeSchools: RequestHandler = async (req, res, next) => {
         code,
         name,
         info,
-        logo: "/api/courses/def-logo.jpg",
+        logo: "/api/courses/default-logo.jpg",
       }))
     );
     res.status(201).json(nSchools);
