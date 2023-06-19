@@ -22,7 +22,7 @@ r.route("/")
   .post(
     guard(WRITE_ROLE),
     validator(
-      body("name").notEmpty().withMessage("Not empty"),
+      body("name").notEmpty().withMessage("Not empty").trim().escape(),
       body("level").isInt({ min: 0 }).withMessage("Must be Int > 0"),
       body("rule_ids")
         .notEmpty()
@@ -50,13 +50,18 @@ r.route("/many")
         .notEmpty()
         .withMessage("Not empty")
         .isString()
-        .withMessage("Must be string"),
+        .withMessage("Must be string")
+        .trim()
+        .escape(),
       body("*.level")
         .notEmpty()
         .withMessage("Not empty")
         .isInt({ min: 0 })
         .withMessage("Must be Int > 0"),
-      body("*.rule_ids").isArray().withMessage("Must be array"),
+      body("*.rule_ids")
+        .isArray()
+        .withMessage("Must be array")
+        .customSanitizer((vals) => [...new Set(vals)]),
       body("*.rule_ids.*")
         .notEmpty()
         .withMessage("Not empty")
@@ -72,7 +77,8 @@ r.route("/many")
         .notEmpty()
         .withMessage("Not empty")
         .isArray({ min: 1 })
-        .withMessage("Should be at least 1 element"),
+        .withMessage("Should be at least 1 element")
+        .customSanitizer((vals) => [...new Set(vals)]),
       body("*").isMongoId().withMessage("Must be object")
     ),
     deleteRoles
@@ -91,7 +97,9 @@ r.route("/:id")
       body("name")
         .optional({ values: "undefined" })
         .isString()
-        .withMessage("Must be string"),
+        .withMessage("Must be string")
+        .trim()
+        .escape(),
       body("level")
         .optional({ values: "undefined" })
         .isInt({ min: 0 })
@@ -99,7 +107,8 @@ r.route("/:id")
       body("rule_ids")
         .optional({ values: "undefined" })
         .isArray()
-        .withMessage("Must be array"),
+        .withMessage("Must be array")
+        .customSanitizer((vals) => [...new Set(vals)]),
       body("rule_ids.*").isMongoId().withMessage("Must be mongoId")
     ),
     modifyRole

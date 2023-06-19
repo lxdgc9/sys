@@ -4,10 +4,9 @@ import { Rule } from "../../models/rule";
 
 const readRule: RequestHandler = async (req, res, next) => {
   try {
-    const rule = await Rule.findById(req.params.id).populate(
-      "catalog",
-      "-rules"
-    );
+    const rule = await Rule.findById(req.params.id)
+      .lean()
+      .populate("catalog", "-rules");
     if (!rule) {
       throw new NotFoundErr("Rule not found");
     }

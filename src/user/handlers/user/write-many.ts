@@ -102,7 +102,10 @@ const writeUsers: RequestHandler = async (req, res, next) => {
           select: "-catalog",
         },
       },
-      { path: "spec_rules", select: "-catalog" },
+      {
+        path: "spec_rules",
+        select: "-catalog",
+      },
     ]);
     res.status(201).json(nUsers);
 

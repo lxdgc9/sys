@@ -8,7 +8,7 @@ export class InsertUserListener extends Listener<InsertUser> {
   subject: Subject.INSERT_USER = Subject.INSERT_USER;
   qGroup = qGroup;
 
-  onMsg(data: InsertUser["data"], msg: Message) {
+  async onMsg(data: InsertUser["data"], msg: Message) {
     const { id, attrs, role, is_active } = data;
 
     const user = new User({
@@ -17,7 +17,7 @@ export class InsertUserListener extends Listener<InsertUser> {
       role,
       is_active,
     });
-    user.save();
+    await user.save();
 
     msg.ack();
   }

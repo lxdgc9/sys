@@ -16,7 +16,7 @@ const deleteRules: RequestHandler = async (req, res, next) => {
       Role.exists({ rules: { $in: ids } }),
     ]);
     if (rules.length < ids.length) {
-      throw new BadReqErr("Invalid array");
+      throw new BadReqErr("Invalid body");
     }
     if (hasDepend) {
       throw new BadReqErr("Found dependent");

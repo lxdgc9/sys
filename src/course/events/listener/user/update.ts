@@ -8,9 +8,10 @@ export class UpdateUserListener extends Listener<UpdateUser> {
   subject: Subject.UPDATE_USER = Subject.UPDATE_USER;
   qGroup = qGroup;
 
-  onMsg(data: UpdateUser["data"], msg: Message) {
+  async onMsg(data: UpdateUser["data"], msg: Message) {
     const { id, attrs, role, is_active } = data;
-    User.findOneAndUpdate(
+
+    await User.updateOne(
       { user_id: id },
       {
         $set: {

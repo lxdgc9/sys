@@ -4,10 +4,9 @@ import { Catalog } from "../../models/rule-catalog";
 
 const readCatalog: RequestHandler = async (req, res, next) => {
   try {
-    const catalog = await Catalog.findById(req.params.id).populate(
-      "rules",
-      "-catalog"
-    );
+    const catalog = await Catalog.findById(req.params.id)
+      .lean()
+      .populate("rules", "-catalog");
     if (!catalog) {
       throw new NotFoundErr("Catalog not found");
     }

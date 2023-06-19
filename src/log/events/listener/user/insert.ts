@@ -9,12 +9,11 @@ export class InsertUserListener extends Listener<InsertUser> {
   qGroup = qGroup;
 
   async onMsg(data: InsertUser["data"], msg: Message) {
-    console.log(data);
-    // const newItem = new Actor({
-    //   user_id: data._id,
-    //   data: data,
-    // });
-    // await newItem.save();
+    const nUser = new Actor({
+      user_id: data.id,
+      data: data,
+    });
+    await nUser.save();
 
     msg.ack();
   }

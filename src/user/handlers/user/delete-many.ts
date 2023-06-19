@@ -10,13 +10,19 @@ export const deleteUsers: RequestHandler = async (req, res, next) => {
   const ids: Types.ObjectId[] = req.body;
 
   try {
-    const users = await User.find({ _id: { $in: ids } }).populate({
-      path: "role",
-      populate: {
-        path: "rules",
+    const users = await User.find({ _id: { $in: ids } }).populate([
+      {
+        path: "role",
+        populate: {
+          path: "rules",
+          select: "-catalog",
+        },
+      },
+      {
+        path: "spec_rules",
         select: "-catalog",
       },
-    });
+    ]);
     if (users.length < ids.length) {
       throw new BadReqErr("User mismatch");
     }

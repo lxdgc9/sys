@@ -26,12 +26,17 @@ r.route("/")
         .notEmpty()
         .withMessage("Not empty")
         .isString()
-        .withMessage("Must be string"),
+        .withMessage("Must be string")
+        .trim()
+        .toUpperCase()
+        .escape(),
       body("info")
         .notEmpty()
         .withMessage("Not empty")
         .isString()
-        .withMessage("Must be string"),
+        .withMessage("Must be string")
+        .trim()
+        .escape(),
       body("catalog_id")
         .notEmpty()
         .withMessage("Not empty")
@@ -52,8 +57,13 @@ r.route("/many")
         .isArray({ min: 1 })
         .withMessage("Should be at least 1 element"),
       body("*").isObject().withMessage("Must be object"),
-      body("*.code").isString().withMessage("Must be string"),
-      body("*.info").isString().withMessage("Must be string"),
+      body("*.code")
+        .isString()
+        .withMessage("Must be string")
+        .trim()
+        .toUpperCase()
+        .escape(),
+      body("*.info").isString().withMessage("Must be string").trim().escape(),
       body("*.catalog_id").isMongoId().withMessage("Must be mongoId")
     ),
     writeRules
@@ -65,7 +75,8 @@ r.route("/many")
         .notEmpty()
         .withMessage("Not empty")
         .isArray({ min: 1 })
-        .withMessage("Should be at least 1 element"),
+        .withMessage("Should be at least 1 element")
+        .customSanitizer((vals) => [...new Set(vals)]),
       body("*").isMongoId().withMessage("Must be mongoId")
     ),
     deleteRules
@@ -84,11 +95,16 @@ r.route("/:id")
       body("code")
         .optional({ values: "undefined" })
         .isString()
-        .withMessage("Must be string"),
+        .withMessage("Must be string")
+        .trim()
+        .toUpperCase()
+        .escape(),
       body("info")
         .optional({ values: "undefined" })
         .isString()
-        .withMessage("Must be string"),
+        .withMessage("Must be string")
+        .trim()
+        .escape(),
       body("catalog_id")
         .optional({ values: "undefined" })
         .isMongoId()

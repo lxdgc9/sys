@@ -27,6 +27,9 @@ r.route("/")
         .withMessage("Not empty")
         .isString()
         .withMessage("Must be string")
+        .trim()
+        .toUpperCase()
+        .escape()
     ),
     writeCatalog
   );
@@ -41,7 +44,12 @@ r.route("/many")
         .isArray({ min: 1 })
         .withMessage("Should be at least 1 element"),
       body("*").isObject().withMessage("Must be object"),
-      body("*.name").isString().withMessage("Must be string")
+      body("*.name")
+        .isString()
+        .withMessage("Must be string")
+        .trim()
+        .toUpperCase()
+        .escape()
     ),
     writeCatalogs
   )
@@ -52,7 +60,8 @@ r.route("/many")
         .notEmpty()
         .withMessage("Not empty")
         .isArray({ min: 1 })
-        .withMessage("Should be at least 1 element"),
+        .withMessage("Should be at least 1 element")
+        .customSanitizer((vals) => [...new Set(vals)]),
       body("*").isMongoId().withMessage("Must be mongoId")
     ),
     deleteCatalogs
@@ -72,6 +81,9 @@ r.route("/:id")
         .optional({ values: "undefined" })
         .isString()
         .withMessage("Must be string")
+        .trim()
+        .toUpperCase()
+        .escape()
     ),
     modifyCatalog
   )

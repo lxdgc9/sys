@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { body, param } from "express-validator";
 import { guard, validator } from "@lxdgc9/pkg/dist/handlers";
 import {
   READ_USER,
@@ -7,7 +8,6 @@ import {
   DELETE_USER,
 } from "@lxdgc9/pkg/dist/rules/manage";
 import { ACCESS_SYSTEM } from "@lxdgc9/pkg/dist/rules/app";
-import { body, param } from "express-validator";
 import modifyPassword from "../handlers/user/modify-passwd";
 import modifyAccess from "../handlers/user/modify-access";
 import writeUser from "../handlers/user/write";
@@ -41,18 +41,21 @@ r.route("/")
         .isString()
         .withMessage("Must be string")
         .trim()
-        .toLowerCase(),
+        .toLowerCase()
+        .escape(),
       body("prof.phone")
         .notEmpty()
         .withMessage("Not empty")
         .isMobilePhone("vi-VN")
-        .withMessage("Invalid phone number"),
+        .withMessage("Invalid phone number")
+        .escape(),
       body("prof.email")
         .notEmpty()
         .withMessage("Not empty")
         .isEmail()
         .withMessage("Must be email")
-        .trim(),
+        .trim()
+        .escape(),
       body("password")
         .notEmpty()
         .withMessage("Not empty")
@@ -71,7 +74,8 @@ r.route("/")
       body("spec_rule_ids")
         .optional({ values: "undefined" })
         .isArray()
-        .withMessage("Must be array"),
+        .withMessage("Must be array")
+        .customSanitizer((vals) => [...new Set(vals)]),
       body("spec_rule_ids.*")
         .optional({ values: "undefined" })
         .isMongoId()
@@ -114,18 +118,21 @@ r.route("/many")
         .isString()
         .withMessage("Must be string")
         .trim()
-        .toLowerCase(),
+        .toLowerCase()
+        .escape(),
       body("*.prof.phone")
         .notEmpty()
         .withMessage("Not empty")
         .isMobilePhone("vi-VN")
-        .withMessage("Invalid phone number"),
+        .withMessage("Invalid phone number")
+        .escape(),
       body("*.prof.email")
         .notEmpty()
         .withMessage("Not empty")
         .isEmail()
         .withMessage("Must be email")
-        .trim(),
+        .trim()
+        .escape(),
       body("*.password")
         .notEmpty()
         .withMessage("Not empty")
@@ -141,6 +148,11 @@ r.route("/many")
         .withMessage("Not empty")
         .isMongoId()
         .withMessage("Must be mongoId"),
+      body("*.spec_rule_ids")
+        .optional({ values: "undefined" })
+        .isArray()
+        .withMessage("Must be array")
+        .customSanitizer((vals) => [...new Set(vals)]),
       body("users.*.is_active")
         .isBoolean()
         .withMessage("Must be boolean")
@@ -155,7 +167,8 @@ r.route("/many")
         .notEmpty()
         .withMessage("Not empty")
         .isArray({ min: 1 })
-        .withMessage("Should be at least 1 element"),
+        .withMessage("Should be at least 1 element")
+        .customSanitizer((vals) => [...new Set(vals)]),
       body("*").isMongoId().withMessage("Must be mongoId")
     ),
     deleteUsers
@@ -188,21 +201,29 @@ r.route("/:id")
         .isLength({ min: 1, max: 255 })
         .withMessage("1 <= len <= 255")
         .trim()
-        .toLowerCase(),
+        .toLowerCase()
+        .escape(),
       body("prof.phone")
         .optional({ values: "undefined" })
         .isMobilePhone("vi-VN")
-        .withMessage("Invalid phone number"),
+        .withMessage("Invalid phone number")
+        .escape(),
       body("prof.email")
         .optional({ values: "undefined" })
         .isMobilePhone("vi-VN")
         .isEmail()
         .withMessage("Must be email")
-        .trim(),
+        .trim()
+        .escape(),
       body("role_id")
         .optional({ values: "undefined" })
         .isMongoId()
-        .withMessage("Must be mongoId")
+        .withMessage("Must be mongoId"),
+      body("spec_rule_ids")
+        .optional({ values: "undefined" })
+        .isArray()
+        .withMessage("Must be array")
+        .customSanitizer((vals) => [...new Set(vals)])
     ),
     modifyUser
   )
@@ -219,9 +240,10 @@ r.post(
       .notEmpty()
       .withMessage("Not empty")
       .isIn(["username", "phone", "email"])
-      .withMessage("Invalid field, Must be username, phone or email"),
-    body("v").notEmpty().withMessage("Not empty"),
-    body("password").notEmpty().withMessage("Not empty")
+      .withMessage("Invalid field, Must be username, phone or email")
+      .escape(),
+    body("v").notEmpty().withMessage("Not empty").escape(),
+    body("password").notEmpty().withMessage("Not empty").escape()
   ),
   login
 );
@@ -234,6 +256,7 @@ r.post(
       .withMessage("Not empty")
       .isString()
       .withMessage("Must be string")
+      .escape()
   ),
   refreshToken
 );
@@ -242,8 +265,8 @@ r.patch(
   "/:id/password",
   guard(UPDATE_USER),
   validator(
-    param("id").isMongoId().withMessage("Must be mongoId"),
-    body("old_password").notEmpty().withMessage("Not empty"),
+    param("id").isMongoId().withMessage("Must be mongoId").escape(),
+    body("old_password").notEmpty().withMessage("Not empty").escape(),
     body("new_password")
       .notEmpty()
       .withMessage("Not empty")
@@ -254,6 +277,7 @@ r.patch(
         minUppercase: 0,
       })
       .withMessage("Password not strong enough")
+      .escape()
   ),
   modifyPassword
 );
