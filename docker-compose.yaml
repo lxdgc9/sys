@@ -100,7 +100,7 @@ services:
       - NATS_CLIENT_ID=nats-cli_course
       - NATS_CLUSTER_ID=nats_clus
     volumes:
-      - ./src/uploads:/usr/uploads:rw
+      - ./src/course/uploads:/usr/uploads:rw
     networks:
       - bridge
     depends_on:
