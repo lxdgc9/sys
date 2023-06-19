@@ -66,7 +66,7 @@ const writeUser: RequestHandler = async (req, res, next) => {
       throw new BadReqErr("Invalid spec_rule_ids");
     }
 
-    const newUser = new User({
+    const nUser = new User({
       attrs: Object.entries(prof).map(([k, v]) => ({
         k,
         v,
@@ -76,24 +76,24 @@ const writeUser: RequestHandler = async (req, res, next) => {
       spec_rules: spec_rule_ids,
       active: is_active,
     });
-    await newUser.save();
+    await nUser.save();
 
-    await User.populate(newUser, {
+    await User.populate(nUser, {
       path: "role",
       populate: {
         path: "rules",
         select: "-catalog",
       },
     });
-    res.status(201).json(newUser);
+    res.status(201).json(nUser);
 
     await Promise.allSettled([
-      new InsertUserPublisher(nats.cli).publish(newUser),
+      new InsertUserPublisher(nats.cli).publish(nUser),
       new LogPublisher(nats.cli).publish({
         user_id: req.user?.id,
         model: User.modelName,
         action: "insert",
-        data: newUser,
+        data: nUser,
       }),
     ]);
   } catch (e) {

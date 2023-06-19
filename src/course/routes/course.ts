@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { param } from "express-validator";
 import { guard, validator } from "@lxdgc9/pkg/dist/handlers";
 import {
   DELETE_COURSE,
@@ -10,7 +11,6 @@ import writeCourse from "../handlers/course/write";
 import delCourse from "../handlers/course/delete";
 import readCourse from "../handlers/course/read";
 import readMyCoursesByClass from "../handlers/course/my-course-by-class";
-import { param } from "express-validator";
 import readMyCreatedCourses from "../handlers/course/my-created-course";
 
 const r = Router();
