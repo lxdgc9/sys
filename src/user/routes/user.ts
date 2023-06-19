@@ -6,6 +6,7 @@ import {
   UPDATE_USER,
   DELETE_USER,
 } from "@lxdgc9/pkg/dist/rules/manage";
+import { ACCESS_SYSTEM } from "@lxdgc9/pkg/dist/rules/app";
 import { body, param } from "express-validator";
 import modifyPassword from "../handlers/user/modify-passwd";
 import modifyAccess from "../handlers/user/modify-access";
@@ -15,9 +16,12 @@ import writeUsers from "../handlers/user/write-many";
 import deleteUsers from "../handlers/user/delete-many";
 import deleteUser from "../handlers/user/delete";
 import readUsers from "../handlers/user/read-many";
+import me from "../handlers/user/me";
 import login from "../handlers/auth/login";
 import refreshToken from "../handlers/auth/refresh-token";
 import readUser from "../handlers/user/read";
+import uploadAvt from "../handlers/user/upload-avt";
+import uploader from "../helpers/upload";
 
 const r = Router();
 
@@ -79,6 +83,14 @@ r.route("/")
     ),
     writeUser
   );
+
+r.get("/me", guard(ACCESS_SYSTEM), me);
+r.patch(
+  "/upload-avt",
+  guard(ACCESS_SYSTEM),
+  uploader("/avatar").single("avatar"),
+  uploadAvt
+);
 
 r.route("/many")
   .get(guard(READ_USER), readUsers)

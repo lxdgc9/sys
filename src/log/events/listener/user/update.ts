@@ -9,14 +9,15 @@ export class UpdateUserListener extends Listener<UpdateUser> {
   qGroup = qGroup;
 
   async onMsg(data: UpdateUser["data"], msg: Message) {
-    await Actor.findOneAndUpdate(
-      { user_id: data._id },
-      {
-        $set: {
-          data,
-        },
-      }
-    );
+    console.log(data);
+    // await Actor.findOneAndUpdate(
+    //   { user_id: data._id },
+    //   {
+    //     $set: {
+    //       data,
+    //     },
+    //   }
+    // );
 
     msg.ack();
   }

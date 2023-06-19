@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { body, param } from "express-validator";
 import { guard, validator } from "@lxdgc9/pkg/dist/handlers";
-import { COURSE } from "@lxdgc9/pkg/dist/rules/app";
+import { ACCESS_COURSE } from "@lxdgc9/pkg/dist/rules/app";
 import readUsers from "../handlers/user/read-many";
 import readUser from "../handlers/user/read";
 import allocUser from "../handlers/user/alloc";
@@ -12,7 +12,7 @@ import grantUsersToClass from "../handlers/user/grant-many-class";
 const r = Router();
 
 r.route("/")
-  .get(guard(COURSE), readUsers)
+  .get(guard(ACCESS_COURSE), readUsers)
   .patch(
     guard(),
     validator(
@@ -31,7 +31,7 @@ r.route("/")
   );
 
 r.route("/many").patch(
-  guard(COURSE),
+  guard(ACCESS_COURSE),
   validator(
     body("user_ids")
       .notEmpty()

@@ -9,12 +9,13 @@ export class InsertManyUserListener extends Listener<InsertManyUser> {
   qGroup = qGroup;
 
   async onMsg(data: InsertManyUser["data"], msg: Message) {
-    await Actor.insertMany(
-      data.map((d) => ({
-        user_id: d._id,
-        data: d,
-      }))
-    );
+    console.log(data);
+    // await Actor.insertMany(
+    //   data.map((d) => ({
+    //     user_id: d._id,
+    //     data: d,
+    //   }))
+    // );
 
     msg.ack();
   }

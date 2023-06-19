@@ -20,21 +20,19 @@ const login: RequestHandler = async (req, res, next) => {
       attrs: {
         $elemMatch: { k, v },
       },
-    })
-      .lean()
-      .populate<{
-        role: {
-          rules: {
-            code: string;
-          }[];
-        };
-      }>({
-        path: "role",
-        populate: {
-          path: "rules",
-          select: "-catalog",
-        },
-      });
+    }).populate<{
+      role: {
+        rules: {
+          code: string;
+        }[];
+      };
+    }>({
+      path: "role",
+      populate: {
+        path: "rules",
+        select: "-catalog",
+      },
+    });
     if (!user) {
       throw new UnauthorizedErr("User not found");
     }
