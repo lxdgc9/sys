@@ -2,7 +2,7 @@ import { RequestHandler } from "express";
 import { NotFoundErr } from "@lxdgc9/pkg/dist/err";
 import { Course } from "../../models/course";
 
-const delCourse: RequestHandler = async (req, res, next) => {
+const deleteCourse: RequestHandler = async (req, res, next) => {
   try {
     const result = await Course.deleteOne({
       _id: req.params.id,
@@ -16,4 +16,4 @@ const delCourse: RequestHandler = async (req, res, next) => {
   }
 };
 
-export default delCourse;
+export default deleteCourse;

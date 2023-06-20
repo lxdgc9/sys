@@ -11,7 +11,7 @@ const deleteCourses: RequestHandler = async (req, res, next) => {
       _id: { $in: ids },
     });
     if (numCourses < ids.length) {
-      throw new BadReqErr("Invalid ids");
+      throw new BadReqErr("Invalid body");
     }
 
     await Course.deleteMany({
