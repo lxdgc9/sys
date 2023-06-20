@@ -51,7 +51,7 @@ const schema = new Schema<IUser>(
     classes: [
       {
         type: Schema.Types.ObjectId,
-        ref: "user",
+        ref: "class",
       },
     ],
     courses: [

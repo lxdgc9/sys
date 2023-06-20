@@ -17,7 +17,7 @@ const writeClasses: RequestHandler = async (req, res, next) => {
       _id: { $in: schoolIds },
     });
     if (numSchools < schoolIds.length) {
-      throw new BadReqErr("Schools mismatch");
+      throw new BadReqErr("Invalid school");
     }
 
     const nClasses = await Class.insertMany(

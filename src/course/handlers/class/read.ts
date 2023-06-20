@@ -6,7 +6,10 @@ const readClass: RequestHandler = async (req, res, next) => {
   try {
     const _class = await Class.findById(req.params.id).populate([
       { path: "school", select: "-classes -members" },
-      { path: "members", select: "-classes" },
+      {
+        path: "members",
+        select: "-classes -created_courses -courses -schools",
+      },
     ]);
     if (!_class) {
       throw new NotFoundErr("Class not found");

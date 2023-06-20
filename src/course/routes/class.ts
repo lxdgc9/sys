@@ -7,14 +7,17 @@ import {
   UPDATE_CLASS,
   DELETE_CLASS,
 } from "@lxdgc9/pkg/dist/rules/course";
+import { ACCESS_COURSE } from "@lxdgc9/pkg/dist/rules/app";
 import readClass from "../handlers/class/read";
 import readClasses from "../handlers/class/read-many";
 import readClassesBySchool from "../handlers/class/read-many-by-school";
+import readMyClassesBySchool from "../handlers/class/my-classes-by-school";
 import writeClass from "../handlers/class/write";
 import writeClasses from "../handlers/class/write-many";
 import modifyClass from "../handlers/class/modify";
 import deleteClass from "../handlers/class/delete";
 import deleteClasses from "../handlers/class/delete-many";
+import readMyClasses from "../handlers/class/my-classes";
 
 const r = Router();
 
@@ -48,6 +51,15 @@ r.get(
   guard(READ_CLASS),
   validator(param("school_id").isMongoId().withMessage("Must be mongoId")),
   readClassesBySchool
+);
+
+r.get("/my-classes", guard(ACCESS_COURSE), readMyClasses);
+
+r.get(
+  "/my-classes-by-school/:school_id",
+  guard(ACCESS_COURSE),
+  validator(param("school_id").isMongoId().withMessage("Must be mongoId")),
+  readMyClassesBySchool
 );
 
 r.route("/many")

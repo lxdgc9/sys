@@ -1,6 +1,6 @@
 import { RequestHandler } from "express";
 import { Types } from "mongoose";
-import { BadReqErr } from "@lxdgc9/pkg/dist/err";
+import { BadReqErr, UnauthorizedErr } from "@lxdgc9/pkg/dist/err";
 import { Class } from "../../models/class";
 import { Course } from "../../models/course";
 import { User } from "../../models/user";
@@ -23,7 +23,7 @@ const writeCourse: RequestHandler = async (req, res, next) => {
       "classes"
     );
     if (!user) {
-      throw new BadReqErr("Invalid token");
+      throw new UnauthorizedErr("Invalid token");
     }
 
     if (!class_ids.every((el) => user.classes.some((u) => u.equals(el)))) {
@@ -38,12 +38,21 @@ const writeCourse: RequestHandler = async (req, res, next) => {
     const nCourse = new Course({
       title,
       content,
-      author: user,
+      author: user._id,
       is_publish,
       classes: class_ids,
     });
     await nCourse.save();
+
     await nCourse.populate("classes", "name");
+    await nCourse.populate([
+      { path: "classes", select: "name" },
+      {
+        path: "author",
+        select: "-courses -created_courses -schools -classes",
+      },
+    ]);
+
     res.status(201).json(nCourse);
 
     await Promise.allSettled([

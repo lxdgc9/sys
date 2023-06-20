@@ -10,7 +10,7 @@ const delClasses: RequestHandler = async (req, res, next) => {
   try {
     const classes = await Class.find({ _id: { $in: ids } });
     if (classes.length < ids.length) {
-      throw new BadReqErr("Class mismatch");
+      throw new BadReqErr("Invalid body");
     }
     if (classes.some((el) => el.members.length)) {
       throw new BadReqErr("Found dependent");

@@ -4,7 +4,11 @@ import { Class } from "../../models/class";
 
 const readMyCoursesByClass: RequestHandler = async (req, res, next) => {
   try {
-    const _class = await Class.findById(req.params.class_id).populate({
+    const _class = await Class.findById(req.params.class_id).populate<{
+      courses: {
+        is_publish: boolean;
+      }[];
+    }>({
       path: "courses",
       select: "-classes",
       populate: [
@@ -16,7 +20,7 @@ const readMyCoursesByClass: RequestHandler = async (req, res, next) => {
       throw new NotFoundErr("Class not found");
     }
 
-    res.json(_class.courses);
+    res.json(_class.courses.filter((el) => el.is_publish));
   } catch (e) {
     next(e);
   }
