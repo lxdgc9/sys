@@ -10,7 +10,7 @@ const deleteSchools: RequestHandler = async (req, res, next) => {
   try {
     const schools = await School.find({ _id: { $in: ids } });
     if (schools.length < ids.length) {
-      throw new BadReqErr("Invalid ids");
+      throw new BadReqErr("Invalid body");
     }
     if (schools.some((el) => el.members.length > 0 || el.classes.length > 0)) {
       throw new BadReqErr("Found dependent");

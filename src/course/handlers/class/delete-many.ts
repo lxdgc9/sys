@@ -5,12 +5,10 @@ import { Class } from "../../models/class";
 import { School } from "../../models/school";
 
 const delClasses: RequestHandler = async (req, res, next) => {
-  const ids = [...new Set(req.body)] as Types.ObjectId[];
+  const ids: Types.ObjectId[] = req.body;
 
   try {
-    const classes = await Class.find({
-      _id: { $in: ids },
-    });
+    const classes = await Class.find({ _id: { $in: ids } });
     if (classes.length < ids.length) {
       throw new BadReqErr("Class mismatch");
     }
@@ -18,9 +16,7 @@ const delClasses: RequestHandler = async (req, res, next) => {
       throw new BadReqErr("Found dependent");
     }
 
-    await Class.deleteMany({
-      _id: { $in: ids },
-    });
+    await Class.deleteMany({ _id: { $in: ids } });
     res.sendStatus(204);
 
     await School.updateMany(

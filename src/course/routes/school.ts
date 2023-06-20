@@ -13,8 +13,10 @@ import readSchools from "../handlers/school/read-many";
 import writeSchool from "../handlers/school/write";
 import writeSchools from "../handlers/school/write-many";
 import modifySchool from "../handlers/school/modify";
-import deleteSchools from "../handlers/school/delete-many";
 import deleteSchool from "../handlers/school/delete";
+import deleteSchools from "../handlers/school/delete-many";
+import { ACCESS_COURSE } from "@lxdgc9/pkg/dist/rules/app";
+import readMySchools from "../handlers/school/my-schools";
 
 const r = Router();
 
@@ -41,6 +43,8 @@ r.route("/")
     ),
     writeSchool
   );
+
+r.get("/my-schools", guard(ACCESS_COURSE), readMySchools);
 
 r.route("/many")
   .post(

@@ -15,6 +15,8 @@ app.use(cors());
 app.use(compression());
 app.use(express.json());
 
+app.use("/api/courses/public", express.static("public"));
+
 app.use("/api/courses/schools", school);
 app.use("/api/courses/classes", _class);
 app.use("/api/courses/uploads", upload);

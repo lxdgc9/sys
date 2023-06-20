@@ -3,7 +3,7 @@ import { BadReqErr } from "@lxdgc9/pkg/dist/err";
 import { Class } from "../../models/class";
 import { School } from "../../models/school";
 
-const delClass: RequestHandler = async (req, res, next) => {
+const deleteClass: RequestHandler = async (req, res, next) => {
   try {
     const _class = await Class.findById(req.params.id);
     if (!_class) {
@@ -29,4 +29,4 @@ const delClass: RequestHandler = async (req, res, next) => {
   }
 };
 
-export default delClass;
+export default deleteClass;

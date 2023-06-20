@@ -7,13 +7,14 @@ import {
   UPDATE_CLASS,
   DELETE_CLASS,
 } from "@lxdgc9/pkg/dist/rules/course";
-import readClasses from "../handlers/class/read-many";
-import delClass from "../handlers/class/delete";
-import delClasses from "../handlers/class/delete-many";
-import modifyClass from "../handlers/class/modify";
-import writeClasses from "../handlers/class/write-many";
-import writeClass from "../handlers/class/write";
 import readClass from "../handlers/class/read";
+import readClasses from "../handlers/class/read-many";
+import readClassesBySchool from "../handlers/class/read-many-by-school";
+import writeClass from "../handlers/class/write";
+import writeClasses from "../handlers/class/write-many";
+import modifyClass from "../handlers/class/modify";
+import deleteClass from "../handlers/class/delete";
+import deleteClasses from "../handlers/class/delete-many";
 
 const r = Router();
 
@@ -39,8 +40,15 @@ r.route("/")
   .delete(
     guard(DELETE_CLASS),
     validator(param("id").isMongoId().withMessage("Must be MongoId")),
-    delClass
+    deleteClass
   );
+
+r.get(
+  "/by-school/:school_id",
+  guard(READ_CLASS),
+  validator(param("school_id").isMongoId().withMessage("Must be mongoId")),
+  readClassesBySchool
+);
 
 r.route("/many")
   .post(
@@ -68,10 +76,13 @@ r.route("/many")
   .delete(
     guard(DELETE_CLASS),
     validator(
-      body().isArray({ min: 1 }).withMessage("Should be at least 1 element"),
+      body()
+        .isArray({ min: 1 })
+        .withMessage("Should be at least 1 element")
+        .customSanitizer((vals) => [...new Set(vals)]),
       body("*").isMongoId().withMessage("Must be MongoId")
     ),
-    delClasses
+    deleteClasses
   );
 
 r.route("/:id")
@@ -84,7 +95,7 @@ r.route("/:id")
   .delete(
     guard(DELETE_CLASS),
     validator(param("id").isMongoId().withMessage("Must be MongoId")),
-    delClass
+    deleteClass
   );
 
 export default r;

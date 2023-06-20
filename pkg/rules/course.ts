@@ -1,16 +1,16 @@
-export const READ_SCHOOL = "read_school";
-export const WRITE_SCHOOL = "write_school";
-export const UPDATE_SCHOOL = "update_school";
-export const DELETE_SCHOOL = "delete_school";
+export const READ_SCHOOL = "READ_SCHOOL";
+export const WRITE_SCHOOL = "WRITE_SCHOOL";
+export const UPDATE_SCHOOL = "UPDATE_SCHOOL";
+export const DELETE_SCHOOL = "DELETE_SCHOOL";
 
-export const READ_CLASS = "read_class";
-export const WRITE_CLASS = "write_class";
-export const UPDATE_CLASS = "update_class";
-export const DELETE_CLASS = "delete_class";
+export const READ_CLASS = "READ_CLASS";
+export const WRITE_CLASS = "WRITE_CLASS";
+export const UPDATE_CLASS = "UPDATE_CLASS";
+export const DELETE_CLASS = "DELETE_CLASS";
 
-export const READ_COURSE = "read_course";
-export const WRITE_COURSE = "write_course";
-export const UPDATE_COURSE = "update_course";
-export const DELETE_COURSE = "delete_course";
+export const READ_COURSE = "READ_COURSE";
+export const WRITE_COURSE = "WRITE_COURSE";
+export const UPDATE_COURSE = "UPDATE_COURSE";
+export const DELETE_COURSE = "DELETE_COURSE";
 
-export const ALLOC_USER = "alloc_user";
+export const ALLOC_USER = "ALLOC_USER";

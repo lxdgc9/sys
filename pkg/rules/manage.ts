@@ -1,14 +1,14 @@
-export const READ_USER = "read_user";
-export const WRITE_USER = "write_user";
-export const UPDATE_USER = "update_user";
-export const DELETE_USER = "delete_user";
+export const READ_USER = "READ_USER";
+export const WRITE_USER = "WRITE_USER";
+export const UPDATE_USER = "UPDATE_USER";
+export const DELETE_USER = "DELETE_USER";
 
-export const READ_ROLE = "read_role";
-export const WRITE_ROLE = "write_role";
-export const UPDATE_ROLE = "update_role";
-export const DELETE_ROLE = "delete_role";
+export const READ_ROLE = "READ_ROLE";
+export const WRITE_ROLE = "WRITE_ROLE";
+export const UPDATE_ROLE = "UPDATE_ROLE";
+export const DELETE_ROLE = "DELETE_ROLE";
 
-export const READ_RULE = "read_rule";
-export const WRITE_RULE = "write_rule";
-export const UPDATE_RULE = "update_rule";
-export const DELETE_RULE = "delete_rule";
+export const READ_RULE = "READ_RULE";
+export const WRITE_RULE = "WRITE_RULE";
+export const UPDATE_RULE = "UPDATE_RULE";
+export const DELETE_RULE = "DELETE_RULE";

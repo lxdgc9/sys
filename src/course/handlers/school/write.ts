@@ -14,7 +14,7 @@ const writeSchool: RequestHandler = async (req, res, next) => {
     info: string;
   } = req.body;
 
-  let logo = "/api/courses/def-logo.jpg";
+  let logo = "/api/courses/public/logo.png";
   if (req.file) {
     logo = `/api/courses/${req.file.path}`;
   }

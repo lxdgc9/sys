@@ -1,3 +1,3 @@
-export const ACCESS_SYSTEM = "access_system";
-export const ACCESS_COURSE = "access_course";
-export const ACCESS_LOG = "access_log";
+export const ACCESS_SYSTEM = "ACCESS_SYSTEM";
+export const ACCESS_COURSE = "ACCESS_COURSE";
+export const ACCESS_LOG = "ACCESS_LOG";

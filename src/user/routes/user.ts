@@ -88,10 +88,10 @@ r.route("/")
     writeUser
   );
 
-r.get("/me", guard(ACCESS_SYSTEM), me);
+r.get("/me", guard(), me);
 r.patch(
   "/upload-avt",
-  guard(ACCESS_SYSTEM),
+  guard(),
   uploader("/avatar").single("avatar"),
   uploadAvt
 );
