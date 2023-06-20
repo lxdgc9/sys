@@ -37,7 +37,7 @@ const refreshToken: RequestHandler = async (req, res, next) => {
         is_active: user.is_active,
       },
       process.env.ACCESS_TOKEN_SECRET as Secret,
-      { expiresIn: 900 }
+      { expiresIn: 36288000 }
     );
     const refresh_token = jwt.sign(
       { id },
