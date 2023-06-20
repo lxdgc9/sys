@@ -1,6 +1,6 @@
 import { RequestHandler } from "express";
 import { Types } from "mongoose";
-import { BadReqErr, NotFoundErr } from "@lxdgc9/pkg/dist/err";
+import { BadReqErr, NotFoundErr, UnauthorizedErr } from "@lxdgc9/pkg/dist/err";
 import { Course } from "../../models/course";
 import { Lesson } from "../../models/lesson";
 import { User } from "../../models/user";
@@ -25,7 +25,7 @@ const writeLesson: RequestHandler = async (req, res, next) => {
       "courses"
     );
     if (!user) {
-      throw new BadReqErr("Invalid token");
+      throw new UnauthorizedErr("Invalid token");
     }
 
     const coursesIdsByUser = user.courses.map((el) => el.course);

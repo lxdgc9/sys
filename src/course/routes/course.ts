@@ -11,7 +11,7 @@ import readCourses from "../handlers/course/read-many";
 import writeCourse from "../handlers/course/write";
 import delCourse from "../handlers/course/delete";
 import readCourse from "../handlers/course/read";
-import readMyCoursesByClass from "../handlers/course/my-course-by-class";
+import readCoursesByClass from "../handlers/course/my-course-by-class";
 import readMyCreatedCourses from "../handlers/course/my-created-course";
 
 const r = Router();
@@ -51,13 +51,17 @@ r.route("/")
     writeCourse
   );
 
+r.get("/my-courses", guard(READ_COURSE));
+
+r.get("/my-courses-by-class/:class_id", guard(READ_COURSE), readCoursesByClass);
+
 r.get("/my-created-courses", guard(READ_COURSE), readMyCreatedCourses);
 
 r.get(
   "/class/:class_id",
   guard(READ_COURSE),
   validator(param("class_id").isMongoId().withMessage("Must be mongoId")),
-  readMyCoursesByClass
+  readCoursesByClass
 );
 
 r.route("/:id")

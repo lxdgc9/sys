@@ -2,7 +2,7 @@ import { RequestHandler } from "express";
 import { NotFoundErr } from "@lxdgc9/pkg/dist/err";
 import { Class } from "../../models/class";
 
-const readMyCoursesByClass: RequestHandler = async (req, res, next) => {
+const readCoursesByClass: RequestHandler = async (req, res, next) => {
   try {
     const _class = await Class.findById(req.params.class_id).populate<{
       courses: {
@@ -26,4 +26,4 @@ const readMyCoursesByClass: RequestHandler = async (req, res, next) => {
   }
 };
 
-export default readMyCoursesByClass;
+export default readCoursesByClass;
