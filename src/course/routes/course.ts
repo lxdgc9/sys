@@ -13,6 +13,9 @@ import delCourse from "../handlers/course/delete";
 import readCourse from "../handlers/course/read";
 import readCoursesByClass from "../handlers/course/my-course-by-class";
 import readMyCreatedCourses from "../handlers/course/my-created-course";
+import readMyCourses from "../handlers/course/read-my-courses";
+import updateProcess from "../handlers/course/update-process";
+import changeStatusCourse from "../handlers/course/change-status-course";
 
 const r = Router();
 
@@ -51,7 +54,7 @@ r.route("/")
     writeCourse
   );
 
-r.get("/my-courses", guard(READ_COURSE));
+r.get("/my-courses", guard(READ_COURSE), readMyCourses);
 
 r.get("/my-courses-by-class/:class_id", guard(READ_COURSE), readCoursesByClass);
 
@@ -68,5 +71,33 @@ r.route("/:id")
   .get(guard(READ_COURSE), readCourse)
   .patch(guard(UPDATE_COURSE))
   .delete(guard(DELETE_COURSE), delCourse);
+
+r.patch(
+  "/process/:course_id",
+  guard(UPDATE_COURSE),
+  validator(
+    param("course_id").isMongoId().withMessage("Must be mongoId"),
+    body("process")
+      .notEmpty()
+      .withMessage("Not empty")
+      .isInt({ min: 0, max: 100 })
+      .withMessage("Must be number in range 0, 100")
+  ),
+  updateProcess
+);
+
+r.patch(
+  "/publish/:course_id",
+  guard(UPDATE_COURSE),
+  validator(
+    param("course_id").isMongoId().withMessage("Must be mongoId"),
+    body("status")
+      .notEmpty()
+      .withMessage("Not empty")
+      .isBoolean()
+      .withMessage("Must be boolean")
+  ),
+  changeStatusCourse
+);
 
 export default r;

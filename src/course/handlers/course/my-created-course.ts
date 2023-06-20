@@ -1,17 +1,25 @@
 import { RequestHandler } from "express";
-import { User } from "../../models/user";
 import { BadReqErr } from "@lxdgc9/pkg/dist/err";
+import { User } from "../../models/user";
 
 const readMyCreatedCourses: RequestHandler = async (req, res, next) => {
   try {
-    const user = await User.findOne({ user_id: req.user?.id });
+    const user = await User.findOne({ user_id: req.user?.id }).populate({
+      path: "created_courses",
+      select: "-classes",
+      populate: [
+        {
+          path: "author",
+          select: "-schools -classes -created_courses -courses",
+        },
+        { path: "lessons" },
+      ],
+    });
     if (!user) {
       throw new BadReqErr("Invalid token");
     }
 
-    console.log(user);
-
-    res.json(user.courses);
+    res.json(user.created_courses);
   } catch (e) {
     next(e);
   }

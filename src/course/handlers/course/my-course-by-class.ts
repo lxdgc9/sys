@@ -12,7 +12,10 @@ const readCoursesByClass: RequestHandler = async (req, res, next) => {
       path: "courses",
       select: "-classes",
       populate: [
-        { path: "author", select: "-role -spec_rules" },
+        {
+          path: "author",
+          select: "-schools -classes -created_courses -courses",
+        },
         { path: "lessons" },
       ],
     });
