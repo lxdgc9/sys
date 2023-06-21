@@ -49,7 +49,7 @@ const login: RequestHandler = async (req, res, next) => {
         is_active: user.is_active,
       },
       process.env.ACCESS_TOKEN_SECRET as Secret,
-      { expiresIn: 2592000 }
+      { expiresIn: 43200 }
     );
     const refresh_token = jwt.sign(
       { id: user._id },
