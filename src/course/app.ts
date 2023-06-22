@@ -8,6 +8,8 @@ import upload from "./routes/upload";
 import course from "./routes/course";
 import lesson from "./routes/lesson";
 import user from "./routes/user";
+import question from "./routes/question";
+import exam from "./routes/exam";
 
 const app = express();
 
@@ -22,6 +24,8 @@ app.use("/api/courses/classes", _class);
 app.use("/api/courses/uploads", upload);
 app.use("/api/courses/courses", course);
 app.use("/api/courses/lessons", lesson);
+app.use("/api/courses/questions", question);
+app.use("/api/courses/exams", exam);
 app.use("/api/courses/users", user);
 
 app.all("*", (_req, res) => {

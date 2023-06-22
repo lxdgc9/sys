@@ -1,6 +1,6 @@
 import { RequestHandler } from "express";
 import { LogPublisher } from "../../events/publisher/log";
-import { Catalog } from "../../models/rule-catalog";
+import { Catalog } from "../../models/catalog";
 import nats from "../../nats";
 
 const writeCatalog: RequestHandler = async (req, res, next) => {

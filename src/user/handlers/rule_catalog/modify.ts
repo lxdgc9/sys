@@ -2,7 +2,7 @@ import { RequestHandler } from "express";
 import { NotFoundErr } from "@lxdgc9/pkg/dist/err";
 import nats from "../../nats";
 import { LogPublisher } from "../../events/publisher/log";
-import { Catalog } from "../../models/rule-catalog";
+import { Catalog } from "../../models/catalog";
 
 const modifyCatalog: RequestHandler = async (req, res, next) => {
   const { name }: { name: string } = req.body;

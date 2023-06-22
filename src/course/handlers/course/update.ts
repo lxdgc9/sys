@@ -17,19 +17,17 @@ const modifyCourse: RequestHandler = async (req, res, next) => {
     class_ids: Types.ObjectId[];
   } = req.body;
 
-  const classIds = [...new Set(class_ids)];
-
   try {
     const [hasCourse, numClasses] = await Promise.all([
       Course.exists({ _id: req.params.id }),
       Class.countDocuments({
-        _id: { $in: classIds },
+        _id: { $in: class_ids },
       }),
     ]);
     if (!hasCourse) {
       throw new BadReqErr("Course not found");
     }
-    if (class_ids && numClasses < classIds.length) {
+    if (class_ids && numClasses < class_ids.length) {
       throw new BadReqErr("Classes mismatch");
     }
 
@@ -40,11 +38,22 @@ const modifyCourse: RequestHandler = async (req, res, next) => {
           title,
           content,
           is_publish,
-          class_ids: classIds,
+          class_ids: class_ids,
         },
       },
       { new: true }
-    );
+    ).populate({
+      path: "created_courses",
+      select: "-classes",
+      populate: [
+        {
+          path: "author",
+          select: "-schools -classes -created_courses -courses",
+        },
+        { path: "lessons" },
+      ],
+    });
+
     res.json(modCourse);
   } catch (e) {
     next(e);

@@ -2,7 +2,7 @@ import { RequestHandler } from "express";
 import { Types } from "mongoose";
 import { BadReqErr } from "@lxdgc9/pkg/dist/err";
 import { Rule } from "../../models/rule";
-import { Catalog } from "../../models/rule-catalog";
+import { Catalog } from "../../models/catalog";
 import { Role } from "../../models/role";
 import { LogPublisher } from "../../events/publisher/log";
 import nats from "../../nats";

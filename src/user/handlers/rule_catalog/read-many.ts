@@ -1,5 +1,5 @@
 import { RequestHandler } from "express";
-import { Catalog } from "../../models/rule-catalog";
+import { Catalog } from "../../models/catalog";
 
 const readCatalogs: RequestHandler = async (_req, res, next) => {
   try {

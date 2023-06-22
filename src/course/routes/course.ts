@@ -16,6 +16,7 @@ import readMyCreatedCourses from "../handlers/course/my-created-course";
 import readMyCourses from "../handlers/course/read-my-courses";
 import updateProcess from "../handlers/course/update-process";
 import changeStatusCourse from "../handlers/course/change-status-course";
+import modifyCourse from "../handlers/course/update";
 
 const r = Router();
 
@@ -69,7 +70,29 @@ r.get(
 
 r.route("/:id")
   .get(guard(READ_COURSE), readCourse)
-  .patch(guard(UPDATE_COURSE))
+  .patch(
+    guard(UPDATE_COURSE),
+    validator(
+      body("title")
+        .optional({ values: "undefined" })
+        .isString()
+        .withMessage("Must be string"),
+      body("content")
+        .optional({ values: "undefined" })
+        .isString()
+        .withMessage("Must be string"),
+      body("is_publish")
+        .optional({ values: "undefined" })
+        .isBoolean()
+        .withMessage("Must be boolean"),
+      body("class_ids")
+        .optional({ values: "undefined" })
+        .isArray()
+        .withMessage("Must be array"),
+      body("class_ids.*").isMongoId().withMessage("Must be mongoId")
+    ),
+    modifyCourse
+  )
   .delete(guard(DELETE_COURSE), deleteCourse);
 
 r.patch(

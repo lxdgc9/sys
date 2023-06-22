@@ -1,6 +1,6 @@
 import { RequestHandler } from "express";
 import { NotFoundErr } from "@lxdgc9/pkg/dist/err";
-import { Catalog } from "../../models/rule-catalog";
+import { Catalog } from "../../models/catalog";
 
 const readCatalog: RequestHandler = async (req, res, next) => {
   try {

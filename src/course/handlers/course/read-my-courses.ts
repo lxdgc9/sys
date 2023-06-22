@@ -27,7 +27,8 @@ const readMyCourses: RequestHandler = async (req, res, next) => {
       throw new UnauthorizedErr("Invalid token");
     }
 
-    res.json(user.courses.filter((el) => el.course.is_publish));
+    // res.json(user.courses.filter((el) => el.course.is_publish));
+    res.json(user.courses);
   } catch (e) {
     next(e);
   }
