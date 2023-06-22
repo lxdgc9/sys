@@ -4,6 +4,7 @@ import { body, param } from "express-validator";
 import redaMyCreatedExams from "../handlers/exam/read-my-created-exams";
 import readExamsByCourse from "../handlers/exam/read-many-by-course";
 import writeExam from "../handlers/exam/write";
+import deleteExam from "../handlers/exam/delete";
 
 const r = Router();
 
@@ -47,6 +48,13 @@ r.post(
     body("question_ids.*").isMongoId().withMessage("Must be mongoId")
   ),
   writeExam
+);
+
+r.delete(
+  "/:id",
+  guard(),
+  validator(param("id").isMongoId().withMessage("Must be mongoId")),
+  deleteExam
 );
 
 export default r;
