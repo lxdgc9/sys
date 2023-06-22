@@ -127,6 +127,19 @@ services:
       - bridge
     depends_on:
       - nats
+  landing:
+    image: sys/landing
+    build:
+      context: ./src/landing
+    ports:
+      - 3003:3000
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=dev
+      - MONGO_URI=${MONGO_URI_LANDING_SRV}
+    networks:
+      - bridge
 
 secrets:
   npmrc:
