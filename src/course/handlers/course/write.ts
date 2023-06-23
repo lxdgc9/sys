@@ -44,7 +44,6 @@ const writeCourse: RequestHandler = async (req, res, next) => {
     });
     await nCourse.save();
 
-    await nCourse.populate("classes", "name");
     await nCourse.populate([
       { path: "classes", select: "name" },
       {
