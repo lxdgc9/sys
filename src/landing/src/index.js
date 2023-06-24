@@ -80,10 +80,10 @@ r.post(
       await nCategory.save();
 
       res.status(201).json({
-        success  : true,
+        success: true,
         errorCode: 0,
-        message  : "Tạo danh mục thành công",
-        data     : {
+        message: "Tạo danh mục thành công",
+        data: {
           category: nCategory,
         },
       });
@@ -190,9 +190,10 @@ r.get("/products", async (req, res, next) => {
     const products = await Product.find();
 
     res.json({
-      status : true,
+      status: true,
+      errorCode: 0,
       message: "Lấy danh sách sản phẩm thành công",
-      data   : {
+      data: {
         products,
       },
     });
@@ -212,20 +213,26 @@ r.get(
         .populate("category");
       if (!product) {
         return res.status(404).json({
-          success  : false,
+          success: false,
           errorCode: 3,
-          message  : "Không tìm thấy sản phẩm",
+          message: "Không tìm thấy sản phẩm",
         });
       }
 
-      res.json(product);
+      res.json({
+        success: false,
+        errorCode: 0,
+        message: "Không tìm thấy sản phẩm",
+        data: {
+          product,
+        },
+      });
     } catch (e) {
       next(e);
     }
   }
 );
 
-// Tạo sản phẩm
 r.post("/products", async (req, res, next) => {
   const { type_id } = req.body;
 
@@ -263,42 +270,7 @@ r.post("/products/many", async (req, res, next) => {
   const products = req.body;
 
   try {
-    const isDupl = await Product.exists({
-      code: products.map((el) => el.code),
-    });
-    if (isDupl) {
-      return res.status(409).json({
-        message: "Trùng mã sản phẩm (code)",
-      });
-    }
-
-    const nProducts = await Product.insertMany(
-      products.map(
-        ({
-          code,
-          name,
-          category_id,
-          thumb_url,
-          types,
-          description,
-          image_urls,
-          price,
-          price_sale,
-          taxes,
-        }) => ({
-          code,
-          name,
-          category: category_id,
-          thumb_url,
-          types,
-          description,
-          image_urls,
-          price,
-          price_sale,
-          taxes,
-        })
-      )
-    );
+    const nProducts = await Product.insertMany(products);
 
     const productMap = nProducts.reduce((map, product) => {
       const k = product.category.toString();
@@ -322,7 +294,13 @@ r.post("/products/many", async (req, res, next) => {
       }),
     ]);
 
-    res.status(201).json(nProducts);
+    res.status(201).json({
+      status: false,
+      message: "Cập nhật sản phẩm thành công",
+      data: {
+        products,
+      },
+    });
   } catch (e) {
     next(e);
   }

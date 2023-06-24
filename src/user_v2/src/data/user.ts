@@ -1,7 +1,7 @@
 type Attr = {
   k: string;
   v: string;
-}
+};
 
 type User = {
   id: number;
@@ -9,8 +9,8 @@ type User = {
   role: number;
   spec_perms: number[];
   is_active: boolean;
-}
+};
 
-const users: User[] = []
+const users: User[] = [];
 
 export default users;
