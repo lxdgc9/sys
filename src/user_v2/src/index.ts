@@ -1,8 +1,8 @@
 import fastify from "fastify";
-import userRouter from "./routes/permission-group";
+import { permissionGroupRouter } from "./routes";
 
 const f = fastify({ logger: true });
 
-f.register(userRouter, { prefix: '/api/users' });
+f.register(permissionGroupRouter, { prefix: "/api/users/permission-groups" });
 
 f.listen({ port: 8000 });

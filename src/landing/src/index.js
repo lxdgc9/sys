@@ -27,8 +27,11 @@ function validator(...chains) {
     const errs = validationResult(req);
     if (!errs.isEmpty()) {
       return res.status(400).json({
+        success: false,
         message: "Lỗi đầu vào",
-        errs: errs.array(),
+        data: {
+          errs: errs.array(),
+        },
       });
     }
 
@@ -44,7 +47,14 @@ const r = express.Router();
 r.get("/categories", async (_req, res, next) => {
   try {
     const categories = await Category.find().lean().populate("products");
-    res.json(categories);
+    res.json({
+      success: true,
+      errorCode: 0,
+      message: "Lấy danh mục sản phẩm thành công",
+      data: {
+        categories,
+      },
+    });
   } catch (e) {
     next(e);
   }
@@ -69,7 +79,14 @@ r.post(
       const nCategory = new Category({ label });
       await nCategory.save();
 
-      res.status(201).json(nCategory);
+      res.status(201).json({
+        success  : true,
+        errorCode: 0,
+        message  : "Tạo danh mục thành công",
+        data     : {
+          category: nCategory,
+        },
+      });
     } catch (e) {
       next(e);
     }
@@ -105,11 +122,19 @@ r.patch(
         .populate("products");
       if (!product) {
         return res.status(404).json({
+          success: false,
+          errorCode: 3,
           message: "Danh mục không tồn tại",
         });
       }
 
-      res.json(product);
+      res.json({
+        success: true,
+        errorCode: 0,
+        data: {
+          product,
+        },
+      });
     } catch (e) {
       next(e);
     }
@@ -130,6 +155,8 @@ r.delete(
       await Category.deleteMany({ _id: { $in: ids } });
 
       res.json({
+        success: true,
+        errorCode: 0,
         message: "Xóa danh mục thành công",
       });
     } catch (e) {
@@ -147,6 +174,8 @@ r.delete(
       await Category.deleteOne({ _id: req.params.id });
 
       res.json({
+        success: true,
+        errorCode: 0,
         message: "Xóa danh mục thành công",
       });
     } catch (e) {
@@ -159,7 +188,14 @@ r.delete(
 r.get("/products", async (req, res, next) => {
   try {
     const products = await Product.find();
-    res.json(products);
+
+    res.json({
+      status : true,
+      message: "Lấy danh sách sản phẩm thành công",
+      data   : {
+        products,
+      },
+    });
   } catch (e) {
     next(e);
   }
@@ -176,7 +212,9 @@ r.get(
         .populate("category");
       if (!product) {
         return res.status(404).json({
-          message: "Không tìm thấy sản phẩm",
+          success  : false,
+          errorCode: 3,
+          message  : "Không tìm thấy sản phẩm",
         });
       }
 
@@ -188,222 +226,107 @@ r.get(
 );
 
 // Tạo sản phẩm
-r.post(
-  "/products",
-  validator(
-    body("code")
-      .notEmpty()
-      .withMessage("Bắt buộc")
-      .isString()
-      .withMessage("Phải là chuỗi"),
-    body("name")
-      .notEmpty()
-      .withMessage("Bắt buộc")
-      .isString()
-      .withMessage("Phải là chuỗi"),
-    body("category_id")
-      .notEmpty()
-      .withMessage("Bắt buộc")
-      .isMongoId()
-      .withMessage("Không hợp lệ"),
-    body("types")
-      .optional({ values: "undefined" })
-      .isArray()
-      .withMessage("Phải là mảng"),
-    body("types.*")
-      .optional({ values: "undefined" })
-      .isString()
-      .withMessage("Phải là chuỗi"),
-    body("description")
-      .notEmpty()
-      .withMessage("Bắt buộc")
-      .isString()
-      .withMessage("Phải là chuỗi"),
-    body("price")
-      .notEmpty()
-      .withMessage("Bắt buộc")
-      .isString()
-      .withMessage("Phải là chuỗi"),
-    body("price_sale")
-      .optional({ values: "undefined" })
-      .isString()
-      .withMessage("Phải là chuỗi"),
-    body("taxes")
-      .optional({ values: "undefined" })
-      .isInt({ min: 0 })
-      .withMessage("Phải là số nguyên dương")
-  ),
-  async (req, res, next) => {
-    const {
-      code,
-      name,
-      thumb_url,
-      category_id,
-      types,
-      description,
-      image_urls,
-      price,
-      price_sale,
-      taxes,
-    } = req.body;
+r.post("/products", async (req, res, next) => {
+  const { type_id } = req.body;
 
-    try {
-      const isDupl = await Product.exists({ code });
-      if (isDupl) {
-        return res.status(409).json({
-          message: "Trùng mã sản phẩm (code)",
-        });
-      }
+  try {
+    const nProduct = new Product({ ...req.body, type: type_id });
+    await nProduct.save();
 
-      const nProduct = new Product({
-        code,
-        name,
-        category: category_id,
-        thumb_url,
-        types,
-        description,
-        image_urls,
-        price,
-        price_sale,
-        taxes,
-      });
-      await nProduct.save();
+    await Promise.allSettled([
+      Category.updateOne(
+        { _id: type_id },
+        {
+          $addToSet: {
+            products: nProduct._id,
+          },
+        }
+      ),
+      nProduct.populate("category"),
+    ]);
 
-      await Promise.allSettled([
-        Category.updateOne(
-          { _id: category_id },
-          {
-            $addToSet: {
-              products: nProduct._id,
-            },
-          }
-        ),
-        nProduct.populate("category"),
-      ]);
-
-      res.status(201).json(nProduct);
-    } catch (e) {
-      next(e);
-    }
+    res.status(201).json({
+      success: true,
+      errorCode: 0,
+      message: "Tạo mới sản phẩm thành công",
+      data: {
+        product: nProduct,
+      },
+    });
+  } catch (e) {
+    next(e);
   }
-);
+});
 
 // Tạo nhiều sản phẩm
-r.post(
-  "/products/many",
-  validator(
-    body().isArray().withMessage("Phải là mảng"),
-    body("*.code")
-      .notEmpty()
-      .withMessage("Bắt buộc")
-      .isString()
-      .withMessage("Phải là chuỗi"),
-    body("*.name")
-      .notEmpty()
-      .withMessage("Bắt buộc")
-      .isString()
-      .withMessage("Phải là chuỗi"),
-    body("*.category_id")
-      .notEmpty()
-      .withMessage("Bắt buộc")
-      .isMongoId()
-      .withMessage("Không hợp lệ"),
-    body("*.types")
-      .optional({ values: "undefined" })
-      .isArray()
-      .withMessage("Phải là mảng"),
-    body("*.types.*")
-      .optional({ values: "undefined" })
-      .isString()
-      .withMessage("Phải là chuỗi"),
-    body("*.description")
-      .notEmpty()
-      .withMessage("Bắt buộc")
-      .isString()
-      .withMessage("Phải là chuỗi"),
-    body("*.price")
-      .notEmpty()
-      .withMessage("Bắt buộc")
-      .isString()
-      .withMessage("Phải là chuỗi"),
-    body("*.price_sale")
-      .optional({ values: "undefined" })
-      .isString()
-      .withMessage("Phải là chuỗi"),
-    body("*.taxes")
-      .optional({ values: "undefined" })
-      .isInt({ min: 0 })
-      .withMessage("Phải là số nguyên dương")
-  ),
-  async (req, res, next) => {
-    const products = req.body;
+r.post("/products/many", async (req, res, next) => {
+  const products = req.body;
 
-    try {
-      const isDupl = await Product.exists({
-        code: products.map((el) => el.code),
+  try {
+    const isDupl = await Product.exists({
+      code: products.map((el) => el.code),
+    });
+    if (isDupl) {
+      return res.status(409).json({
+        message: "Trùng mã sản phẩm (code)",
       });
-      if (isDupl) {
-        return res.status(409).json({
-          message: "Trùng mã sản phẩm (code)",
-        });
-      }
-
-      const nProducts = await Product.insertMany(
-        products.map(
-          ({
-            code,
-            name,
-            category_id,
-            thumb_url,
-            types,
-            description,
-            image_urls,
-            price,
-            price_sale,
-            taxes,
-          }) => ({
-            code,
-            name,
-            category: category_id,
-            thumb_url,
-            types,
-            description,
-            image_urls,
-            price,
-            price_sale,
-            taxes,
-          })
-        )
-      );
-
-      const productMap = nProducts.reduce((map, product) => {
-        const k = product.category.toString();
-        if (!map.has(k)) {
-          map.set(k, []);
-        }
-        map.get(k).push(product._id);
-        return map;
-      }, new Map());
-
-      await Promise.allSettled([
-        [...productMap.entries()].forEach(async ([k, v]) => {
-          await Category.updateOne(
-            { _id: k },
-            {
-              $addToSet: {
-                products: v,
-              },
-            }
-          );
-        }),
-      ]);
-
-      res.status(201).json(nProducts);
-    } catch (e) {
-      next(e);
     }
+
+    const nProducts = await Product.insertMany(
+      products.map(
+        ({
+          code,
+          name,
+          category_id,
+          thumb_url,
+          types,
+          description,
+          image_urls,
+          price,
+          price_sale,
+          taxes,
+        }) => ({
+          code,
+          name,
+          category: category_id,
+          thumb_url,
+          types,
+          description,
+          image_urls,
+          price,
+          price_sale,
+          taxes,
+        })
+      )
+    );
+
+    const productMap = nProducts.reduce((map, product) => {
+      const k = product.category.toString();
+      if (!map.has(k)) {
+        map.set(k, []);
+      }
+      map.get(k).push(product._id);
+      return map;
+    }, new Map());
+
+    await Promise.allSettled([
+      [...productMap.entries()].forEach(async ([k, v]) => {
+        await Category.updateOne(
+          { _id: k },
+          {
+            $addToSet: {
+              products: v,
+            },
+          }
+        );
+      }),
+    ]);
+
+    res.status(201).json(nProducts);
+  } catch (e) {
+    next(e);
   }
-);
+});
 
 // Chỉnh sửa thông tin sản phẩm
 r.patch("/products/:id", async (req, res, next) => {
@@ -457,11 +380,20 @@ r.patch("/products/:id", async (req, res, next) => {
       .populate("category");
     if (!product) {
       return res.status(404).json({
+        success: false,
+        errorCode: 3,
         message: "Không tìm thấy sản phẩm",
       });
     }
 
-    res.json(product);
+    res.json({
+      success: true,
+      errorCode: 0,
+      message: "Lấy thông tin sản phẩm thành công",
+      data: {
+        product,
+      },
+    });
   } catch (e) {
     next(e);
   }
@@ -489,6 +421,8 @@ r.delete(
       );
 
       res.json({
+        success: true,
+        errorCode: 0,
         message: "Xóa sản phẩm thành công",
       });
     } catch (e) {
@@ -516,6 +450,8 @@ r.delete(
       ]);
 
       res.json({
+        success: true,
+        errorCode: 0,
         message: "Xóa sản phẩm thành công",
       });
     } catch (e) {
@@ -527,12 +463,19 @@ r.delete(
 // Error handing
 r.use((err, _req, res, _next) => {
   console.log(err);
-  res.json({ message: "Có gì đó sai sai!!!" });
+
+  res.json({
+    success: false,
+    errorCode: 4,
+    message: "Có gì đó sai sai!!!",
+  });
 });
 
 // Bắt unknow request
 r.all("*", (_req, res) => {
   res.json({
+    success: false,
+    errorCode: 5,
     message: "Yêu cầu không tồn tại",
   });
 });

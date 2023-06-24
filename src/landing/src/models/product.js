@@ -2,56 +2,146 @@ const mongoose = require("mongoose");
 
 const productSchema = new mongoose.Schema(
   {
-    code: {
-      type: String,
+    type: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'category',
       required: true,
-      unique: true,
     },
-    name: {
+    publish: {
       type: String,
-      required: true,
     },
     category: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "category",
-      required: true,
-    },
-    types: [
-      {
-        type: String,
-        required: true,
-      },
-    ],
-    thumb_url: {
       type: String,
-      required: true,
     },
-    description: {
-      type: String,
-      required: true,
+    available: {
+      type: Number,
+      default: 0,
     },
-    image_urls: [
-      {
-        type: String,
-      },
-    ],
-    price: {
-      type: String,
-      required: true,
-    },
-    price_sale: {
-      type: String,
+    priceSale: {
+      type: Number,
     },
     taxes: {
       type: Number,
     },
-  },
-  {
-    timestamps: {
-      createdAt: "created_at",
-      updatedAt: "updated_at",
+    quantity: {
+      type: Number,
     },
-  }
+    sizes: [
+      {
+        type: Number,
+      },
+    ],
+    inventoryType: {
+      type: String,
+    },
+    images: [
+      {
+        type: String,
+      },
+    ],
+    ratings: [
+      {
+        name: {
+          type: String,
+        },
+        starCount: {
+          type: Number,
+        },
+        reviewCount: {
+          type: Number,
+        },
+      },
+    ],
+    reviews: [
+      {
+        name: {
+          type: String,
+        },
+        postedAt: {
+          type: Date,
+        },
+        comment: {
+          type: String,
+        },
+        isPurchased: {
+          type: Boolean,
+        },
+        rating: {
+          type: String,
+        },
+        avatarUrl: {
+          type: String,
+        },
+        helpful: {
+          type: Number,
+        },
+        attachments: [
+          {
+            type: mongoose.Schema.Types.Mixed
+          }
+        ]
+      }
+    ],
+    tags: [
+      {
+        type: String,
+      }
+    ],
+    code: {
+      type: String, 
+    },
+    description: {
+      type: String, 
+    },
+    newLabel: {
+      enabled: {
+        type: Boolean,
+      },
+      content: {
+        type: String,
+      }
+    },
+    sku: {
+      type: String,
+    },
+    createdAt: {
+      type: Date,
+    },
+    saleLabel: {
+      enabled: {
+        type: Boolean,
+      },
+      content: {
+        type: String,
+      }
+    },
+    name: {
+      type: String,
+    },
+    price: {
+      type: Number,
+    },
+    coverUrl: {
+      type: String,
+    },
+    totalRatings: {
+      type: Number,
+    },
+    totalSold: {
+      type: Number,
+    },
+    totalReviews: {
+      type: Number,
+    },
+    subDescription: {
+      type: String,
+    },
+    colors: [
+      {
+        type: String
+      }
+    ]
+  },
 );
 
 const Product = mongoose.model("product", productSchema);
