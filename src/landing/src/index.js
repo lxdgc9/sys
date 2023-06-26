@@ -30,9 +30,7 @@ function validator(...chains) {
       return res.status(400).json({
         success: false,
         message: "Lỗi đầu vào",
-        data: {
-          errs: errs.array(),
-        },
+        errs: errs.array(),
       });
     }
 
@@ -52,9 +50,7 @@ r.get("/types", async (_req, res, next) => {
       success: true,
       errorCode: 0,
       message: "Lấy danh sách loại sản phẩm thành công",
-      data: {
-        types,
-      },
+      types,
     });
   } catch (e) {
     next(e);
@@ -84,9 +80,7 @@ r.post(
         success: true,
         errorCode: 0,
         message: "Tạo loại sản phẩm thành công",
-        data: {
-          type: nType,
-        },
+        type: nType,
       });
     } catch (e) {
       next(e);
@@ -130,9 +124,7 @@ r.patch(
       res.json({
         success: true,
         errorCode: 0,
-        data: {
-          type,
-        },
+        type,
       });
     } catch (e) {
       next(e);
@@ -190,9 +182,7 @@ r.get("/categories", async (_req, res, next) => {
       success: true,
       errorCode: 0,
       message: "Lấy danh mục sản phẩm thành công",
-      data: {
-        categories,
-      },
+      categories,
     });
   } catch (e) {
     next(e);
@@ -221,9 +211,7 @@ r.post(
         success: true,
         errorCode: 0,
         message: "Tạo danh mục sản phẩm thành công",
-        data: {
-          category: nCategory,
-        },
+        category: nCategory,
       });
     } catch (e) {
       next(e);
@@ -258,9 +246,7 @@ r.get("/products", async (req, res, next) => {
       status: true,
       errorCode: 0,
       message: "Lấy danh sách sản phẩm thành công",
-      data: {
-        products,
-      },
+      products,
     });
   } catch (e) {
     next(e);
@@ -288,9 +274,7 @@ r.get(
         success: false,
         errorCode: 0,
         message: "Không tìm thấy sản phẩm",
-        data: {
-          product,
-        },
+        product,
       });
     } catch (e) {
       next(e);
@@ -325,9 +309,7 @@ r.post("/products", async (req, res, next) => {
       success: true,
       errorCode: 0,
       message: "Tạo mới sản phẩm thành công",
-      data: {
-        product: nProduct,
-      },
+      product: nProduct,
     });
   } catch (e) {
     next(e);
@@ -366,9 +348,7 @@ r.post("/products/many", async (req, res, next) => {
     res.status(201).json({
       status: false,
       message: "Cập nhật sản phẩm thành công",
-      data: {
-        products,
-      },
+      products,
     });
   } catch (e) {
     next(e);
@@ -435,9 +415,7 @@ r.patch("/products/:id", async (req, res, next) => {
       success: true,
       errorCode: 0,
       message: "Lấy thông tin sản phẩm thành công",
-      data: {
-        product,
-      },
+      product,
     });
   } catch (e) {
     next(e);
