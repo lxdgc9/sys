@@ -4,14 +4,16 @@ const productSchema = new mongoose.Schema(
   {
     type: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'category',
+      ref: "category",
       required: true,
     },
     publish: {
       type: String,
     },
     category: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "type",
+      required: true,
     },
     available: {
       type: Number,
@@ -77,21 +79,21 @@ const productSchema = new mongoose.Schema(
         },
         attachments: [
           {
-            type: mongoose.Schema.Types.Mixed
-          }
-        ]
-      }
+            type: mongoose.Schema.Types.Mixed,
+          },
+        ],
+      },
     ],
     tags: [
       {
         type: String,
-      }
+      },
     ],
     code: {
-      type: String, 
+      type: String,
     },
     description: {
-      type: String, 
+      type: String,
     },
     newLabel: {
       enabled: {
@@ -99,7 +101,7 @@ const productSchema = new mongoose.Schema(
       },
       content: {
         type: String,
-      }
+      },
     },
     sku: {
       type: String,
@@ -113,7 +115,7 @@ const productSchema = new mongoose.Schema(
       },
       content: {
         type: String,
-      }
+      },
     },
     name: {
       type: String,
@@ -138,10 +140,19 @@ const productSchema = new mongoose.Schema(
     },
     colors: [
       {
-        type: String
-      }
-    ]
+        type: String,
+      },
+    ],
   },
+  {
+    toJSON: {
+      virtuals: true,
+      transform(_doc, ret, _opts) {
+        delete ret._id;
+        delete ret.__v;
+      },
+    },
+  }
 );
 
 const Product = mongoose.model("product", productSchema);

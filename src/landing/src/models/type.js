@@ -1,11 +1,17 @@
 const mongoose = require("mongoose");
 
-const categorySchema = new mongoose.Schema(
+const typeSchema = new mongoose.Schema(
   {
     label: {
       type: String,
       required: true,
     },
+    products: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "product",
+      },
+    ],
   },
   {
     toJSON: {
@@ -18,6 +24,6 @@ const categorySchema = new mongoose.Schema(
   }
 );
 
-const Category = mongoose.model("type", categorySchema);
+const Type = mongoose.model("category", typeSchema);
 
-module.exports = Category;
+module.exports = Type;

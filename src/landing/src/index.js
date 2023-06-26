@@ -3,8 +3,9 @@ const cors = require("cors");
 const mongoose = require("mongoose");
 const compression = require("compression");
 const { param, body, validationResult } = require("express-validator");
-const Category = require("./models/category");
+const Type = require("./models/type");
 const Product = require("./models/product");
+const Category = require("./models/category");
 
 const app = express();
 
@@ -44,9 +45,147 @@ function validator(...chains) {
 const r = express.Router();
 
 // Danh mục sản phẩm
+r.get("/types", async (_req, res, next) => {
+  try {
+    const types = await Type.find().populate("products");
+    res.json({
+      success: true,
+      errorCode: 0,
+      message: "Lấy danh sách loại sản phẩm thành công",
+      data: {
+        types,
+      },
+    });
+  } catch (e) {
+    next(e);
+  }
+});
+
+// Tạo danh mục
+r.post(
+  "/types",
+  validator(
+    body("label")
+      .notEmpty()
+      .withMessage("Trường bắt buộc")
+      .isString()
+      .withMessage("Phải là chuỗi")
+      .trim()
+      .escape()
+  ),
+  async (req, res, next) => {
+    const { label } = req.body;
+
+    try {
+      const nType = new Type({ label });
+      await nType.save();
+
+      res.status(201).json({
+        success: true,
+        errorCode: 0,
+        message: "Tạo loại sản phẩm thành công",
+        data: {
+          type: nType,
+        },
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+);
+
+// Chỉnh sửa thông tin danh mục
+r.patch(
+  "/types/:id",
+  validator(
+    param("id").isMongoId().withMessage("Param không hợp lệ"),
+    body("label")
+      .optional({ values: "undefined" })
+      .isString()
+      .withMessage("Phải là chuỗi")
+      .trim()
+      .escape()
+  ),
+  async (req, res, next) => {
+    const { label } = req.body;
+
+    try {
+      const type = await Type.findByIdAndUpdate(
+        req.params.id,
+        {
+          $set: {
+            label,
+          },
+        },
+        { new: true }
+      ).populate("products");
+      if (!type) {
+        return res.status(404).json({
+          success: false,
+          errorCode: 3,
+          message: "Loại sản phẩm không tồn tại",
+        });
+      }
+
+      res.json({
+        success: true,
+        errorCode: 0,
+        data: {
+          type,
+        },
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+);
+
+// Xóa nhiều danh mục
+r.delete(
+  "/types/batch",
+  validator(
+    body().isArray().withMessage("Phải là mảng"),
+    body("*").isMongoId().withMessage("Phải là mongoId")
+  ),
+  async (req, res, next) => {
+    const ids = req.body;
+
+    try {
+      await Type.deleteMany({ _id: { $in: ids } });
+
+      res.json({
+        success: true,
+        errorCode: 0,
+        message: "Xóa loại sản phẩm thành công",
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+);
+
+// Xóa danh mục
+r.delete(
+  "/types/:id",
+  validator(param("id").isMongoId().withMessage("Param không hợp lệ")),
+  async (req, res, next) => {
+    try {
+      await Type.deleteOne({ _id: req.params.id });
+
+      res.json({
+        success: true,
+        errorCode: 0,
+        message: "Xóa loại sản phẩm thành công",
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+);
+
 r.get("/categories", async (_req, res, next) => {
   try {
-    const categories = await Category.find().lean().populate("products");
+    const categories = await Category.find();
     res.json({
       success: true,
       errorCode: 0,
@@ -60,7 +199,6 @@ r.get("/categories", async (_req, res, next) => {
   }
 });
 
-// Tạo danh mục
 r.post(
   "/categories",
   validator(
@@ -82,7 +220,7 @@ r.post(
       res.status(201).json({
         success: true,
         errorCode: 0,
-        message: "Tạo danh mục thành công",
+        message: "Tạo danh mục sản phẩm thành công",
         data: {
           category: nCategory,
         },
@@ -93,79 +231,6 @@ r.post(
   }
 );
 
-// Chỉnh sửa thông tin danh mục
-r.patch(
-  "/categories/:id",
-  validator(
-    param("id").isMongoId().withMessage("Param không hợp lệ"),
-    body("label")
-      .optional({ values: "undefined" })
-      .isString()
-      .withMessage("Phải là chuỗi")
-      .trim()
-      .escape()
-  ),
-  async (req, res, next) => {
-    const { label } = req.body;
-
-    try {
-      const product = await Category.findByIdAndUpdate(
-        req.params.id,
-        {
-          $set: {
-            label,
-          },
-        },
-        { new: true }
-      )
-        .lean()
-        .populate("products");
-      if (!product) {
-        return res.status(404).json({
-          success: false,
-          errorCode: 3,
-          message: "Danh mục không tồn tại",
-        });
-      }
-
-      res.json({
-        success: true,
-        errorCode: 0,
-        data: {
-          product,
-        },
-      });
-    } catch (e) {
-      next(e);
-    }
-  }
-);
-
-// Xóa nhiều danh mục
-r.delete(
-  "/categories/many",
-  validator(
-    body().isArray().withMessage("Phải là mảng"),
-    body("*").isMongoId().withMessage("Phải là mongoId")
-  ),
-  async (req, res, next) => {
-    const ids = req.body;
-
-    try {
-      await Category.deleteMany({ _id: { $in: ids } });
-
-      res.json({
-        success: true,
-        errorCode: 0,
-        message: "Xóa danh mục thành công",
-      });
-    } catch (e) {
-      next(e);
-    }
-  }
-);
-
-// Xóa danh mục
 r.delete(
   "/categories/:id",
   validator(param("id").isMongoId().withMessage("Param không hợp lệ")),
@@ -208,9 +273,9 @@ r.get(
   validator(param("id").isMongoId().withMessage("Param không hợp lệ")),
   async (req, res, next) => {
     try {
-      const product = await Product.findById(req.params.id)
-        .lean()
-        .populate("category");
+      const product = await Product.findById(req.params.id).populate(
+        "category"
+      );
       if (!product) {
         return res.status(404).json({
           success: false,
@@ -234,14 +299,18 @@ r.get(
 );
 
 r.post("/products", async (req, res, next) => {
-  const { type_id } = req.body;
+  const { type_id, category_id } = req.body;
 
   try {
-    const nProduct = new Product({ ...req.body, type: type_id });
+    const nProduct = new Product({
+      ...req.body,
+      type: type_id,
+      category: category_id,
+    });
     await nProduct.save();
 
     await Promise.allSettled([
-      Category.updateOne(
+      Type.updateOne(
         { _id: type_id },
         {
           $addToSet: {
@@ -283,7 +352,7 @@ r.post("/products/many", async (req, res, next) => {
 
     await Promise.allSettled([
       [...productMap.entries()].forEach(async ([k, v]) => {
-        await Category.updateOne(
+        await Type.updateOne(
           { _id: k },
           {
             $addToSet: {
@@ -353,9 +422,7 @@ r.patch("/products/:id", async (req, res, next) => {
       {
         new: true,
       }
-    )
-      .lean()
-      .populate("category");
+    ).populate("category");
     if (!product) {
       return res.status(404).json({
         success: false,
@@ -389,7 +456,7 @@ r.delete(
 
     try {
       await Product.deleteMany({ _id: { $in: ids } });
-      await Category.updateMany(
+      await Type.updateMany(
         { products: { $in: ids } },
         {
           $pullAll: {
@@ -417,7 +484,7 @@ r.delete(
     try {
       await Promise.allSettled([
         Product.deleteOne({ _id: req.params.id }),
-        Category.updateMany(
+        Type.updateMany(
           { products: req.params.id },
           {
             $pull: {
