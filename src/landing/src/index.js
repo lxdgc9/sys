@@ -199,6 +199,7 @@ r.post(
   ),
   async (req, res, next) => {
     const { label } = req.body;
+    console.log(label);
 
     try {
       const nCategory = new Category({ label });
@@ -221,6 +222,19 @@ r.patch(
   validator(param("id").isMongoId().withMessage("Param không hợp lệ")),
   async (req, res, next) => {
     try {
+      const category = await Category.findByIdAndUpdate(
+        req.params.id,
+        req.body,
+        { new: true }
+      );
+      if (!category) {
+        return res.status(404).json({
+          success: false,
+          errorCode: 4,
+          message: "Không tìm thấy danh mục",
+        });
+      }
+      res.statusCode(204);
     } catch (e) {
       next(e);
     }
@@ -248,13 +262,17 @@ r.delete(
 // Danh sách sản phẩm
 r.get("/products", async (req, res, next) => {
   try {
-    const products = await Product.find();
+    const products = await Product.find().populate("category");
+    const formated = products.map((el) => ({
+      ...el.toJSON(),
+      category: el.name,
+    }));
 
     res.json({
       status: true,
       errorCode: 0,
       message: "Lấy danh sách sản phẩm thành công",
-      products,
+      products: formated,
     });
   } catch (e) {
     next(e);
@@ -282,7 +300,7 @@ r.get(
         success: false,
         errorCode: 0,
         message: "Không tìm thấy sản phẩm",
-        product,
+        product: { ...product.toJSON(), category: product.name },
       });
     } catch (e) {
       next(e);
