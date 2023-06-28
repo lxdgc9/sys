@@ -265,7 +265,7 @@ r.get("/products", async (req, res, next) => {
     const products = await Product.find().populate("category");
     const formated = products.map((el) => ({
       ...el.toJSON(),
-      category: el.name,
+      category: el.category.label,
     }));
 
     res.json({
@@ -300,7 +300,7 @@ r.get(
         success: false,
         errorCode: 0,
         message: "Không tìm thấy sản phẩm",
-        product: { ...product.toJSON(), category: product.name },
+        product: { ...product.toJSON(), category: product.category.label },
       });
     } catch (e) {
       next(e);
