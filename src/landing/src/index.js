@@ -67,7 +67,6 @@ r.post(
       .isString()
       .withMessage("Phải là chuỗi")
       .trim()
-      .escape()
   ),
   async (req, res, next) => {
     const { label } = req.body;
@@ -98,7 +97,6 @@ r.patch(
       .isString()
       .withMessage("Phải là chuỗi")
       .trim()
-      .escape()
   ),
   async (req, res, next) => {
     const { label } = req.body;
@@ -198,7 +196,6 @@ r.post(
       .isString()
       .withMessage("Phải là chuỗi")
       .trim()
-      .escape()
   ),
   async (req, res, next) => {
     const { label } = req.body;
@@ -213,6 +210,17 @@ r.post(
         message: "Tạo danh mục sản phẩm thành công",
         category: nCategory,
       });
+    } catch (e) {
+      next(e);
+    }
+  }
+);
+
+r.patch(
+  "/categoires/:id",
+  validator(param("id").isMongoId().withMessage("Param không hợp lệ")),
+  async (req, res, next) => {
+    try {
     } catch (e) {
       next(e);
     }
