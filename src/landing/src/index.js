@@ -306,9 +306,9 @@ r.get(
       }
 
       res.json({
-        success: false,
+        success: true,
         errorCode: 0,
-        message: "Không tìm thấy sản phẩm",
+        message: "Lấy thông tin sản phẩm thành công",
         product: {
           ...product.toJSON(),
           type: product.type.label,
