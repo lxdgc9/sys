@@ -388,14 +388,9 @@ r.post("/products/many", async (req, res, next) => {
 
 // Chỉnh sửa thông tin sản phẩm
 r.patch("/products/:id", async (req, res, next) => {
-  const { type_id, category_id } = req.body;
-  console.log(req.body);
-
   try {
     const product = await Product.findByIdAndUpdate(req.params.id, {
       ...req.body,
-      type: type_id,
-      category: category_id,
     });
     if (!product) {
       return res.status(404).json({
