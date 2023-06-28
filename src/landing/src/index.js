@@ -262,9 +262,10 @@ r.delete(
 // Danh sách sản phẩm
 r.get("/products", async (req, res, next) => {
   try {
-    const products = await Product.find().populate("category");
+    const products = await Product.find().populate("category type");
     const formated = products.map((el) => ({
       ...el.toJSON(),
+      type: el.type.label,
       category: el.category.label,
     }));
 
@@ -286,7 +287,7 @@ r.get(
   async (req, res, next) => {
     try {
       const product = await Product.findById(req.params.id).populate(
-        "category"
+        "category type"
       );
       if (!product) {
         return res.status(404).json({
@@ -300,7 +301,11 @@ r.get(
         success: false,
         errorCode: 0,
         message: "Không tìm thấy sản phẩm",
-        product: { ...product.toJSON(), category: product.category.label },
+        product: {
+          ...product.toJSON(),
+          type: product.type.label,
+          category: product.category.label,
+        },
       });
     } catch (e) {
       next(e);
