@@ -388,65 +388,27 @@ r.post("/products/many", async (req, res, next) => {
 
 // Chỉnh sửa thông tin sản phẩm
 r.patch("/products/:id", async (req, res, next) => {
-  const {
-    code,
-    name,
-    thumb_url,
-    category_id,
-    types,
-    description,
-    image_urls,
-    price,
-    price_sale,
-    taxes,
-  } = req.body;
+  const { type_id, category_id } = req.body;
+  console.log(req.body);
 
   try {
-    if (code) {
-      const isDupl = await Product.exists({
-        _id: { $ne: req.params.id },
-        code,
-      });
-      if (isDupl) {
-        return res.status(409).json({
-          message: "Trùng mã sản phẩm",
-        });
-      }
-    }
-
-    const product = await Product.findByIdAndUpdate(
-      req.params.id,
-      {
-        $set: {
-          code,
-          name,
-          category: category_id,
-          thumb_url,
-          types,
-          description,
-          image_urls,
-          price,
-          price_sale,
-          taxes,
-        },
-      },
-      {
-        new: true,
-      }
-    ).populate("category");
+    const product = await Product.findByIdAndUpdate(req.params.id, {
+      ...req.body,
+      type: type_id,
+      category: category_id,
+    });
     if (!product) {
       return res.status(404).json({
         success: false,
-        errorCode: 3,
-        message: "Không tìm thấy sản phẩm",
+        errorCode: 1,
+        message: "Chỉnh sửa thông tin sản phẩm thất bại",
       });
     }
 
     res.json({
       success: true,
       errorCode: 0,
-      message: "Lấy thông tin sản phẩm thành công",
-      product,
+      message: "Chỉnh sửa thông tin sản phẩm thành công",
     });
   } catch (e) {
     next(e);
