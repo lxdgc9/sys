@@ -2,7 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
 const compression = require("compression");
-const { param, body, validationResult } = require("express-validator");
+const { param, body, validationResult, query } = require("express-validator");
 const Type = require("./models/type");
 const Product = require("./models/product");
 const Category = require("./models/category");
@@ -282,11 +282,19 @@ r.get("/products", async (req, res, next) => {
 
 // Chi tiết sản phẩm
 r.get(
-  "/products/:id",
-  validator(param("id").isMongoId().withMessage("Param không hợp lệ")),
+  "/product/details",
+  validator(
+    query("productId")
+      .notEmpty()
+      .withMessage("Bắt buộc")
+      .isMongoId()
+      .withMessage("Param không hợp lệ")
+  ),
   async (req, res, next) => {
+    const { productId } = req.query;
+
     try {
-      const product = await Product.findById(req.params.id).populate(
+      const product = await Product.findById(productId).populate(
         "category type"
       );
       if (!product) {
