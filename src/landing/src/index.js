@@ -297,7 +297,7 @@ r.get("/product/search", async (req, res, next) => {
       success: true,
       errorCode: 0,
       message: "Tìm kiếm danh sách sản phẩm thành công",
-      result: formatedProduct,
+      results: formatedProduct,
     });
   } catch (e) {
     next(e);
