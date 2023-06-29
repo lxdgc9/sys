@@ -1,2 +1,0 @@
-"use strict";(self.webpackChunkiit29062023=self.webpackChunkiit29062023||[]).push([[6829],{66829:function(n,t,e){e.r(t),e.d(t,{default:function(){return u}});var i=e(6907),s=e(32618),r=e(80184);function u(){return(0,r.jsxs)(r.Fragment,{children:[(0,r.jsx)(i.ql,{children:(0,r.jsx)("title",{children:" Foundations: Icons"})}),(0,r.jsx)(s.zQ,{})]})}}}]);
-//# sourceMappingURL=6829.dcce0984.chunk.js.map

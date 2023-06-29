@@ -1,2 +1,0 @@
-"use strict";(self.webpackChunkiit29062023=self.webpackChunkiit29062023||[]).push([[1059],{3604:function(e,n,t){t.r(n),t.d(n,{default:function(){return u}});var i=t(6907),r=t(5599),s=t(80184);function u(){return(0,s.jsxs)(s.Fragment,{children:[(0,s.jsx)(i.ql,{children:(0,s.jsx)("title",{children:" Dashboard: User List"})}),(0,s.jsx)(r.Qu,{})]})}}}]);
-//# sourceMappingURL=1059.66d4997a.chunk.js.map
