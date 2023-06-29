@@ -286,7 +286,17 @@ r.get("/product/search", async (req, res, next) => {
 
   try {
     const products = await Product.find({
-      name: { $regex: query, $options: "i" },
+      $or: [
+        {
+          name: { $regex: query, $options: "i" },
+        },
+        {
+          "newLabel.content": { $regex: query, $options: "i" },
+        },
+        {
+          "saleLabel.content": { $regex: query, $options: "i" },
+        },
+      ],
     }).populate("category type");
     const formatedProduct = products.map((el) => ({
       ...el.toJSON(),
