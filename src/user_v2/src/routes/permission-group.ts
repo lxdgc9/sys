@@ -6,27 +6,27 @@ import readPermissionGroup from "../handlers/permission_group/read";
 
 const r: FastifyPluginCallback = (f, _opts, done) => {
   f.route({
-    method    : 'GET',
-    url       : "/",
+    method: "GET",
+    url: "/",
     preHandler: [decodeJwt],
-    handler   : readPermissionGroups,
+    handler: readPermissionGroups,
   });
 
   f.route({
-    method    : 'GET',
-    url       : "/:id",
+    method: "GET",
+    url: "/:id",
     preHandler: [decodeJwt],
-    handler   : readPermissionGroup,
+    handler: readPermissionGroup,
   });
 
   f.route({
-    method    : 'POST',
-    url       : "/",
+    method: "POST",
+    url: "/",
     preHandler: [decodeJwt],
-    handler   : writePermissionGroup,
+    handler: writePermissionGroup,
   });
 
   done();
-}
+};
 
 export default r;

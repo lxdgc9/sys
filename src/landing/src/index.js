@@ -280,6 +280,30 @@ r.get("/products", async (req, res, next) => {
   }
 });
 
+// Tìm kiếm sản phẩm
+r.get("/product/search", async (req, res, next) => {
+  const { query } = req.query;
+
+  try {
+    const products = await Product.find({ name: new RegExp(query) }).populate(
+      "category type"
+    );
+    const formatedProduct = products.map((el) => ({
+      ...el.toJSON(),
+      type: el.type.label,
+      category: el.category.label,
+    }));
+    res.json({
+      success: true,
+      errorCode: 0,
+      message: "Tìm kiếm danh sách sản phẩm thành công",
+      result: formatedProduct,
+    });
+  } catch (e) {
+    next(e);
+  }
+});
+
 // Chi tiết sản phẩm
 r.get(
   "/product/details",

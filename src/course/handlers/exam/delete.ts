@@ -9,8 +9,6 @@ const deleteExam: RequestHandler = async (req, res, next) => {
       throw new NotFoundErr("Exam not found");
     }
 
-    console.log("hello world");
-
     // await exam.deleteOne();
 
     res.sendStatus(204);
