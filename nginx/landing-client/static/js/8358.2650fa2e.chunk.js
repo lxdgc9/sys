@@ -1,0 +1,2 @@
+"use strict";(self.webpackChunkiit29062023=self.webpackChunkiit29062023||[]).push([[8358],{99454:function(e,n,r){r.r(n),r.d(n,{default:function(){return u}});var s=r(6907),t=r(5599),i=r(80184);function u(){return(0,i.jsxs)(i.Fragment,{children:[(0,i.jsx)(s.ql,{children:(0,i.jsx)("title",{children:" Dashboard: User Cards"})}),(0,i.jsx)(t.FQ,{})]})}}}]);
+//# sourceMappingURL=8358.2650fa2e.chunk.js.map

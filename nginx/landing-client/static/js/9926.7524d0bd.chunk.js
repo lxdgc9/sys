@@ -1,0 +1,2 @@
+"use strict";(self.webpackChunkiit29062023=self.webpackChunkiit29062023||[]).push([[9926],{21151:function(n,t,i){i.r(t),i.d(t,{default:function(){return u}});var e=i(6907),r=i(22600),s=i(80184);function u(){return(0,s.jsxs)(s.Fragment,{children:[(0,s.jsx)(e.ql,{children:(0,s.jsx)("title",{children:" IIT - Chi ti\u1ebft s\u1ea3n ph\u1ea9m"})}),(0,s.jsx)(r.QN,{})]})}}}]);
+//# sourceMappingURL=9926.7524d0bd.chunk.js.map
