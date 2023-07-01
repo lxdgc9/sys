@@ -7,7 +7,6 @@ import {
   UPDATE_USER,
   DELETE_USER,
 } from "@lxdgc9/pkg/dist/rules/manage";
-import { ACCESS_SYSTEM } from "@lxdgc9/pkg/dist/rules/app";
 import modifyPassword from "../handlers/user/modify-passwd";
 import modifyAccess from "../handlers/user/modify-access";
 import writeUser from "../handlers/user/write";

@@ -1,0 +1,13 @@
+### get groups
+GET http://localhost:8000/permission-groups HTTP/1.1
+
+### create group
+POST http://localhost:8000/permission-groups HTTP/1.1
+Content-Type: application/json
+
+{
+  "name": "for update"
+}
+
+### delete group
+DELETE http://localhost:8000/permission-groups/649fd5c1ea1f23dd5edd5ddb HTTP/1.1
