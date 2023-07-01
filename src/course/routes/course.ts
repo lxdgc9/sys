@@ -17,6 +17,7 @@ import readMyCourses from "../handlers/course/read-my-courses";
 import updateProcess from "../handlers/course/update-process";
 import changeStatusCourse from "../handlers/course/change-status-course";
 import modifyCourse from "../handlers/course/update";
+import { ACCESS_COURSE } from "@lxdgc9/pkg/dist/rules/app";
 
 const r = Router();
 
@@ -55,7 +56,7 @@ r.route("/")
     writeCourse
   );
 
-r.get("/my-courses", guard(READ_COURSE), readMyCourses);
+r.get("/my-courses", guard(ACCESS_COURSE), readMyCourses);
 
 r.get("/my-courses-by-class/:class_id", guard(READ_COURSE), readCoursesByClass);
 
