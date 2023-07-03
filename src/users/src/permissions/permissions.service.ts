@@ -65,10 +65,7 @@ export class PermissionsService {
   }
 
   async update(id: string, updatePermissionDto: UpdatePermissionDto) {
-    let data: any = {
-      code: updatePermissionDto.code,
-      description: updatePermissionDto.description,
-    };
+    let data: any = {};
 
     if (updatePermissionDto.group_id) {
       data.group = {
@@ -82,7 +79,13 @@ export class PermissionsService {
       where: {
         id,
       },
-      data,
+      data: {
+        code: updatePermissionDto.code,
+        description: updatePermissionDto.description,
+        group: updatePermissionDto.group_id
+          ? { connect: { id: updatePermissionDto.group_id } }
+          : undefined,
+      },
       include: {
         group: true,
       },
