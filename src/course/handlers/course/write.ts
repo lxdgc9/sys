@@ -6,16 +6,18 @@ import { Course } from "../../models/course";
 import { User } from "../../models/user";
 
 const writeCourse: RequestHandler = async (req, res, next) => {
-  const {
+  let {
     title,
     content,
     is_publish,
     class_ids,
+    same_author_ids,
   }: {
     title: string;
     content: string;
     is_publish: boolean;
     class_ids: Types.ObjectId[];
+    same_author_ids: Types.ObjectId[];
   } = req.body;
 
   try {
@@ -30,6 +32,9 @@ const writeCourse: RequestHandler = async (req, res, next) => {
       throw new BadReqErr("Invalid class_ids");
     }
 
+    same_author_ids.push(req.user!.id);
+    same_author_ids = [...new Set(same_author_ids)];
+
     const _classes = await Class.find({ _id: { $in: class_ids } }).select(
       "members"
     );
@@ -38,6 +43,7 @@ const writeCourse: RequestHandler = async (req, res, next) => {
     const nCourse = new Course({
       title,
       content,
+      same_authors: same_author_ids,
       author: user._id,
       is_publish,
       classes: class_ids,

@@ -40,6 +40,7 @@ const writeLesson: RequestHandler = async (req, res, next) => {
 
     const nLesson = new Lesson({
       course_id,
+      author: req.user!.id,
       title,
       content,
       files: (req.files as any).map((f: any) => ({

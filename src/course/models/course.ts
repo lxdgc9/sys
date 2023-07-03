@@ -9,6 +9,7 @@ interface ICourse {
   is_publish: boolean;
   comments: Types.ObjectId[];
   ratings: Types.ObjectId[];
+  same_authors: Types.ObjectId[];
 }
 
 const schema = new Schema<ICourse>(
@@ -52,6 +53,12 @@ const schema = new Schema<ICourse>(
       {
         type: Schema.Types.ObjectId,
         ref: "rating",
+      },
+    ],
+    same_authors: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "user",
       },
     ],
   },

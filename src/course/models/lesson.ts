@@ -4,6 +4,7 @@ interface ILesson {
   course_id: Types.ObjectId;
   title: string;
   content: string;
+  author: Types.ObjectId;
   files: {
     path: string;
     filename: string;
@@ -25,6 +26,11 @@ const schema = new Schema<ILesson>(
     },
     content: {
       type: String,
+      required: true,
+    },
+    author: {
+      type: Schema.Types.ObjectId,
+      ref: "user",
       required: true,
     },
     files: [
