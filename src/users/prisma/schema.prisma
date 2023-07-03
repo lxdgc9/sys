@@ -11,23 +11,23 @@ datasource db {
 }
 
 model Permission {
-  id          String          @id @default(auto()) @map("_id") @db.ObjectId
-  code        String          @unique
+  id          String       @id @default(auto()) @map("_id") @db.ObjectId
+  code        String       @unique
   description String?
-  group       PermissionGroup @relation(fields: [group_id], references: [id])
-  group_id    String          @db.ObjectId
-  role_ids    String[]        @db.ObjectId
-  roles       Role[]          @relation(fields: [role_ids], references: [id])
+  group       PermCategory @relation(fields: [group_id], references: [id])
+  group_id    String       @db.ObjectId
+  role_ids    String[]     @db.ObjectId
+  roles       Role[]       @relation(fields: [role_ids], references: [id])
 
   @@map("permissions")
 }
 
-model PermissionGroup {
+model PermCategory {
   id          String       @id @default(auto()) @map("_id") @db.ObjectId
   name        String
   permissions Permission[]
 
-  @@map("permission-groups")
+  @@map("perm-categories")
 }
 
 model Role {
@@ -44,14 +44,22 @@ model Role {
 }
 
 model User {
-  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  id        String     @id @default(auto()) @map("_id") @db.ObjectId
+  ufields   UniqFields
   atts      Attr[]
   password  String
-  role      Role?   @relation(fields: [role_id], references: [id])
-  role_id   String? @db.ObjectId
-  is_active Boolean @default(true)
+  role      Role?      @relation(fields: [role_id], references: [id])
+  role_id   String?    @db.ObjectId
+  is_active Boolean    @default(true)
 
-  @@map("Users")
+  @@map("users")
+}
+
+type UniqFields {
+  username String
+  phone    String
+  email    String
+  password String
 }
 
 type Attr {
