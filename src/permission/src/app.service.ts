@@ -4,6 +4,7 @@ import { CreatePermissionDto } from './dto/create-permission.dto';
 import { CreatePermissionGroupDto } from './dto/create-permission-group.dto';
 import { UpdatePermissionGroupDto } from './dto/update-permission-group.dto';
 import { UpdatePermissionDto } from './dto/update-permission.dto';
+import { DeletePermissionsDto } from './dto/delete-permission-batch.dto';
 
 @Injectable()
 export class AppService {
@@ -83,6 +84,17 @@ export class AppService {
       },
       include: {
         group: true,
+      },
+    });
+    return permission;
+  }
+
+  async deletePermissions(deletePermissionsDto: DeletePermissionsDto) {
+    const permission = await this.prismaService.permission.deleteMany({
+      where: {
+        id: {
+          in: deletePermissionsDto.ids,
+        },
       },
     });
     return permission;

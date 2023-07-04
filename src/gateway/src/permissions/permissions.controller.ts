@@ -10,6 +10,7 @@ import {
 import { PermissionsService } from './permissions.service';
 import { CreatePermissionDto } from './dto/create-permission.dto';
 import { UpdatePermissionDto } from './dto/update-permission.dto';
+import { DeletePermissionsDto } from './dto/delete-permission-batch.dto';
 
 @Controller('permissions')
 export class PermissionsController {
@@ -36,6 +37,11 @@ export class PermissionsController {
     @Body() updatePermissionDto: UpdatePermissionDto,
   ) {
     return this.permissionsService.update(id, updatePermissionDto);
+  }
+
+  @Delete('/batch')
+  removeBatch(@Body() deletePermissionsDto: DeletePermissionsDto) {
+    return this.permissionsService.removeBatch(deletePermissionsDto);
   }
 
   @Delete(':id')
