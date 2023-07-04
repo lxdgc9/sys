@@ -5,16 +5,18 @@ import { Course } from "../../models/course";
 import { Class } from "../../models/class";
 
 const modifyCourse: RequestHandler = async (req, res, next) => {
-  const {
+  let {
     title,
     content,
     is_publish,
     class_ids,
+    same_author_ids,
   }: {
     title: string;
     content: string;
     is_publish: boolean;
     class_ids: Types.ObjectId[];
+    same_author_ids: Types.ObjectId[];
   } = req.body;
 
   try {
@@ -31,13 +33,18 @@ const modifyCourse: RequestHandler = async (req, res, next) => {
       throw new BadReqErr("Classes mismatch");
     }
 
+    same_author_ids.push(req.user!.id);
+    same_author_ids = [...new Set(same_author_ids)];
+
     const modCourse = await Course.findByIdAndUpdate(
       req.params.id,
       {
         $set: {
           title,
+          same_authors: same_author_ids,
           content,
           is_publish,
+          author: req.user?.id,
           class_ids: class_ids,
         },
       },
