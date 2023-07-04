@@ -20,6 +20,12 @@ const readMyCourses: RequestHandler = async (req, res, next) => {
         },
         {
           path: "lessons",
+          populate: {
+            path: "author",
+          },
+        },
+        {
+          path: "same_authors",
         },
       ],
     });

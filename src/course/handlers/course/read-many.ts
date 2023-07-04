@@ -11,7 +11,15 @@ const readCourses: RequestHandler = async (req, res, next) => {
         select: "-classes",
         populate: [
           { path: "author", select: "-role -spec_rules" },
-          { path: "lessons" },
+          {
+            path: "lessons",
+            populate: {
+              path: "author",
+            },
+          },
+          {
+            path: "same_authors",
+          },
         ],
       });
     if (!user) {

@@ -12,7 +12,15 @@ const readMyCreatedCourses: RequestHandler = async (req, res, next) => {
           path: "author",
           select: "-schools -classes -created_courses -courses",
         },
-        { path: "lessons" },
+        {
+          path: "lessons",
+          populate: {
+            path: "author",
+          },
+        },
+        {
+          path: "same_authors",
+        },
       ],
     });
     if (!user) {
