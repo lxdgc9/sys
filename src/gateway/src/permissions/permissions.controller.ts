@@ -7,7 +7,6 @@ import {
   Param,
   Delete,
 } from '@nestjs/common';
-import { IsMongoId } from 'class-validator';
 import { PermissionsService } from './permissions.service';
 import { CreatePermissionDto } from './dto/create-permission.dto';
 import { UpdatePermissionDto } from './dto/update-permission.dto';
@@ -15,21 +14,21 @@ import { DeletePermissionsDto } from './dto/delete-permission-batch.dto';
 
 @Controller('permissions')
 export class PermissionsController {
-  constructor(private readonly permissionsService: PermissionsService) {}
+  constructor(private readonly permission: PermissionsService) {}
 
   @Post()
   create(@Body() createPermissionDto: CreatePermissionDto) {
-    return this.permissionsService.create(createPermissionDto);
+    return this.permission.create(createPermissionDto);
   }
 
   @Get()
   findAll() {
-    return this.permissionsService.findAll();
+    return this.permission.findAll();
   }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.permissionsService.findOne(id);
+    return this.permission.findOne(id);
   }
 
   @Patch(':id')
@@ -37,16 +36,16 @@ export class PermissionsController {
     @Param('id') id: string,
     @Body() updatePermissionDto: UpdatePermissionDto,
   ) {
-    return this.permissionsService.update(id, updatePermissionDto);
+    return this.permission.update(id, updatePermissionDto);
   }
 
   @Delete('/batch')
   removeBatch(@Body() deletePermissionsDto: DeletePermissionsDto) {
-    return this.permissionsService.removeBatch(deletePermissionsDto);
+    return this.permission.removeBatch(deletePermissionsDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.permissionsService.remove(id);
+    return this.permission.remove(id);
   }
 }

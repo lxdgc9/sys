@@ -10,7 +10,7 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
         name: 'PERMISSION_SERVICE',
         transport: Transport.NATS,
         options: {
-          servers: 'http://localhost:50869',
+          servers: 'http://localhost:4222',
         },
       },
     ]),

@@ -1,73 +1,84 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller } from '@nestjs/common';
 import { MessagePattern } from '@nestjs/microservices';
 import { AppService } from './app.service';
+import { CreatePermissionDto } from './dto/create-permission.dto';
+import { UpdatePermissionDto } from './dto/update-permission.dto';
+import { UpdateGroupDto } from './dto/update-group.dto';
+import { CreateGroupDto } from './dto/create-group.dto';
 
 @Controller()
 export class AppController {
-  constructor(private readonly appService: AppService) {}
-
-  @Get()
-  getHello(): string {
-    return this.appService.getHello();
-  }
+  constructor(private readonly app: AppService) {}
 
   @MessagePattern('create_permission')
-  handleCreatePermission(data: any) {
-    return this.appService.createPermission(data);
+  handleCreatePermission(createPermissionDto: CreatePermissionDto) {
+    return this.app.createPermission(createPermissionDto);
   }
 
   @MessagePattern('get_permissions')
   handleGetPermissions() {
-    return this.appService.getPermissions();
+    return this.app.getPermissions();
   }
 
   @MessagePattern('get_permission')
   handleGetPermission(id: string) {
-    return this.appService.getPermission(id);
+    return this.app.getPermission(id);
   }
 
   @MessagePattern('update_permission')
-  handleUpdatePermission(data: any) {
-    return this.appService.updatePermission(data.id, data);
+  handleUpdatePermission({
+    id,
+    updatePermissionDto,
+  }: {
+    id: string;
+    updatePermissionDto: UpdatePermissionDto;
+  }) {
+    return this.app.updatePermission(id, updatePermissionDto);
   }
 
   @MessagePattern('delete_permission')
   handleDeletePermission(id: string) {
-    return this.appService.deletePermission(id);
+    return this.app.deletePermission(id);
   }
 
   @MessagePattern('delete_permissions')
-  handleDeletePermissions(data: any) {
-    return this.appService.deletePermissions(data);
+  handleDeletePermissions(ids: string[]) {
+    return this.app.deletePermissions(ids);
   }
 
   @MessagePattern('create_permission_group')
-  handleCreatePermissionGroup(data: any) {
-    return this.appService.createPermissionGroup(data);
+  handleCreateGroup(createGroupDto: CreateGroupDto) {
+    return this.app.createGroup(createGroupDto);
   }
 
   @MessagePattern('get_permission_groups')
-  handleGetPermissionGroups() {
-    return this.appService.getPermissionGroups();
+  handleGetGroups() {
+    return this.app.getGroups();
   }
 
   @MessagePattern('get_permission_group')
-  handleGetPermissionGroup(id: string) {
-    return this.appService.getPermissionGroup(id);
+  handleGetGroup(id: string) {
+    return this.app.getGroup(id);
   }
 
   @MessagePattern('update_permission_group')
-  handleUpdatePermissionGroup(data: any) {
-    return this.appService.updatePermissionGroup(data.id, data);
+  handleUpdateGroup({
+    id,
+    updateGroupDto,
+  }: {
+    id: string;
+    updateGroupDto: UpdateGroupDto;
+  }) {
+    return this.app.updateGroup(id, updateGroupDto);
   }
 
   @MessagePattern('delete_permission_group')
-  handleDeletePermissionGroup(id: string) {
-    return this.appService.deletePermissionGroup(id);
+  handleDeleteGroup(id: string) {
+    return this.app.deleteGroup(id);
   }
 
   @MessagePattern('delete_permission_groups')
-  handleDeletePermissionGroups(data: any) {
-    return this.appService.deletePermissionGroups(data);
+  handleDeleteGroups(ids: string[]) {
+    return this.app.deleteGroups(ids);
   }
 }

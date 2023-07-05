@@ -14,23 +14,21 @@ import { DeletePermissionGroupsDto } from './dto/delete-permission-group-batch.d
 
 @Controller('permission-groups')
 export class PermissionGroupsController {
-  constructor(
-    private readonly permissionGroupService: PermissionGroupsService,
-  ) {}
+  constructor(private readonly permissionGroup: PermissionGroupsService) {}
 
   @Post()
   create(@Body() createPermissionGroupDto: CreatePermissionGroupDto) {
-    return this.permissionGroupService.create(createPermissionGroupDto);
+    return this.permissionGroup.create(createPermissionGroupDto);
   }
 
   @Get()
   findAll() {
-    return this.permissionGroupService.findAll();
+    return this.permissionGroup.findAll();
   }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.permissionGroupService.findOne(id);
+    return this.permissionGroup.findOne(id);
   }
 
   @Patch(':id')
@@ -38,16 +36,16 @@ export class PermissionGroupsController {
     @Param('id') id: string,
     @Body() updatePermissionGroupDto: UpdatePermissionGroupDto,
   ) {
-    return this.permissionGroupService.update(id, updatePermissionGroupDto);
+    return this.permissionGroup.update(id, updatePermissionGroupDto);
   }
 
   @Delete('/batch')
   removeBatch(@Body() deletePermissionGroupsDto: DeletePermissionGroupsDto) {
-    return this.permissionGroupService.removeBatch(deletePermissionGroupsDto);
+    return this.permissionGroup.removeBatch(deletePermissionGroupsDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.permissionGroupService.remove(id);
+    return this.permissionGroup.remove(id);
   }
 }

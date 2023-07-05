@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
+import { ClientsModule, Transport } from '@nestjs/microservices';
 import { PermissionGroupsService } from './permission-groups.service';
 import { PermissionGroupsController } from './permission-groups.controller';
-import { ClientsModule, Transport } from '@nestjs/microservices';
 
 @Module({
   imports: [
@@ -10,7 +10,7 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
         name: 'PERMISSION_SERVICE',
         transport: Transport.NATS,
         options: {
-          servers: 'http://localhost:50869',
+          servers: process.env.NATS_URL,
         },
       },
     ]),

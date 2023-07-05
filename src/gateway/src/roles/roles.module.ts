@@ -10,7 +10,7 @@ import { RolesController } from './roles.controller';
         name: 'ROLE_SERVICE',
         transport: Transport.NATS,
         options: {
-          servers: 'http://localhost:50869',
+          servers: process.env.NATS_URL,
         },
       },
     ]),

@@ -11,16 +11,16 @@ datasource db {
 }
 
 model Permission {
-  id          String          @id @default(auto()) @map("_id") @db.ObjectId
-  code        String          @unique
+  id          String  @id @default(auto()) @map("_id") @db.ObjectId
+  code        String  @unique
   description String?
-  group       PermissionGroup @relation(fields: [group_id], references: [id])
-  group_id    String          @db.ObjectId
+  group       Group   @relation(fields: [group_id], references: [id])
+  group_id    String  @db.ObjectId
 
   @@map("permissions")
 }
 
-model PermissionGroup {
+model Group {
   id          String       @id @default(auto()) @map("_id") @db.ObjectId
   name        String
   permissions Permission[]

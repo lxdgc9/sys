@@ -13,7 +13,7 @@ import { PrismaModule } from './prisma/prisma.module';
         name: 'NATS',
         transport: Transport.NATS,
         options: {
-          servers: 'http://localhost:50869',
+          servers: process.env.NATS_URL,
         },
       },
     ]),

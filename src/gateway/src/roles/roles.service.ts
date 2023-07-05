@@ -1,18 +1,17 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { ClientProxy } from '@nestjs/microservices';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
-import { ClientProxy } from '@nestjs/microservices';
-import { CreateRoleEvent } from './events/create-role.event';
 import { DeleteRolesDto } from './dto/delete-role-batch.dto';
+import { CreateRoleEvent } from './events/create-role.event';
+import { UpdateRoleEvent } from './events/update-role.event';
 
 @Injectable()
 export class RolesService {
-  constructor(
-    @Inject('ROLE_SERVICE') private readonly roleClient: ClientProxy,
-  ) {}
+  constructor(@Inject('ROLE_SERVICE') private readonly role: ClientProxy) {}
 
   create(createRoleDto: CreateRoleDto) {
-    const role = this.roleClient.send(
+    return this.role.send(
       'create_role',
       new CreateRoleEvent(
         createRoleDto.name,
@@ -20,30 +19,33 @@ export class RolesService {
         createRoleDto.permission_ids,
       ),
     );
-    return role;
   }
 
   findAll() {
-    const roles = this.roleClient.send('get_roles', {});
-    return roles;
+    return this.role.send('get_roles', {});
   }
 
   findOne(id: string) {
-    const role = this.roleClient.send('get_role', id);
-    return role;
+    return this.role.send('get_role', id);
   }
 
   update(id: string, updateRoleDto: UpdateRoleDto) {
-    return `This action updates a #${id} role`;
+    return this.role.send(
+      'update_role',
+      new UpdateRoleEvent(
+        id,
+        updateRoleDto.name,
+        updateRoleDto.level,
+        updateRoleDto.permission_ids,
+      ),
+    );
   }
 
   remove(id: string) {
-    const role = this.roleClient.send('delete_role', id);
-    return role;
+    return this.role.send('delete_role', id);
   }
 
   removeBatch(deleteRolesDto: DeleteRolesDto) {
-    const result = this.roleClient.send('delete_roles', deleteRolesDto.ids);
-    return result;
+    return this.role.send('delete_roles', deleteRolesDto.ids);
   }
 }

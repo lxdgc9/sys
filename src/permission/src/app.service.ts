@@ -1,26 +1,22 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { ClientProxy } from '@nestjs/microservices';
 import { PrismaService } from './prisma/prisma.service';
+import { ClientProxy } from '@nestjs/microservices';
 import { CreatePermissionDto } from './dto/create-permission.dto';
-import { CreatePermissionGroupDto } from './dto/create-permission-group.dto';
-import { UpdatePermissionGroupDto } from './dto/update-permission-group.dto';
 import { UpdatePermissionDto } from './dto/update-permission.dto';
-import { DeletePermissionsDto } from './dto/delete-permission-batch.dto';
-import { DeletePermissionGroupsDto } from './dto/delete-permission-group-batch.dto';
+import { PermissionUpdatedEvent } from './events/permission-updated.event';
+import { PermissionCreatedEvent } from './events/permission-created.event';
+import { CreateGroupDto } from './dto/create-group.dto';
+import { UpdateGroupDto } from './dto/update-group.dto';
 
 @Injectable()
 export class AppService {
   constructor(
-    private readonly prismaService: PrismaService,
-    @Inject('NATS') private readonly natsClient: ClientProxy,
+    private readonly prisma: PrismaService,
+    @Inject('NATS') private readonly nats: ClientProxy,
   ) {}
 
-  getHello(): string {
-    return 'Hello World!';
-  }
-
   async createPermission(createPermissionDto: CreatePermissionDto) {
-    const permission = await this.prismaService.permission.create({
+    const permission = await this.prisma.permission.create({
       data: {
         code: createPermissionDto.code,
         description: createPermissionDto.description,
@@ -35,22 +31,30 @@ export class AppService {
       },
     });
 
-    this.natsClient.emit('permission_created', permission);
+    if (permission) {
+      this.nats.emit(
+        'permission_created',
+        new PermissionCreatedEvent(
+          permission.id,
+          permission.code,
+          permission.description,
+        ),
+      );
+    }
 
     return permission;
   }
 
   async getPermissions() {
-    const permissions = await this.prismaService.permission.findMany({
+    return await this.prisma.permission.findMany({
       include: {
         group: true,
       },
     });
-    return permissions;
   }
 
   async getPermission(id: string) {
-    const permission = await this.prismaService.permission.findUnique({
+    return await this.prisma.permission.findUnique({
       where: {
         id,
       },
@@ -58,11 +62,10 @@ export class AppService {
         group: true,
       },
     });
-    return permission;
   }
 
   async updatePermission(id: string, updatePermissionDto: UpdatePermissionDto) {
-    const permission = await this.prismaService.permission.update({
+    const permission = await this.prisma.permission.update({
       where: {
         id,
       },
@@ -83,11 +86,22 @@ export class AppService {
       },
     });
 
+    if (permission) {
+      this.nats.emit(
+        'permission_updated',
+        new PermissionUpdatedEvent(
+          permission.id,
+          permission.code,
+          permission.description,
+        ),
+      );
+    }
+
     return permission;
   }
 
   async deletePermission(id: string) {
-    const permission = await this.prismaService.permission.delete({
+    const permission = await this.prisma.permission.delete({
       where: {
         id,
       },
@@ -96,47 +110,47 @@ export class AppService {
       },
     });
 
-    this.natsClient.emit('permission_deleted', id);
+    if (permission) {
+      this.nats.emit('permission_deleted', permission.id);
+    }
 
     return permission;
   }
 
-  async deletePermissions(deletePermissionsDto: DeletePermissionsDto) {
-    const result = await this.prismaService.permission.deleteMany({
+  async deletePermissions(ids: string[]) {
+    const result = await this.prisma.permission.deleteMany({
       where: {
         id: {
-          in: deletePermissionsDto.ids,
+          in: ids,
         },
       },
     });
 
-    this.natsClient.emit('permissions_deleted', deletePermissionsDto.ids);
+    if (result) {
+      this.nats.emit('permissions_deleted', ids);
+    }
 
     return result;
   }
 
-  async createPermissionGroup(
-    createPermissionGroupDto: CreatePermissionGroupDto,
-  ) {
-    const group = await this.prismaService.permissionGroup.create({
+  async createGroup(createGroupDto: CreateGroupDto) {
+    return await this.prisma.group.create({
       data: {
-        name: createPermissionGroupDto.name,
+        name: createGroupDto.name,
       },
     });
-    return group;
   }
 
-  async getPermissionGroups() {
-    const groups = await this.prismaService.permissionGroup.findMany({
+  async getGroups() {
+    return await this.prisma.group.findMany({
       include: {
         permissions: true,
       },
     });
-    return groups;
   }
 
-  async getPermissionGroup(id: string) {
-    const group = await this.prismaService.permissionGroup.findUnique({
+  async getGroup(id: string) {
+    return await this.prisma.group.findUnique({
       where: {
         id,
       },
@@ -144,29 +158,24 @@ export class AppService {
         permissions: true,
       },
     });
-    return group;
   }
 
-  async updatePermissionGroup(
-    id: string,
-    updatePermissionGroupDto: UpdatePermissionGroupDto,
-  ) {
-    const group = await this.prismaService.permissionGroup.update({
+  async updateGroup(id: string, updateGroupDto: UpdateGroupDto) {
+    return await this.prisma.group.update({
       where: {
         id,
       },
       data: {
-        name: updatePermissionGroupDto.name,
+        name: updateGroupDto.name,
       },
       include: {
         permissions: true,
       },
     });
-    return group;
   }
 
-  async deletePermissionGroup(id: string) {
-    const group = await this.prismaService.permissionGroup.delete({
+  async deleteGroup(id: string) {
+    return await this.prisma.group.delete({
       where: {
         id,
       },
@@ -174,19 +183,15 @@ export class AppService {
         permissions: true,
       },
     });
-    return group;
   }
 
-  async deletePermissionGroups(
-    deletePermissionGroupsDto: DeletePermissionGroupsDto,
-  ) {
-    const result = await this.prismaService.permissionGroup.deleteMany({
+  async deleteGroups(ids: string[]) {
+    return await this.prisma.group.deleteMany({
       where: {
         id: {
-          in: deletePermissionGroupsDto.ids,
+          in: ids,
         },
       },
     });
-    return result;
   }
 }

@@ -11,11 +11,11 @@ import { DeletePermissionsEvent } from './events/delete-permission-batch.event';
 export class PermissionsService {
   constructor(
     @Inject('PERMISSION_SERVICE')
-    private readonly permissionClient: ClientProxy,
+    private readonly permission: ClientProxy,
   ) {}
 
   create(createPermissionDto: CreatePermissionDto) {
-    const permission = this.permissionClient.send(
+    const permission = this.permission.send(
       'create_permission',
       new CreatePermissionEvent(
         createPermissionDto.code,
@@ -27,17 +27,17 @@ export class PermissionsService {
   }
 
   findAll() {
-    const permissions = this.permissionClient.send('get_permissions', {});
+    const permissions = this.permission.send('get_permissions', {});
     return permissions;
   }
 
   findOne(id: string) {
-    const permission = this.permissionClient.send('get_permission', id);
+    const permission = this.permission.send('get_permission', id);
     return permission;
   }
 
   update(id: string, updatePermissionDto: UpdatePermissionDto) {
-    const permission = this.permissionClient.send(
+    const permission = this.permission.send(
       'update_permission',
       new UpdatePermissionEvent(
         id,
@@ -50,12 +50,12 @@ export class PermissionsService {
   }
 
   remove(id: string) {
-    const permission = this.permissionClient.send('delete_permission', id);
+    const permission = this.permission.send('delete_permission', id);
     return permission;
   }
 
   removeBatch(deletePermissionsDto: DeletePermissionsDto) {
-    const permissions = this.permissionClient.send(
+    const permissions = this.permission.send(
       'delete_permissions',
       new DeletePermissionsEvent(deletePermissionsDto.ids),
     );

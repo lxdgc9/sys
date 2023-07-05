@@ -14,35 +14,35 @@ import { DeleteRolesDto } from './dto/delete-role-batch.dto';
 
 @Controller('roles')
 export class RolesController {
-  constructor(private readonly rolesService: RolesService) {}
+  constructor(private readonly role: RolesService) {}
 
   @Post()
   create(@Body() createRoleDto: CreateRoleDto) {
-    return this.rolesService.create(createRoleDto);
+    return this.role.create(createRoleDto);
   }
 
   @Get()
   findAll() {
-    return this.rolesService.findAll();
+    return this.role.findAll();
   }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.rolesService.findOne(id);
+    return this.role.findOne(id);
   }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateRoleDto: UpdateRoleDto) {
-    return this.rolesService.update(id, updateRoleDto);
+    return this.role.update(id, updateRoleDto);
   }
 
   @Delete('/batch')
   removeBatch(@Body() deleteRolesDto: DeleteRolesDto) {
-    return this.rolesService.removeBatch(deleteRolesDto);
+    return this.role.removeBatch(deleteRolesDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.rolesService.remove(id);
+    return this.role.remove(id);
   }
 }
