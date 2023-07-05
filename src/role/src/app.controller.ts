@@ -15,4 +15,14 @@ export class AppController {
   handlePermissionCreated(data: any) {
     this.appService.SyncPermissionCreated(data);
   }
+
+  @EventPattern('permission_deleted')
+  handlePermissionDeleted(id: string) {
+    this.appService.SyncPermissionDeleted(id);
+  }
+
+  @EventPattern('permissions_deleted')
+  handlePermissionsDeleted(ids: string[]) {
+    this.appService.SyncPermissionsDeleted(ids);
+  }
 }

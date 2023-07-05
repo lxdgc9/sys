@@ -19,4 +19,22 @@ export class AppService {
       },
     });
   }
+
+  async SyncPermissionDeleted(id: string) {
+    await this.prismaService.permission.delete({
+      where: {
+        id,
+      },
+    });
+  }
+
+  async SyncPermissionsDeleted(ids: string[]) {
+    await this.prismaService.permission.deleteMany({
+      where: {
+        id: {
+          in: ids,
+        },
+      },
+    });
+  }
 }

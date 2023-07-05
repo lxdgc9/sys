@@ -2,8 +2,9 @@ import { Inject, Injectable } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { CreatePermissionGroupDto } from './dto/create-permission-group.dto';
 import { UpdatePermissionGroupDto } from './dto/update-permission-group.dto';
-import { CreatePermissionGroupEvent } from './event/create-permission-group.event';
-import { UpdatePermissionGroupEvent } from './event/update-permission-group.event';
+import { CreatePermissionGroupEvent } from './events/create-permission-group.event';
+import { UpdatePermissionGroupEvent } from './events/update-permission-group.event';
+import { DeletePermissionGroupsDto } from './dto/delete-permission-group-batch.dto';
 
 @Injectable()
 export class PermissionGroupsService {
@@ -41,5 +42,13 @@ export class PermissionGroupsService {
   remove(id: string) {
     const group = this.permissionClient.send('delete_permission_group', id);
     return group;
+  }
+
+  removeBatch(deletePermissionGroupsDto: DeletePermissionGroupsDto) {
+    const result = this.permissionClient.send(
+      'delete_permission_groups',
+      deletePermissionGroupsDto.ids,
+    );
+    return result;
   }
 }

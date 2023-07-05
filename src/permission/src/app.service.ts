@@ -6,7 +6,7 @@ import { CreatePermissionGroupDto } from './dto/create-permission-group.dto';
 import { UpdatePermissionGroupDto } from './dto/update-permission-group.dto';
 import { UpdatePermissionDto } from './dto/update-permission.dto';
 import { DeletePermissionsDto } from './dto/delete-permission-batch.dto';
-import { CreatePermissionsDto } from './dto/create-permission-batch.dto';
+import { DeletePermissionGroupsDto } from './dto/delete-permission-group-batch.dto';
 
 @Injectable()
 export class AppService {
@@ -26,7 +26,7 @@ export class AppService {
         description: createPermissionDto.description,
         group: {
           connect: {
-            id: createPermissionDto.permissionGroupId,
+            id: createPermissionDto.groupId,
           },
         },
       },
@@ -38,17 +38,6 @@ export class AppService {
     this.natsClient.emit('permission_created', permission);
 
     return permission;
-  }
-
-  async createPermissions(createPermissionsDto: CreatePermissionsDto) {
-    const result = await this.prismaService.permission.createMany({
-      data: createPermissionsDto.permissions.map((permission) => ({
-        code: permission.code,
-        description: permission.description,
-        group_id: permission.permissionGroupId,
-      })),
-    });
-    return result;
   }
 
   async getPermissions() {
@@ -81,10 +70,10 @@ export class AppService {
         code: updatePermissionDto.code,
         description: updatePermissionDto.description,
         group:
-          updatePermissionDto.permissionGroupId !== null
+          updatePermissionDto.groupId !== null
             ? {
                 connect: {
-                  id: updatePermissionDto.permissionGroupId,
+                  id: updatePermissionDto.groupId,
                 },
               }
             : undefined,
@@ -106,6 +95,9 @@ export class AppService {
         group: true,
       },
     });
+
+    this.natsClient.emit('permission_deleted', id);
+
     return permission;
   }
 
@@ -117,6 +109,9 @@ export class AppService {
         },
       },
     });
+
+    this.natsClient.emit('permissions_deleted', deletePermissionsDto.ids);
+
     return result;
   }
 
@@ -180,5 +175,18 @@ export class AppService {
       },
     });
     return group;
+  }
+
+  async deletePermissionGroups(
+    deletePermissionGroupsDto: DeletePermissionGroupsDto,
+  ) {
+    const result = await this.prismaService.permissionGroup.deleteMany({
+      where: {
+        id: {
+          in: deletePermissionGroupsDto.ids,
+        },
+      },
+    });
+    return result;
   }
 }

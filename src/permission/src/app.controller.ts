@@ -16,11 +16,6 @@ export class AppController {
     return this.appService.createPermission(data);
   }
 
-  @MessagePattern('create_permissions')
-  handleCreatePermissions(data: any) {
-    return this.appService.createPermissions(data);
-  }
-
   @MessagePattern('get_permissions')
   handleGetPermissions() {
     return this.appService.getPermissions();
@@ -69,5 +64,10 @@ export class AppController {
   @MessagePattern('delete_permission_group')
   handleDeletePermissionGroup(id: string) {
     return this.appService.deletePermissionGroup(id);
+  }
+
+  @MessagePattern('delete_permission_groups')
+  handleDeletePermissionGroups(data: any) {
+    return this.appService.deletePermissionGroups(data);
   }
 }
