@@ -1,14 +1,19 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
+import { ClientProxy } from '@nestjs/microservices';
 import { PrismaService } from './prisma/prisma.service';
 import { CreatePermissionDto } from './dto/create-permission.dto';
 import { CreatePermissionGroupDto } from './dto/create-permission-group.dto';
 import { UpdatePermissionGroupDto } from './dto/update-permission-group.dto';
 import { UpdatePermissionDto } from './dto/update-permission.dto';
 import { DeletePermissionsDto } from './dto/delete-permission-batch.dto';
+import { CreatePermissionsDto } from './dto/create-permission-batch.dto';
 
 @Injectable()
 export class AppService {
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(
+    private readonly prismaService: PrismaService,
+    @Inject('NATS') private readonly natsClient: ClientProxy,
+  ) {}
 
   getHello(): string {
     return 'Hello World!';
@@ -29,7 +34,21 @@ export class AppService {
         group: true,
       },
     });
+
+    this.natsClient.emit('permission_created', permission);
+
     return permission;
+  }
+
+  async createPermissions(createPermissionsDto: CreatePermissionsDto) {
+    const result = await this.prismaService.permission.createMany({
+      data: createPermissionsDto.permissions.map((permission) => ({
+        code: permission.code,
+        description: permission.description,
+        group_id: permission.permissionGroupId,
+      })),
+    });
+    return result;
   }
 
   async getPermissions() {
@@ -74,6 +93,7 @@ export class AppService {
         group: true,
       },
     });
+
     return permission;
   }
 
@@ -90,14 +110,14 @@ export class AppService {
   }
 
   async deletePermissions(deletePermissionsDto: DeletePermissionsDto) {
-    const permission = await this.prismaService.permission.deleteMany({
+    const result = await this.prismaService.permission.deleteMany({
       where: {
         id: {
           in: deletePermissionsDto.ids,
         },
       },
     });
-    return permission;
+    return result;
   }
 
   async createPermissionGroup(

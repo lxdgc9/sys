@@ -11,10 +11,16 @@ import { PermissionsService } from './permissions.service';
 import { CreatePermissionDto } from './dto/create-permission.dto';
 import { UpdatePermissionDto } from './dto/update-permission.dto';
 import { DeletePermissionsDto } from './dto/delete-permission-batch.dto';
+import { CreatePermissionsDto } from './dto/create-permission-batch.dto';
 
 @Controller('permissions')
 export class PermissionsController {
   constructor(private readonly permissionsService: PermissionsService) {}
+
+  @Post('/batch')
+  createBatch(@Body() createPermissionsDto: CreatePermissionsDto) {
+    return this.permissionsService.createBatch(createPermissionsDto);
+  }
 
   @Post()
   create(@Body() createPermissionDto: CreatePermissionDto) {

@@ -16,6 +16,11 @@ export class AppController {
     return this.appService.createPermission(data);
   }
 
+  @MessagePattern('create_permissions')
+  handleCreatePermissions(data: any) {
+    return this.appService.createPermissions(data);
+  }
+
   @MessagePattern('get_permissions')
   handleGetPermissions() {
     return this.appService.getPermissions();

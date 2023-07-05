@@ -6,6 +6,8 @@ import { CreatePermissionEvent } from './event/create-permission.event';
 import { UpdatePermissionEvent } from './event/update-permission.event';
 import { DeletePermissionsDto } from './dto/delete-permission-batch.dto';
 import { DeletePermissionsEvent } from './event/delete-permission-batch.event';
+import { CreatePermissionsDto } from './dto/create-permission-batch.dto';
+import { CreatePermissionsEvent } from './event/create-permission-batch.event';
 
 @Injectable()
 export class PermissionsService {
@@ -24,6 +26,20 @@ export class PermissionsService {
       ),
     );
     return permission;
+  }
+
+  createBatch(createPermissionsDto: CreatePermissionsDto) {
+    const permissions = this.permissionClient.send(
+      'create_permissions',
+      new CreatePermissionsEvent(
+        createPermissionsDto.permissions.map((permission) => ({
+          code: permission.code,
+          description: permission.description,
+          permissionGroupId: permission.group_id,
+        })),
+      ),
+    );
+    return permissions;
   }
 
   findAll() {
