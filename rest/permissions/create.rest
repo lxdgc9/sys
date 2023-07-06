@@ -1,0 +1,8 @@
+POST {{host}}/permissions
+Content-Type: application/json
+
+{
+  "code": "CREATE_USER",
+  "description": "Hello World",
+  "group_id": "64a638df6ad7044e0b232bc8"
+}

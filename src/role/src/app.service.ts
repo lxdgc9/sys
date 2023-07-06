@@ -20,12 +20,14 @@ export class AppService {
       data: {
         name: createRoleDto.name,
         level: createRoleDto.level,
-        permissions:
-          createRoleDto.permission_ids !== null
-            ? {
-                connect: createRoleDto.permission_ids.map((id) => ({ id })),
-              }
-            : undefined,
+        permissions: createRoleDto.permissionIds
+          ? {
+              connect: createRoleDto.permissionIds.map((id) => ({ id })),
+            }
+          : undefined,
+      },
+      include: {
+        permissions: true,
       },
     });
 
@@ -71,12 +73,11 @@ export class AppService {
       data: {
         name: updateRoleDto.name,
         level: updateRoleDto.level,
-        permissions:
-          updateRoleDto.permission_ids !== null
-            ? {
-                connect: updateRoleDto.permission_ids.map((id) => ({ id })),
-              }
-            : undefined,
+        permissions: updateRoleDto.permissionIds
+          ? {
+              connect: updateRoleDto.permissionIds.map((id) => ({ id })),
+            }
+          : undefined,
       },
       include: {
         permissions: true,

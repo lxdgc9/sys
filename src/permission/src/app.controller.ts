@@ -28,12 +28,15 @@ export class AppController {
   @MessagePattern('update_permission')
   handleUpdatePermission({
     id,
-    updatePermissionDto,
+    ...updatePermissionDto
   }: {
     id: string;
     updatePermissionDto: UpdatePermissionDto;
   }) {
-    return this.app.updatePermission(id, updatePermissionDto);
+    return this.app.updatePermission(
+      id,
+      updatePermissionDto as UpdatePermissionDto,
+    );
   }
 
   @MessagePattern('delete_permissions')
@@ -64,12 +67,12 @@ export class AppController {
   @MessagePattern('update_permission_group')
   handleUpdateGroup({
     id,
-    updateGroupDto,
+    ...updateGroupDto
   }: {
     id: string;
     updateGroupDto: UpdateGroupDto;
   }) {
-    return this.app.updateGroup(id, updateGroupDto);
+    return this.app.updateGroup(id, updateGroupDto as UpdateGroupDto);
   }
 
   @MessagePattern('delete_permission_groups')

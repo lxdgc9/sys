@@ -1,0 +1,7 @@
+PATCH {{host}}/roles/64a63b20633b3d7dc45e3522
+Content-Type: application/json
+
+{
+  "code": "UPDATE_USER",
+  "description": "Hello World"
+}

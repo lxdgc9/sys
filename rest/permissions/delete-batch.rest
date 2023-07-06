@@ -1,0 +1,8 @@
+DELETE {{host}}/permissions/batch
+Content-Type: application/json
+
+{
+  "ids": [
+    "64a631bcee62ef267c0e9326"
+  ]
+}

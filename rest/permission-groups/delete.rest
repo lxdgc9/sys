@@ -1,0 +1,1 @@
+DELETE {{host}}/permission-groups/64a638056ad7044e0b232bc7

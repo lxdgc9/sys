@@ -72,14 +72,13 @@ export class AppService {
       data: {
         code: updatePermissionDto.code,
         description: updatePermissionDto.description,
-        group:
-          updatePermissionDto.groupId !== null
-            ? {
-                connect: {
-                  id: updatePermissionDto.groupId,
-                },
-              }
-            : undefined,
+        group: updatePermissionDto.groupId
+          ? {
+              connect: {
+                id: updatePermissionDto.groupId,
+              },
+            }
+          : undefined,
       },
       include: {
         group: true,

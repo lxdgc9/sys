@@ -1,0 +1,6 @@
+POST {{host}}/permission-groups
+Content-Type: application/json
+
+{
+  "name": "Quản lý hệ thống"
+}
