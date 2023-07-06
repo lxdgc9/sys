@@ -28,12 +28,12 @@ export class AppController {
   @MessagePattern('update_role')
   handleUpdateRole({
     id,
-    updateRoleDto: updatePermissionDto,
+    ...updateRoleDto
   }: {
     id: string;
     updateRoleDto: UpdateRoleDto;
   }) {
-    return this.app.updateRole(id, updatePermissionDto);
+    return this.app.updateRole(id, updateRoleDto as UpdateRoleDto);
   }
 
   @MessagePattern('delete_roles')

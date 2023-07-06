@@ -2,7 +2,7 @@ POST {{host}}/roles
 Content-Type: application/json
 
 {
-  "name": "admin02",
+  "name": "admin",
   "level": 0,
   "permission_ids": [
     "64a63b20633b3d7dc45e3522"

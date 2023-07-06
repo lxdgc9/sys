@@ -1,0 +1,61 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                  String       @id @default(auto()) @map("_id") @db.ObjectId
+  ufields             UniqFields
+  attrs               Attr[]
+  role                Role         @relation(fields: [role_id], references: [id])
+  role_id             String       @map("role_id") @db.ObjectId
+  spec_permissions    Permission[] @relation(fields: [spec_permission_ids], references: [id])
+  spec_permission_ids String[]     @db.ObjectId
+  created_at          DateTime     @default(now())
+  updated_at          DateTime     @updatedAt
+
+  @@map("users")
+}
+
+type UniqFields {
+  username String
+  phone    String
+  email    String
+}
+
+type Attr {
+  k String
+  v String
+}
+
+model Role {
+  id             String       @id @map("_id") @db.ObjectId
+  name           String
+  level          Int
+  users          User[]
+  permissions    Permission[] @relation(fields: [permission_ids], references: [id])
+  permission_ids String[]     @db.ObjectId
+  created_at     DateTime     @default(now())
+  updated_at     DateTime     @updatedAt
+
+  @@map("roles")
+}
+
+model Permission {
+  id          String   @id @map("_id") @db.ObjectId
+  code        String   @unique
+  description String?
+  roles       Role[]   @relation(fields: [role_ids], references: [id])
+  role_ids    String[] @db.ObjectId
+  users       User[]   @relation(fields: [user_ids], references: [id])
+  user_ids    String[] @db.ObjectId
+
+  @@map("permissions")
+}
