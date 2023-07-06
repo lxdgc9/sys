@@ -36,28 +36,33 @@ export class AppController {
     return this.app.updateRole(id, updatePermissionDto);
   }
 
+  @MessagePattern('delete_roles')
+  handleDeleteRoles(ids: string[]) {
+    return this.app.deleteRoles(ids);
+  }
+
   @MessagePattern('delete_role')
   handleDeleteRole(id: string) {
-    return this.app.getRole(id);
+    return this.app.deleteRole(id);
   }
 
   @EventPattern('permission_created')
   handlePermissionCreated(permissionCreatedDto: PermissionCreatedDto) {
-    this.app.SyncPermissionCreated(permissionCreatedDto);
+    this.app.syncPermissionCreated(permissionCreatedDto);
   }
 
   @EventPattern('permission_updated')
   handlePermissionUpdated(permissionUpdatedDto: PermissionUpdatedDto) {
-    this.app.SyncPermissionUpdated(permissionUpdatedDto);
-  }
-
-  @EventPattern('permission_deleted')
-  handlePermissionDeleted(id: string) {
-    this.app.SyncPermissionDeleted(id);
+    this.app.syncPermissionUpdated(permissionUpdatedDto);
   }
 
   @EventPattern('permissions_deleted')
   handlePermissionsDeleted(ids: string[]) {
-    this.app.SyncPermissionsDeleted(ids);
+    this.app.syncPermissionsDeleted(ids);
+  }
+
+  @EventPattern('permission_deleted')
+  handlePermissionDeleted(id: string) {
+    this.app.syncPermissionDeleted(id);
   }
 }

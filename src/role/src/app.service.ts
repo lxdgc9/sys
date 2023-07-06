@@ -98,6 +98,22 @@ export class AppService {
     return role;
   }
 
+  async deleteRoles(ids: string[]) {
+    const result = await this.prisma.role.deleteMany({
+      where: {
+        id: {
+          in: ids,
+        },
+      },
+    });
+
+    if (result) {
+      this.nats.emit('roles_deleted', ids);
+    }
+
+    return result;
+  }
+
   async deleteRole(id: string) {
     const role = await this.prisma.role.delete({
       where: {
@@ -115,23 +131,7 @@ export class AppService {
     return role;
   }
 
-  async deleteRoles(ids: string[]) {
-    const result = await this.prisma.role.deleteMany({
-      where: {
-        id: {
-          in: ids,
-        },
-      },
-    });
-
-    if (result) {
-      this.nats.emit('roles_deleted', ids);
-    }
-
-    return result;
-  }
-
-  async SyncPermissionCreated(permissionCreatedDto: PermissionCreatedDto) {
+  async syncPermissionCreated(permissionCreatedDto: PermissionCreatedDto) {
     await this.prisma.permission.create({
       data: {
         id: permissionCreatedDto.id,
@@ -141,7 +141,7 @@ export class AppService {
     });
   }
 
-  async SyncPermissionUpdated(permissionUpdatedDto: PermissionUpdatedDto) {
+  async syncPermissionUpdated(permissionUpdatedDto: PermissionUpdatedDto) {
     await this.prisma.permission.update({
       where: {
         id: permissionUpdatedDto.id,
@@ -153,20 +153,20 @@ export class AppService {
     });
   }
 
-  async SyncPermissionDeleted(id: string) {
-    await this.prisma.permission.delete({
-      where: {
-        id,
-      },
-    });
-  }
-
-  async SyncPermissionsDeleted(ids: string[]) {
+  async syncPermissionsDeleted(ids: string[]) {
     await this.prisma.permission.deleteMany({
       where: {
         id: {
           in: ids,
         },
+      },
+    });
+  }
+
+  async syncPermissionDeleted(id: string) {
+    await this.prisma.permission.delete({
+      where: {
+        id,
       },
     });
   }

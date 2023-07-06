@@ -4,7 +4,7 @@ import { CreatePermissionGroupDto } from './dto/create-permission-group.dto';
 import { UpdatePermissionGroupDto } from './dto/update-permission-group.dto';
 import { CreatePermissionGroupEvent } from './events/create-permission-group.event';
 import { UpdatePermissionGroupEvent } from './events/update-permission-group.event';
-import { DeletePermissionGroupsDto } from './dto/delete-permission-group-batch.dto';
+import { DeletePermissionGroupsDto } from './dto/delete-permission-group.dto';
 
 @Injectable()
 export class PermissionGroupsService {
@@ -35,14 +35,14 @@ export class PermissionGroupsService {
     );
   }
 
-  remove(id: string) {
-    return this.permission.send('delete_permission_group', id);
-  }
-
   removeBatch(deletePermissionGroupsDto: DeletePermissionGroupsDto) {
     return this.permission.send(
       'delete_permission_groups',
       deletePermissionGroupsDto.ids,
     );
+  }
+
+  remove(id: string) {
+    return this.permission.send('delete_permission_group', id);
   }
 }

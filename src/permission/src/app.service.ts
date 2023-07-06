@@ -1,12 +1,12 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { PrismaService } from './prisma/prisma.service';
 import { ClientProxy } from '@nestjs/microservices';
+import { PrismaService } from './prisma/prisma.service';
 import { CreatePermissionDto } from './dto/create-permission.dto';
 import { UpdatePermissionDto } from './dto/update-permission.dto';
-import { PermissionUpdatedEvent } from './events/permission-updated.event';
-import { PermissionCreatedEvent } from './events/permission-created.event';
 import { CreateGroupDto } from './dto/create-group.dto';
 import { UpdateGroupDto } from './dto/update-group.dto';
+import { PermissionUpdatedEvent } from './events/permission-updated.event';
+import { PermissionCreatedEvent } from './events/permission-created.event';
 
 @Injectable()
 export class AppService {

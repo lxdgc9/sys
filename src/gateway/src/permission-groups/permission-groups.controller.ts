@@ -10,7 +10,7 @@ import {
 import { PermissionGroupsService } from './permission-groups.service';
 import { CreatePermissionGroupDto } from './dto/create-permission-group.dto';
 import { UpdatePermissionGroupDto } from './dto/update-permission-group.dto';
-import { DeletePermissionGroupsDto } from './dto/delete-permission-group-batch.dto';
+import { DeletePermissionGroupsDto } from './dto/delete-permission-group.dto';
 
 @Controller('permission-groups')
 export class PermissionGroupsController {

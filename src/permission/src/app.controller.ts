@@ -36,14 +36,14 @@ export class AppController {
     return this.app.updatePermission(id, updatePermissionDto);
   }
 
-  @MessagePattern('delete_permission')
-  handleDeletePermission(id: string) {
-    return this.app.deletePermission(id);
-  }
-
   @MessagePattern('delete_permissions')
   handleDeletePermissions(ids: string[]) {
     return this.app.deletePermissions(ids);
+  }
+
+  @MessagePattern('delete_permission')
+  handleDeletePermission(id: string) {
+    return this.app.deletePermission(id);
   }
 
   @MessagePattern('create_permission_group')
@@ -72,13 +72,13 @@ export class AppController {
     return this.app.updateGroup(id, updateGroupDto);
   }
 
-  @MessagePattern('delete_permission_group')
-  handleDeleteGroup(id: string) {
-    return this.app.deleteGroup(id);
-  }
-
   @MessagePattern('delete_permission_groups')
   handleDeleteGroups(ids: string[]) {
     return this.app.deleteGroups(ids);
+  }
+
+  @MessagePattern('delete_permission_group')
+  handleDeleteGroup(id: string) {
+    return this.app.deleteGroup(id);
   }
 }
