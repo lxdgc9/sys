@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
+import { genSalt, hash } from 'bcrypt';
 import { PrismaService } from './prisma/prisma.service';
 import { PermissionCreatedDto } from './dto/permission-created.dto';
 import { PermissionUpdatedDto } from './dto/permission-updated.dto';
@@ -16,15 +17,42 @@ export class AppService {
   ) {}
 
   async createUser(createUserDto: CreateUserDto) {
+    const salt = await genSalt(10);
+    const hashedPassword = await hash(createUserDto.password, salt);
     const user = await this.prisma.user.create({
-      data: undefined,
+      data: {
+        ufields: {
+          set: {
+            username: createUserDto.ufields.username,
+            phone: createUserDto.ufields.phone,
+            email: createUserDto.ufields.email,
+          },
+        },
+        password: hashedPassword,
+        attrs: createUserDto.attrs.map((attr) => ({ k: attr.k, v: attr.v })),
+        role: {
+          connect: {
+            id: createUserDto.roleId,
+          },
+        },
+        spec_permissions: createUserDto.specPermissionIds
+          ? {
+              connect: createUserDto.specPermissionIds.map((id) => ({ id })),
+            }
+          : undefined,
+      },
       include: {
-        role: true,
+        role: {
+          include: {
+            permissions: true,
+          },
+        },
         spec_permissions: true,
       },
     });
 
     if (user) {
+      this.nats.emit('user_created', user);
     }
 
     return user;
@@ -33,7 +61,11 @@ export class AppService {
   async getUsers() {
     return await this.prisma.user.findMany({
       include: {
-        role: true,
+        role: {
+          include: {
+            permissions: true,
+          },
+        },
         spec_permissions: true,
       },
     });
@@ -45,7 +77,11 @@ export class AppService {
         id,
       },
       include: {
-        role: true,
+        role: {
+          include: {
+            permissions: true,
+          },
+        },
         spec_permissions: true,
       },
     });
@@ -58,7 +94,11 @@ export class AppService {
       },
       data: undefined,
       include: {
-        role: true,
+        role: {
+          include: {
+            permissions: true,
+          },
+        },
         spec_permissions: true,
       },
     });
@@ -87,7 +127,11 @@ export class AppService {
         id,
       },
       include: {
-        role: true,
+        role: {
+          include: {
+            permissions: true,
+          },
+        },
         spec_permissions: true,
       },
     });

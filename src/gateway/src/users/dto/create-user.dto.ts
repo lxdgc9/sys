@@ -1,30 +1,47 @@
 import {
+  IsArray,
+  IsEmail,
   IsMongoId,
   IsNotEmpty,
   IsObject,
   IsOptional,
+  IsPhoneNumber,
   IsString,
 } from 'class-validator';
 
-type Attr = {
+class Attr {
+  @IsString()
   k: string;
+
+  @IsString()
   v: string;
-};
+}
+
+class UniqFields {
+  @IsNotEmpty()
+  @IsString()
+  username: string;
+
+  @IsNotEmpty()
+  @IsPhoneNumber('VN')
+  phone: string;
+
+  @IsNotEmpty()
+  @IsEmail()
+  email: string;
+}
 
 export class CreateUserDto {
+  @IsNotEmpty()
   @IsObject()
-  ufields: {
-    username: string;
-    phone: string;
-    email: string;
-  };
+  ufields: UniqFields;
 
   @IsNotEmpty()
   @IsString()
   password: string;
 
   @IsNotEmpty()
-  @IsObject()
+  @IsArray()
   profile: Attr[];
 
   @IsNotEmpty()

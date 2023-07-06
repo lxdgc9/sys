@@ -3,13 +3,28 @@ import { ClientProxy } from '@nestjs/microservices';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { DeleteUsersDto } from './dto/delete-user.dto';
+import { CreateUserEvent } from './events/create-user.event';
 
 @Injectable()
 export class UsersService {
   constructor(@Inject('USER_SERVICE') private readonly user: ClientProxy) {}
 
   create(createUserDto: CreateUserDto) {
-    // return this.user.send('create_user', new CreateUserEvent(createUserDto));
+    return this.user.send(
+      'create_user',
+      new CreateUserEvent(
+        {
+          username: createUserDto.ufields.username,
+          phone: createUserDto.ufields.phone,
+          email: createUserDto.ufields.email,
+        },
+        createUserDto.password,
+        createUserDto.profile,
+        createUserDto.role_id,
+        createUserDto.spec_permission_ids,
+        createUserDto.is_active,
+      ),
+    );
   }
 
   findAll() {
