@@ -1,10 +1,18 @@
-POST {{host}}/roles
+POST {{host}}/users
 Content-Type: application/json
 
 {
-  "name": "admin",
-  "level": 0,
-  "permission_ids": [
-    "64a63b20633b3d7dc45e3522"
+  "ufields": {
+    "username": "admin",
+    "phone": "0123456789",
+    "email": "djaksdjal@gmail.com"
+  },
+  "profile": [
+    { "k": "name", "v": "Danh Phi Long" }
+  ],
+  "password": "123456",
+  "role_id": "64a679f7632b84b327d8543e",
+  "spec_permission_ids": [
+    "64a6797e633b3d7dc45e3525"
   ]
 }

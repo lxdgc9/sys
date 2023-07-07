@@ -1,1 +1,1 @@
-GET {{host}}/roles
+GET {{host}}/users

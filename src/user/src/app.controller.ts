@@ -1,6 +1,7 @@
 import { Controller } from '@nestjs/common';
 import { EventPattern, MessagePattern } from '@nestjs/microservices';
 import { AppService } from './app.service';
+import { LoginDto } from './dto/login.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PermissionCreatedDto } from './dto/permission-created.dto';
@@ -11,6 +12,11 @@ import { RoleUpdatedDto } from './dto/role-updated.dto';
 @Controller()
 export class AppController {
   constructor(private readonly app: AppService) {}
+
+  @MessagePattern('login')
+  async handleLogin(loginDto: LoginDto) {
+    return await this.app.login(loginDto);
+  }
 
   @MessagePattern('create_user')
   handleCreateUser(createUserDto: CreateUserDto) {

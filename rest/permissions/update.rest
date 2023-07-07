@@ -1,4 +1,4 @@
-PATCH {{host}}/permissions/64a63b20633b3d7dc45e3522
+PATCH {{host}}/permissions/64a6797e633b3d7dc45e3525
 Content-Type: application/json
 
 {

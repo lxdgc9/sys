@@ -1,7 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
-import { genSalt, hash } from 'bcrypt';
+import { compare, genSalt, hash } from 'bcrypt';
 import { PrismaService } from './prisma/prisma.service';
+import { LoginDto } from './dto/login.dto';
 import { PermissionCreatedDto } from './dto/permission-created.dto';
 import { PermissionUpdatedDto } from './dto/permission-updated.dto';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -15,6 +16,28 @@ export class AppService {
     private readonly prisma: PrismaService,
     @Inject('NATS') private readonly nats: ClientProxy,
   ) {}
+
+  async login(loginDto: LoginDto) {
+    const user = await this.prisma.user.findFirst({
+      where: {
+        ufields: {
+          is: {
+            [`${loginDto.k}`]: loginDto.v,
+          },
+        },
+      },
+    });
+    if (!user) {
+      return;
+    }
+
+    const isMatch = await compare(loginDto.password, user.password);
+    if (!isMatch) {
+      return;
+    }
+
+    return user;
+  }
 
   async createUser(createUserDto: CreateUserDto) {
     const salt = await genSalt(10);

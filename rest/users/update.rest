@@ -1,4 +1,4 @@
-PATCH {{host}}/roles/64a63f2d8b90370439215ea7
+PATCH {{host}}/users/64a63f2d8b90370439215ea7
 Content-Type: application/json
 
 {
