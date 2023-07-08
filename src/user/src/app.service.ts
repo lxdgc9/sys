@@ -28,12 +28,12 @@ export class AppService {
       },
     });
     if (!user) {
-      return;
+      return null;
     }
 
     const isMatch = await compare(loginDto.password, user.password);
     if (!isMatch) {
-      return;
+      return null;
     }
 
     return user;
