@@ -13,7 +13,7 @@ import { IS_PUBLIC_KEY } from './decorators/public.decorator';
 export class AuthGuard implements CanActivate {
   constructor(private jwt: JwtService, private reflector: Reflector) {}
 
-  async canActivate(ctx: ExecutionContext): Promise<boolean> {
+  async canActivate(ctx: ExecutionContext) {
     const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
       ctx.getHandler(),
       ctx.getClass(),
@@ -23,8 +23,8 @@ export class AuthGuard implements CanActivate {
       return true;
     }
 
-    const request = ctx.switchToHttp().getRequest();
-    const token = this.extractTokenFromHeader(request);
+    const req = ctx.switchToHttp().getRequest();
+    const token = this.extractTokenFromHeader(req);
     if (!token) {
       throw new UnauthorizedException('Require token');
     }
@@ -36,7 +36,7 @@ export class AuthGuard implements CanActivate {
 
       // 💡 We're assigning the payload to the request object here
       // so that we can access it in our route handlers
-      request['user'] = payload;
+      req['user'] = payload;
     } catch {
       throw new UnauthorizedException('Invalid token');
     }
@@ -44,8 +44,8 @@ export class AuthGuard implements CanActivate {
     return true;
   }
 
-  private extractTokenFromHeader(request: Request): string | undefined {
-    const [type, token] = request.headers.authorization?.split(' ') ?? [];
+  private extractTokenFromHeader(req: Request): string | undefined {
+    const [type, token] = req.headers.authorization?.split(' ') ?? [];
     return type === 'Bearer' ? token : undefined;
   }
 }
