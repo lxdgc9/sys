@@ -93,11 +93,11 @@ export class AppService {
       this.nats.emit('user_created', user);
     }
 
-    return user;
+    return exclude(user, ['password']);
   }
 
   async getUsers() {
-    return await this.prisma.user.findMany({
+    const users = await this.prisma.user.findMany({
       include: {
         role: {
           include: {
@@ -107,10 +107,12 @@ export class AppService {
         spec_permissions: true,
       },
     });
+
+    return users.map((user) => exclude(user, ['password']));
   }
 
   async getUser(id: string) {
-    return await this.prisma.user.findUnique({
+    const user = await this.prisma.user.findUnique({
       where: {
         id,
       },
@@ -123,6 +125,8 @@ export class AppService {
         spec_permissions: true,
       },
     });
+
+    return exclude(user, ['password']);
   }
 
   async updateUser(id: string, data: UpdateUserDto) {
@@ -141,7 +145,7 @@ export class AppService {
       },
     });
 
-    return user;
+    return exclude(user, ['password']);
   }
 
   async deleteUsers(ids: string[]) {
@@ -177,7 +181,7 @@ export class AppService {
     if (user) {
     }
 
-    return user;
+    return exclude(user, ['password']);
   }
 
   async syncPermissionCreated(permissionCreatedDto: PermissionCreatedDto) {

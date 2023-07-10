@@ -22,9 +22,31 @@ export class AuthService {
     );
     const user = await lastValueFrom(observUser);
 
-    // this.ws.login('Long pro vip');
-
     return user;
+  }
+
+  async validateUserFromToken(token: string) {
+    type RefreshTokenJwtPayload = {
+      id: string;
+    };
+
+    try {
+      const payload: RefreshTokenJwtPayload = await this.jwt.verifyAsync(
+        token,
+        {
+          secret: process.env.REFRESH_TOKEN_SECRET,
+        },
+      );
+
+      const observUser = this.user.send('get_user', payload.id);
+      const user = await lastValueFrom(observUser);
+
+      return user;
+    } catch (err) {
+      console.log(err);
+    }
+
+    return null;
   }
 
   async generateToken(user: User) {

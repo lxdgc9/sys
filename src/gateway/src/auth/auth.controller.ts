@@ -1,5 +1,4 @@
 import { Controller, Post, Body, UnauthorizedException } from '@nestjs/common';
-import { lastValueFrom } from 'rxjs';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
@@ -32,7 +31,21 @@ export class AuthController {
 
   @Public()
   @Post('refresh-token')
-  refreshToken(refreshTokenDto: RefreshTokenDto) {
-    // return this.auth.refreshToken(refreshTokenDto);
+  async refreshToken(@Body() refreshTokenDto: RefreshTokenDto) {
+    const user = await this.auth.validateUserFromToken(refreshTokenDto.token);
+    console.log('debug:', user);
+    if (!user) {
+      throw new UnauthorizedException('Invalid refresh_token');
+    }
+
+    const { access_token, refresh_token } = await this.auth.generateToken(
+      user as User,
+    );
+
+    return {
+      user,
+      access_token,
+      refresh_token,
+    };
   }
 }
