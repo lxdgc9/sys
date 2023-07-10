@@ -26,6 +26,14 @@ export class AppService {
           },
         },
       },
+      include: {
+        role: {
+          include: {
+            permissions: true,
+          },
+        },
+        spec_permissions: true,
+      },
     });
     if (!user) {
       return null;

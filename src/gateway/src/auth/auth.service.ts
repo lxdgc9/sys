@@ -1,8 +1,9 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
+import { JwtService } from '@nestjs/jwt';
 import { LoginDto } from './dto/login.dto';
 import { LoginEvent } from './events/login.event';
-import { JwtService } from '@nestjs/jwt';
+import { User } from './entities/user.entity';
 
 @Injectable()
 export class AuthService {
@@ -20,14 +21,36 @@ export class AuthService {
     return user;
   }
 
-  async generateToken(user: any) {
-    let refreshToken;
-
+  async generateToken(user: User) {
     return {
-      access_token: await this.jwt.signAsync(user.id, {
-        secret: 'hello world',
-      }),
-      refresh_token: refreshToken,
+      access_token: await this.jwt.signAsync(
+        {
+          id: user.id,
+          role: user.role.name,
+          permissions: [
+            ...new Set(
+              user.role.permissions
+                .map((permission) => permission.code)
+                .concat(
+                  user.spec_permissions.map((permission) => permission.code),
+                ),
+            ),
+          ],
+        },
+        {
+          secret: process.env.ACCESS_TOKEN_SECRET,
+          expiresIn: '5m',
+        },
+      ),
+      refresh_token: await this.jwt.signAsync(
+        {
+          id: user.id,
+        },
+        {
+          secret: process.env.REFRESH_TOKEN_SECRET,
+          expiresIn: '1w',
+        },
+      ),
     };
   }
 }

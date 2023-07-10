@@ -1,22 +1,28 @@
 import { Controller, Post, Body, UnauthorizedException } from '@nestjs/common';
+import { lastValueFrom } from 'rxjs';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
-import { lastValueFrom } from 'rxjs';
+import { User } from './entities/user.entity';
+import { Public } from './decorators/public.decorator';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly auth: AuthService) {}
 
+  @Public()
   @Post('login')
   async login(@Body() loginDto: LoginDto) {
-    const user = this.auth.validateUser(loginDto);
-    console.log('hello world:', user, lastValueFrom(user));
+    const observUser = this.auth.validateUser(loginDto);
+    const user = await lastValueFrom(observUser);
+
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const { access_token, refresh_token } = await this.auth.generateToken(user);
+    const { access_token, refresh_token } = await this.auth.generateToken(
+      user as User,
+    );
 
     return {
       user,
@@ -25,6 +31,7 @@ export class AuthController {
     };
   }
 
+  @Public()
   @Post('refresh-token')
   refreshToken(refreshTokenDto: RefreshTokenDto) {
     // return this.auth.refreshToken(refreshTokenDto);
