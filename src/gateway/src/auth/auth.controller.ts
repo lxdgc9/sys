@@ -33,7 +33,6 @@ export class AuthController {
   @Post('refresh-token')
   async refreshToken(@Body() refreshTokenDto: RefreshTokenDto) {
     const user = await this.auth.validateUserFromToken(refreshTokenDto.token);
-    console.log('debug:', user);
     if (!user) {
       throw new UnauthorizedException('Invalid refresh_token');
     }
