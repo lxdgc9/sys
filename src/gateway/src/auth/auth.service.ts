@@ -1,11 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { JwtService } from '@nestjs/jwt';
+import { lastValueFrom } from 'rxjs';
 import { LoginDto } from './dto/login.dto';
 import { LoginEvent } from './events/login.event';
 import { User } from './entities/user.entity';
 import { EventsGateway } from '../events/events.gateway';
-import { lastValueFrom } from 'rxjs';
 
 @Injectable()
 export class AuthService {
@@ -20,7 +20,7 @@ export class AuthService {
       'login',
       new LoginEvent(loginDto.k, loginDto.v, loginDto.password),
     );
-    const user = await lastValueFrom(observUser);
+    const user: User = await lastValueFrom(observUser);
 
     return user;
   }
