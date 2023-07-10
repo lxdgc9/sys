@@ -1,1 +1,2 @@
 GET {{host}}/users/64a68b935beba8ebe7f3f0d1
+Authorization: {{bearer_token}}

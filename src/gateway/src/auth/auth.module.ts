@@ -5,7 +5,8 @@ import { APP_GUARD } from '@nestjs/core';
 import { AuthGuard } from './auth.guard';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
-import { EventsGateway } from 'src/events/events.gateway';
+import { EventsGateway } from '../events/events.gateway';
+import { PermissionsGuard } from './permission.guard';
 
 @Module({
   imports: [
@@ -28,6 +29,10 @@ import { EventsGateway } from 'src/events/events.gateway';
     {
       provide: APP_GUARD,
       useClass: AuthGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: PermissionsGuard,
     },
     EventsGateway,
   ],

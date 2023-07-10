@@ -68,7 +68,7 @@ export class AuthService {
         },
         {
           secret: process.env.ACCESS_TOKEN_SECRET,
-          expiresIn: '5m',
+          expiresIn: '1h',
         },
       ),
       refresh_token: await this.jwt.signAsync(

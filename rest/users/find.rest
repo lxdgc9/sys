@@ -1,2 +1,2 @@
 GET {{host}}/users
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY0YTY4YjkzNWJlYmE4ZWJlN2YzZjBkMSIsInJvbGUiOiJhZG1pbjA1IiwicGVybWlzc2lvbnMiOlsiR0VUX1VTRVIiXSwiaXNfYWN0aXZlIjp0cnVlLCJpYXQiOjE2ODg5NzcxNDMsImV4cCI6MTY4ODk3NzQ0M30.7InZMxjoxKDFE-2xyU-hNdWacCuZ9WFs6EzBsj7EImM
+Authorization: {{bearer_token}}
