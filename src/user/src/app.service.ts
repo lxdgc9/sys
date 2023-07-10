@@ -10,6 +10,13 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { RoleCreatedDto } from './dto/role-created.dto';
 import { RoleUpdatedDto } from './dto/role-updated.dto';
 
+// Exclude keys from user
+function exclude<User, Key extends keyof User>(user: User, keys: Key[]) {
+  return Object.fromEntries(
+    Object.entries(user).filter(([key]) => !keys.includes(key as Key)),
+  );
+}
+
 @Injectable()
 export class AppService {
   constructor(
@@ -44,7 +51,7 @@ export class AppService {
       return null;
     }
 
-    return user;
+    return exclude(user, ['password']);
   }
 
   async createUser(createUserDto: CreateUserDto) {

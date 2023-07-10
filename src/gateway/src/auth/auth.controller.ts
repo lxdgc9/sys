@@ -13,8 +13,7 @@ export class AuthController {
   @Public()
   @Post('login')
   async login(@Body() loginDto: LoginDto) {
-    const observUser = this.auth.validateUser(loginDto);
-    const user = await lastValueFrom(observUser);
+    const user = await this.auth.validateUser(loginDto);
 
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');

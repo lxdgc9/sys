@@ -34,11 +34,20 @@ export class AuthGuard implements CanActivate {
         secret: process.env.ACCESS_TOKEN_SECRET,
       });
 
+      if (!payload.is_active) {
+        throw new UnauthorizedException('Is not active');
+      }
+
       // 💡 We're assigning the payload to the request object here
       // so that we can access it in our route handlers
       req['user'] = payload;
-    } catch {
-      throw new UnauthorizedException('Invalid token');
+    } catch (err) {
+      console.log(err);
+      if (err.name === 'TokenExpiredError') {
+        throw new UnauthorizedException('Token expired');
+      }
+
+      throw err;
     }
 
     return true;
