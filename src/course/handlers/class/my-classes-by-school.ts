@@ -15,7 +15,6 @@ const readMyClassesBySchool: RequestHandler = async (req, res, next) => {
           }[];
         }>({
           path: "classes",
-          select: "-school",
           populate: {
             path: "members",
             select: "-school -classes",
@@ -30,9 +29,9 @@ const readMyClassesBySchool: RequestHandler = async (req, res, next) => {
       throw new NotFoundErr("School not found");
     }
 
-    const classes = user.classes.map((el) =>
-      el.school._id.equals(req.params.school_id)
-    );
+    const classes = user.classes.filter((el) => {
+      return el.school._id.equals(req.params.school_id);
+    });
 
     res.json(classes);
   } catch (e) {
