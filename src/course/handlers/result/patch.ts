@@ -13,9 +13,9 @@ function cal(
   xmid: number,
   xfinal: number
 ) {
+  let a = 0;
   let ok = 0;
   let sum = 0;
-  let a = 0;
 
   if (Number.isFinite(x1)) {
     a++;
