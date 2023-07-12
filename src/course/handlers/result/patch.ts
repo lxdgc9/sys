@@ -65,7 +65,7 @@ function cal(
   return sum / a;
 }
 
-function calFinal(x1: number | null, x2?: number | null) {
+function calFinal(x1: number | null, x2: number | null) {
   if (!x1 || !x2) {
     return null;
   }
