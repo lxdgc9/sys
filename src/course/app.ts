@@ -10,6 +10,7 @@ import lesson from "./routes/lesson";
 import user from "./routes/user";
 import question from "./routes/question";
 import exam from "./routes/exam";
+import result from "./routes/result";
 
 const app = express();
 
@@ -27,6 +28,7 @@ app.use("/api/courses/lessons", lesson);
 app.use("/api/courses/questions", question);
 app.use("/api/courses/exams", exam);
 app.use("/api/courses/users", user);
+app.use("/api/courses/results", result);
 
 app.all("*", (_req, res) => {
   res.status(404).json({ msg: "Request not found" });
