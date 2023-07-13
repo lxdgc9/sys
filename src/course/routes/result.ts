@@ -7,7 +7,7 @@ import { body } from "express-validator";
 const r = Router();
 
 // Lấy thông tin bảng điểm theo lớp
-r.get("/:class_id", guard(), validator(), getResult);
+r.get("/:class_id", guard(), getResult);
 r.patch(
   "/:class_id",
   guard(),
