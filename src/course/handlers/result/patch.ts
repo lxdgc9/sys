@@ -78,6 +78,8 @@ function calFinal(x1: number | null, x2: number | null) {
 }
 
 export const patchResult: RequestHandler = async (req, res, next) => {
+  console.log("hello world");
+
   const {
     user_id,
     term1: {
